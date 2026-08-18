@@ -1,10 +1,10 @@
-import DashboardSidebar from '../components/dashboard/DashboardSidebar';
-import MobileTopNav from '../components/dashboard/MobileTopNav';
-import MobileBottomNav from '../components/dashboard/MobileBottomNav';
-import SearchBar from '../components/dashboard/SearchBar';
-import FilterPills from '../components/dashboard/FilterPills';
-import FeaturedCourseHero from '../components/dashboard/FeaturedCourseHero';
-import CourseGrid from '../components/dashboard/CourseGrid';
+import DashboardSidebar from '../components/courses/DashboardSidebar';
+import MobileTopNav from '../components/courses/MobileTopNav';
+import MobileBottomNav from '../components/courses/MobileBottomNav';
+import SearchBar from '../components/courses/SearchBar';
+import FilterPills from '../components/courses/FilterPills';
+import FeaturedCourseHero from '../components/courses/FeaturedCourseHero';
+import CourseGrid from '../components/courses/CourseGrid';
 import Icon from '../components/Icon';
 
 export default function CoursesPage() {
