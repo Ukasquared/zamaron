@@ -1,7 +1,7 @@
-import Icon from './Icon';
-import type { TrustBadgeData } from '../types';
+import { Icon } from '@/components/ui/Icon';
+import type { TrustBadgeData } from '@/types';
 
-export default function TrustBadgeItem({ icon, label, iconColorClass }: TrustBadgeData) {
+export function TrustBadgeItem({ icon, label, iconColorClass }: TrustBadgeData) {
   return (
     <div className="flex items-center gap-2">
       <Icon name={icon} className={`${iconColorClass} text-[16px]`} />
@@ -9,3 +9,5 @@ export default function TrustBadgeItem({ icon, label, iconColorClass }: TrustBad
     </div>
   );
 }
+
+export default TrustBadgeItem;

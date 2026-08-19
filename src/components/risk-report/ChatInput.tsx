@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 
 interface ChatInputProps {
   onSend?: (message: string) => void;

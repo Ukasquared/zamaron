@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import type { SidebarNavItemData } from '../../types';
 
 export default function SidebarNavLink({ icon, label, href, active = false }: SidebarNavItemData) {

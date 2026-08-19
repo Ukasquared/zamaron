@@ -1,7 +1,9 @@
-import Icon from './Icon';
-import type { FeatureData } from '../types';
+import { Icon } from '@/components/ui/Icon';
+import { Card } from '@/components/ui/Card';
+import { FEATURES } from '@/data/content';
+import type { FeatureData } from '@/types';
 
-export default function FeatureCard({
+function FeatureCardItem({
   icon,
   eyebrow,
   eyebrowColorClass,
@@ -14,9 +16,11 @@ export default function FeatureCard({
   offset = false,
 }: FeatureData) {
   return (
-    <div
+    <Card
+      variant="glass"
+      hoverEffect
       className={[
-        'glass-panel rounded-xl p-card-padding flex flex-col gap-4 group transition-all duration-500 relative overflow-hidden',
+        'p-card-padding flex flex-col gap-4 group transition-all duration-500 relative overflow-hidden',
         glowClass,
         offset ? 'md:-translate-y-8 border-secondary-container/30' : '',
       ]
@@ -36,6 +40,20 @@ export default function FeatureCard({
       </div>
       <h3 className={`font-headline-lg text-[24px] font-semibold ${titleColorClass}`}>{title}</h3>
       <p className="font-body-md text-body-md text-on-surface-variant flex-grow">{description}</p>
-    </div>
+    </Card>
   );
 }
+
+export function FeaturesSection() {
+  return (
+    <section className="mb-section-gap relative z-20">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {FEATURES.map((feature) => (
+          <FeatureCardItem key={feature.title} {...feature} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default FeaturesSection;

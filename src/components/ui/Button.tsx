@@ -5,6 +5,7 @@ import { Icon } from './Icon';
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'terminal';
   size?: 'sm' | 'md' | 'lg' | 'icon';
+  glass?: boolean;
   icon?: string;
   iconRight?: string;
   loading?: boolean;
@@ -16,6 +17,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant = 'primary',
       size = 'md',
+      glass = false,
       icon,
       iconRight,
       loading,
@@ -50,11 +52,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         'bg-[#0b1326] text-primary border border-primary/30 hover:border-primary hover:bg-[#111a30] font-mono tracking-tight text-xs normal-case',
     };
 
+    const glassStyles = glass ? 'backdrop-blur-xl bg-white/5 border-white/20 hover:bg-white/10' : '';
+
     return (
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={cn(baseStyles, sizeStyles[size], variantStyles[variant], className)}
+        className={cn(baseStyles, sizeStyles[size], variantStyles[variant], glassStyles, className)}
         {...props}
       >
         {loading ? (
@@ -72,3 +76,5 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
+export default Button;

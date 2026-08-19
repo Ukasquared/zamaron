@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import type { CourseData, CourseAccent } from '../../types';
 
 const ACCENT_STYLES: Record<

@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import SidebarNavLink from './SidebarNavLink';
 import { SIDEBAR_NAV_ITEMS } from '../../data/riskReportContent';
 

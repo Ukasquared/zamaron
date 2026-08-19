@@ -1,0 +1,1885 @@
+diff --git a/package-lock.json b/package-lock.json
+index b222c80..07c0b18 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -8,13 +8,16 @@
+       "name": "zamaron",
+       "version": "0.1.0",
+       "dependencies": {
++        "clsx": "^2.1.1",
+         "react": "^18.3.1",
+         "react-dom": "^18.3.1",
+-        "react-router-dom": "^6.28.0"
++        "react-router-dom": "^6.28.0",
++        "tailwind-merge": "^3.6.0"
+       },
+       "devDependencies": {
+         "@tailwindcss/forms": "^0.5.9",
+         "@tailwindcss/vite": "^4.0.0",
++        "@types/node": "^26.2.0",
+         "@types/react": "^18.3.12",
+         "@types/react-dom": "^18.3.1",
+         "@vitejs/plugin-react": "^4.3.3",
+@@ -1466,6 +1469,16 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/@types/node": {
++      "version": "26.2.0",
++      "resolved": "https://registry.npmjs.org/@types/node/-/node-26.2.0.tgz",
++      "integrity": "sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "undici-types": "~8.3.0"
++      }
++    },
+     "node_modules/@types/prop-types": {
+       "version": "15.7.15",
+       "resolved": "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.15.tgz",
+@@ -1583,6 +1596,15 @@
+       ],
+       "license": "CC-BY-4.0"
+     },
++    "node_modules/clsx": {
++      "version": "2.1.1",
++      "resolved": "https://registry.npmjs.org/clsx/-/clsx-2.1.1.tgz",
++      "integrity": "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=6"
++      }
++    },
+     "node_modules/convert-source-map": {
+       "version": "2.0.0",
+       "resolved": "https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz",
+@@ -2286,6 +2308,16 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/tailwind-merge": {
++      "version": "3.6.0",
++      "resolved": "https://registry.npmjs.org/tailwind-merge/-/tailwind-merge-3.6.0.tgz",
++      "integrity": "sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==",
++      "license": "MIT",
++      "funding": {
++        "type": "github",
++        "url": "https://github.com/sponsors/dcastil"
++      }
++    },
+     "node_modules/tailwindcss": {
+       "version": "4.3.3",
+       "resolved": "https://registry.npmjs.org/tailwindcss/-/tailwindcss-4.3.3.tgz",
+@@ -2321,6 +2353,13 @@
+         "node": ">=14.17"
+       }
+     },
++    "node_modules/undici-types": {
++      "version": "8.3.0",
++      "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-8.3.0.tgz",
++      "integrity": "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/update-browserslist-db": {
+       "version": "1.3.1",
+       "resolved": "https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.3.1.tgz",
+diff --git a/package.json b/package.json
+index 4445be4..4718a01 100644
+--- a/package.json
++++ b/package.json
+@@ -4,19 +4,22 @@
+   "version": "0.1.0",
+   "type": "module",
+   "scripts": {
+-    "dev": "vite",
++    "dev": "vite --host 0.0.0.0",
+     "build": "tsc -b && vite build",
+-    "preview": "vite preview",
++    "preview": "vite preview --host 0.0.0.0",
+     "lint": "eslint ."
+   },
+   "dependencies": {
++    "clsx": "^2.1.1",
+     "react": "^18.3.1",
+     "react-dom": "^18.3.1",
+-    "react-router-dom": "^6.28.0"
++    "react-router-dom": "^6.28.0",
++    "tailwind-merge": "^3.6.0"
+   },
+   "devDependencies": {
+     "@tailwindcss/forms": "^0.5.9",
+     "@tailwindcss/vite": "^4.0.0",
++    "@types/node": "^26.2.0",
+     "@types/react": "^18.3.12",
+     "@types/react-dom": "^18.3.1",
+     "@vitejs/plugin-react": "^4.3.3",
+diff --git a/src/App.tsx b/src/App.tsx
+index 49fce6b..6c6daed 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,24 +1,3 @@
+-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+-import LandingPage from './pages/LandingPage';
+-import RiskReportPage from './pages/RiskReportPage';
+-import CoursesPage from './pages/CoursesPage';
+-import AcademyLessonPage from './pages/AcademyLessonPage';
+-import ScamDetectorPage from './pages/ScamDectectorPage';
+-
+-export default function App() {
+-  return (
+-    <BrowserRouter>
+-      <Routes>
+-        <Route path="/" element={<LandingPage />} />
+-        <Route path="/risk-report" element={<RiskReportPage />} />
+-        <Route path="/courses" element={<CoursesPage />} />
+-        <Route path="/academy/lesson" element={<AcademyLessonPage />} />
+-        <Route path="/scam-detector" element={<ScamDetectorPage />} />
+-      </Routes>
+-    </BrowserRouter>
+-  );
+-} 
+-  
+ import React from 'react';
+ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+ import { AuthProvider } from '@/context/AuthContext';
+@@ -162,3 +141,5 @@ export const App: React.FC = () => {
+     </AuthProvider>
+   );
+ };
++
++export default App;
+diff --git a/src/components/Button.tsx b/src/components/Button.tsx
+deleted file mode 100644
+index b1aed8a..0000000
+--- a/src/components/Button.tsx
++++ /dev/null
+@@ -1,48 +0,0 @@
+-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+-import type { ButtonSize, ButtonVariant } from '../types';
+-
+-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+-  variant?: ButtonVariant;
+-  size?: ButtonSize;
+-  /** Applies the frosted glass-panel background used on hero CTAs */
+-  glass?: boolean;
+-  children: ReactNode;
+-}
+-
+-const VARIANT_CLASSES: Record<ButtonVariant, string> = {
+-  primary:
+-    'border-primary-fixed-dim text-primary-fixed-dim hover:bg-primary-fixed-dim hover:text-on-primary neon-glow-primary',
+-  secondary:
+-    'border-secondary-container text-secondary-container hover:bg-secondary-container hover:text-on-secondary neon-glow-secondary',
+-};
+-
+-const SIZE_CLASSES: Record<ButtonSize, string> = {
+-  sm: 'px-6 py-2 rounded-full',
+-  lg: 'px-8 py-4 rounded-lg',
+-};
+-
+-export default function Button({
+-  variant = 'primary',
+-  size = 'sm',
+-  glass = false,
+-  className = '',
+-  children,
+-  ...rest
+-}: ButtonProps) {
+-  return (
+-    <button
+-      className={[
+-        'font-label-sm text-label-sm border transition-all duration-300 flex items-center gap-2',
+-        VARIANT_CLASSES[variant],
+-        SIZE_CLASSES[size],
+-        glass ? 'glass-panel' : '',
+-        className,
+-      ]
+-        .filter(Boolean)
+-        .join(' ')}
+-      {...rest}
+-    >
+-      {children}
+-    </button>
+-  );
+-}
+diff --git a/src/components/FeaturesSection.tsx b/src/components/FeaturesSection.tsx
+deleted file mode 100644
+index 7e832f1..0000000
+--- a/src/components/FeaturesSection.tsx
++++ /dev/null
+@@ -1,14 +0,0 @@
+-import FeatureCard from './FeatureCard';
+-import { FEATURES } from '../data/content';
+-
+-export default function FeaturesSection() {
+-  return (
+-    <section className="mb-section-gap relative z-20">
+-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+-        {FEATURES.map((feature) => (
+-          <FeatureCard key={feature.title} {...feature} />
+-        ))}
+-      </div>
+-    </section>
+-  );
+-}
+diff --git a/src/components/Footer.tsx b/src/components/Footer.tsx
+deleted file mode 100644
+index 7886065..0000000
+--- a/src/components/Footer.tsx
++++ /dev/null
+@@ -1,34 +0,0 @@
+-import { FOOTER_LINKS } from '../data/content';
+-
+-interface FooterProps {
+-  /** Compact variant used on in-app pages: no logo lockup, no solid background */
+-  compact?: boolean;
+-}
+-
+-export default function Footer({ compact = false }: FooterProps) {
+-  return (
+-    <footer
+-      className={`w-full flex flex-col items-center gap-6 py-12 border-t border-white/5 ${
+-        compact ? 'mt-8' : 'bg-slate-950 mt-auto relative z-20'
+-      }`}
+-    >
+-      {!compact && <div className="font-bold text-slate-200 font-['Space_Grotesk'] text-xl">ZAMARON</div>}
+-
+-      <div className="flex flex-wrap justify-center gap-8">
+-        {FOOTER_LINKS.map((link) => (
+-          <a
+-            key={link.label}
+-            href={link.href}
+-            className="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-slate-600 hover:text-cyan-400 transition-colors hover:opacity-80"
+-          >
+-            {link.label}
+-          </a>
+-        ))}
+-      </div>
+-
+-      <p className="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-slate-600">
+-        © {new Date().getFullYear()} ZAMARON PROTOCOL. SECURE THE FRONTIER.
+-      </p>
+-    </footer>
+-  );
+-}
+diff --git a/src/components/Icon.tsx b/src/components/Icon.tsx
+deleted file mode 100644
+index 360dd3d..0000000
+--- a/src/components/Icon.tsx
++++ /dev/null
+@@ -1,17 +0,0 @@
+-interface IconProps {
+-  name: string;
+-  className?: string;
+-  /** Renders the filled variant of the glyph (FILL 1) */
+-  filled?: boolean;
+-}
+-
+-export default function Icon({ name, className = '', filled = false }: IconProps) {
+-  return (
+-    <span
+-      className={`material-symbols-outlined ${filled ? 'filled' : ''} ${className}`}
+-      aria-hidden="true"
+-    >
+-      {name}
+-    </span>
+-  );
+-}
+diff --git a/src/components/admin/AdminPage.tsx b/src/components/admin/AdminPage.tsx
+deleted file mode 100644
+index 0131f81..0000000
+--- a/src/components/admin/AdminPage.tsx
++++ /dev/null
+@@ -1,61 +0,0 @@
+-import { useState } from "react";
+-import AdminSideNav from "./AdminSideNav";
+-import AdminTopNav from "./AdminTopNav";
+-import AdminStats from "./AdminStats";
+-import MasterRegistry from "./MasterRegistry";
+-import RiskHeatmap from "./RiskHeatmap";
+-import ActivityStream from "./ActivityStream";
+-
+-export default function AdminPage() {
+-  const [sidebarOpen, setSidebarOpen] = useState(false);
+-
+-  return (
+-    <div className="font-body-md text-on-surface min-h-screen bg-[radial-gradient(circle_at_top_right,#1d1e32,#111225)]">
+-      <div className="fixed inset-0 grid-overlay pointer-events-none" />
+-
+-      <AdminSideNav open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+-
+-      <main className="md:ml-72 min-h-screen relative flex flex-col">
+-        <AdminTopNav onMenuClick={() => setSidebarOpen(true)} />
+-
+-        <div className="p-4 sm:p-6 md:p-8 flex flex-col gap-6 md:gap-8 pb-24">
+-          {/* Page Header */}
+-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
+-            <div>
+-              <h2 className="font-headline-lg text-xl sm:text-2xl md:text-headline-lg text-primary drop-shadow-[0_0_10px_rgba(0,219,233,0.2)]">
+-                User & Protocol Management
+-              </h2>
+-              <p className="text-slate-400 mt-1 max-w-2xl text-sm md:text-base">
+-                Oversee high-net-worth elite operatives and verified smart
+-                contract clusters. Monitor real-time risk tiers and security
+-                clearance levels.
+-              </p>
+-            </div>
+-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 shrink-0">
+-              <button className="flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 rounded-lg border border-error text-error bg-error/5 hover:bg-error/10 transition-all font-label-sm text-label-sm neon-glow-error">
+-                <span className="material-symbols-outlined text-[18px]">
+-                  gpp_maybe
+-                </span>
+-                NEW SECURITY ALERT
+-              </button>
+-              <button className="flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 rounded-lg border border-cyan-400 text-cyan-400 bg-cyan-400/5 hover:bg-cyan-400/10 transition-all font-label-sm text-label-sm neon-glow-primary">
+-                <span className="material-symbols-outlined text-[18px]">
+-                  add
+-                </span>
+-                REGISTER OPERATIVE
+-              </button>
+-            </div>
+-          </div>
+-
+-          <AdminStats />
+-          <MasterRegistry />
+-
+-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+-            <RiskHeatmap />
+-            <ActivityStream />
+-          </div>
+-        </div>
+-      </main>
+-    </div>
+-  );
+-}
+diff --git a/src/components/analytics/AnalyticsPage.tsx b/src/components/analytics/AnalyticsPage.tsx
+deleted file mode 100644
+index 3d08e4a..0000000
+--- a/src/components/analytics/AnalyticsPage.tsx
++++ /dev/null
+@@ -1,109 +0,0 @@
+-import { useState } from "react";
+-import AnalyticsSideNav from "./AnalyticsSideNav";
+-import AnalyticsTopBar from "./AnalyticsTopBar";
+-import ProficiencyGauge from "./ProficiencyGauge";
+-import SkillRadar from "./SkillRadar";
+-import KpiCards from "./KpiCards";
+-import AssessmentHistory from "./AssessmentHistory";
+-
+-export default function AnalyticsPage() {
+-  const [sidebarOpen, setSidebarOpen] = useState(false);
+-
+-  return (
+-    <div className="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen selection:bg-primary/30">
+-      <AnalyticsSideNav
+-        open={sidebarOpen}
+-        onClose={() => setSidebarOpen(false)}
+-      />
+-
+-      <main className="md:ml-64 min-h-screen pb-20 md:pb-0">
+-        <AnalyticsTopBar onMenuClick={() => setSidebarOpen(true)} />
+-
+-        <div className="p-4 sm:p-6 md:p-8 max-w-[1280px] mx-auto">
+-          <div className="mb-6 md:mb-gutter flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+-            <div>
+-              <h2 className="font-display-xl text-2xl sm:text-3xl md:text-display-xl text-primary mb-2">
+-                Performance Analytics
+-              </h2>
+-              <p className="text-sm md:text-body-lg text-on-surface-variant">
+-                Mastery telemetry for Operator: Alex
+-              </p>
+-            </div>
+-            <div className="flex flex-col items-start sm:items-end">
+-              <span className="text-label-sm font-label-sm text-primary">
+-                STATUS
+-              </span>
+-              <span className="text-body-md font-bold text-on-surface flex items-center gap-2">
+-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+-                Live Sync Active
+-              </span>
+-            </div>
+-          </div>
+-
+-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-gutter">
+-            <ProficiencyGauge />
+-            <SkillRadar />
+-            <KpiCards />
+-            <AssessmentHistory />
+-          </div>
+-        </div>
+-
+-        <footer className="w-full py-10 md:py-12 mt-8 md:mt-12 bg-background border-t border-outline-variant/10">
+-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 md:px-gutter flex flex-col md:flex-row justify-between items-center gap-6">
+-            <div className="flex flex-col items-center md:items-start gap-2">
+-              <span className="text-xl md:text-headline-lg font-display-xl text-primary">
+-                ZAMARON
+-              </span>
+-              <p className="text-sm text-on-surface-variant">
+-                © 2024 ZAMARON Academy. Encrypted Future.
+-              </p>
+-            </div>
+-            <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+-              {[
+-                "Privacy Protocol",
+-                "Terms of Service",
+-                "Bug Bounty",
+-                "Audit Status",
+-              ].map((link) => (
+-                <a
+-                  key={link}
+-                  className="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors"
+-                  href="#"
+-                >
+-                  {link}
+-                </a>
+-              ))}
+-            </div>
+-          </div>
+-        </footer>
+-      </main>
+-
+-      {/* Mobile bottom nav */}
+-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-low/90 backdrop-blur-xl border-t border-outline-variant/20 flex justify-around items-center z-50">
+-        {[
+-          { icon: "dashboard", label: "Home", active: false },
+-          { icon: "analytics", label: "Metrics", active: true, fill: true },
+-          { icon: "school", label: "Library", active: false },
+-          { icon: "person", label: "Profile", active: false },
+-        ].map((item) => (
+-          <button
+-            key={item.label}
+-            className={`flex flex-col items-center gap-1 ${
+-              item.active ? "text-primary" : "text-on-surface-variant"
+-            }`}
+-          >
+-            <span
+-              className="material-symbols-outlined"
+-              style={
+-                item.fill ? { fontVariationSettings: "'FILL' 1" } : undefined
+-              }
+-            >
+-              {item.icon}
+-            </span>
+-            <span className="text-[10px] uppercase">{item.label}</span>
+-          </button>
+-        ))}
+-      </nav>
+-    </div>
+-  );
+-}
+diff --git a/src/components/assessment/AssessmentPage.tsx b/src/components/assessment/AssessmentPage.tsx
+deleted file mode 100644
+index 3ac324e..0000000
+--- a/src/components/assessment/AssessmentPage.tsx
++++ /dev/null
+@@ -1,185 +0,0 @@
+-import { useState } from "react";
+-import AssessmentSideNav from "./AssessmentSideNav";
+-import QuizHeader from "./QuizHeader";
+-import CodeSnippet from "./CodeSnippet";
+-import QuizOptions from "./QuizOptions";
+-import InfoCards from "./InfoCards";
+-import type { AssessmentMeta, QuizQuestion } from "../../types/assessment";
+-
+-const meta: AssessmentMeta = {
+-  courseTitle: "Crypto Security 101",
+-  phaseLabel: "Final Assessment Phase",
+-  timeRemaining: "14:52",
+-  progressPercent: 80,
+-};
+-
+-const question: QuizQuestion = {
+-  id: "q8",
+-  number: 8,
+-  total: 10,
+-  prompt:
+-    "Identify the primary risk factor in the provided smart contract snippet.",
+-  codeSnippet: {
+-    language: "Solidity v0.8.0",
+-    lines: [
+-      { text: "function ", type: "keyword" },
+-      { text: "withdrawBalance", type: "function" },
+-      { text: "() ", type: "plain" },
+-      { text: "public", type: "keyword" },
+-      { text: " {\n", type: "plain" },
+-      { text: "    uint amountToWithdraw = userBalances[msg.sender];\n", type: "plain" },
+-      { text: "    // Vulnerable operation below\n", type: "comment" },
+-      { text: "    (bool success, ) = msg.sender.", type: "plain" },
+-      { text: "call", type: "function" },
+-      { text: "{value: amountToWithdraw}(", type: "plain" },
+-      { text: '""', type: "string" },
+-      { text: ");\n", type: "plain" },
+-      { text: "    require", type: "error" },
+-      { text: "(success);\n", type: "plain" },
+-      { text: "    userBalances[msg.sender] = ", type: "plain" },
+-      { text: "0", type: "number" },
+-      { text: ";\n", type: "plain" },
+-      { text: "}", type: "plain" },
+-    ],
+-  },
+-  options: [
+-    {
+-      id: "a",
+-      label: "A",
+-      text: "Integer Overflow in the withdrawal calculation.",
+-    },
+-    {
+-      id: "b",
+-      label: "B",
+-      text: "Reentrancy attack via low-level call before state update.",
+-    },
+-    {
+-      id: "c",
+-      label: "C",
+-      text: "Front-running vulnerability due to public visibility.",
+-    },
+-    {
+-      id: "d",
+-      label: "D",
+-      text: "Incorrect use of `msg.sender` in a delegated context.",
+-    },
+-  ],
+-};
+-
+-export default function AssessmentPage() {
+-  const [sidebarOpen, setSidebarOpen] = useState(false);
+-  const [selectedId, setSelectedId] = useState<string | null>(null);
+-
+-  return (
+-    <div className="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden">
+-      <AssessmentSideNav
+-        open={sidebarOpen}
+-        onClose={() => setSidebarOpen(false)}
+-      />
+-
+-      {/* Main Content */}
+-      <main className="md:ml-64 min-h-screen relative overflow-y-auto px-4 sm:px-8 md:px-12 py-6 md:py-8 flex flex-col items-center">
+-        {/* Background Ambient Elements */}
+-        <div className="fixed inset-0 pointer-events-none -z-10">
+-          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-container/10 blur-[120px] rounded-full" />
+-          <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-secondary-container/10 blur-[150px] rounded-full" />
+-        </div>
+-
+-        <QuizHeader
+-          meta={meta}
+-          onMenuClick={() => setSidebarOpen(true)}
+-        />
+-
+-        {/* Central Quiz Container */}
+-        <div className="w-full max-w-5xl glass-panel rounded-2xl md:rounded-3xl p-5 sm:p-8 md:p-10 relative shadow-2xl overflow-hidden">
+-          {/* Progress */}
+-          <div className="mb-8 md:mb-12">
+-            <div className="flex justify-between items-end mb-3 md:mb-4">
+-              <span className="font-label-sm text-label-sm text-slate-400 uppercase">
+-                Assessment Progress
+-              </span>
+-              <span className="font-data-lg text-data-lg text-primary text-lg md:text-2xl">
+-                Question {question.number}{" "}
+-                <span className="text-slate-500 text-base md:text-lg">
+-                  / {question.total}
+-                </span>
+-              </span>
+-            </div>
+-            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+-              <div
+-                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
+-                style={{ width: `${meta.progressPercent}%` }}
+-              />
+-            </div>
+-          </div>
+-
+-          {/* Question */}
+-          <div className="space-y-6 md:space-y-8">
+-            <h1 className="font-headline-lg text-xl sm:text-2xl md:text-headline-lg text-white leading-snug">
+-              {question.prompt}
+-            </h1>
+-
+-            {question.codeSnippet && (
+-              <CodeSnippet
+-                language={question.codeSnippet.language}
+-                lines={question.codeSnippet.lines}
+-              />
+-            )}
+-
+-            <QuizOptions
+-              options={question.options}
+-              selectedId={selectedId}
+-              onSelect={setSelectedId}
+-            />
+-
+-            {/* Action Footer */}
+-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between pt-6 md:pt-8 border-t border-white/10 gap-4 md:gap-6">
+-              <a
+-                className="text-label-sm font-label-sm text-slate-500 hover:text-white transition-colors flex items-center gap-2 justify-center md:justify-start order-3 md:order-1"
+-                href="#"
+-              >
+-                <span className="material-symbols-outlined text-sm">
+-                  skip_next
+-                </span>
+-                SKIP FOR NOW
+-              </a>
+-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4 w-full md:w-auto order-1 md:order-2">
+-                <button className="px-6 md:px-8 py-3.5 md:py-4 rounded-xl bg-transparent border border-white/10 text-white font-label-sm hover:bg-white/5 transition-all w-full md:w-auto">
+-                  PREVIOUS
+-                </button>
+-                <button
+-                  className="px-8 md:px-12 py-3.5 md:py-4 rounded-xl bg-primary-container text-on-primary-container font-label-sm font-bold shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:shadow-[0_0_30px_rgba(0,240,255,0.6)] active:scale-95 transition-all w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+-                  disabled={!selectedId}
+-                >
+-                  SUBMIT ANSWER
+-                </button>
+-              </div>
+-            </div>
+-          </div>
+-        </div>
+-
+-        <InfoCards />
+-      </main>
+-
+-      {/* Footer */}
+-      <footer className="md:ml-64 w-full md:w-[calc(100%-256px)] py-8 md:py-12 border-t border-white/5 bg-slate-950 flex flex-col items-center gap-4 md:gap-6 z-10 px-4">
+-        <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+-          {["Security Audit", "Privacy Matrix", "Terms of Intel", "Neural API"].map(
+-            (link) => (
+-              <a
+-                key={link}
+-                className="font-display-xl text-xs uppercase tracking-widest text-slate-600 hover:text-cyan-400 transition-colors"
+-                href="#"
+-              >
+-                {link}
+-              </a>
+-            )
+-          )}
+-        </div>
+-        <p className="font-display-xl text-xs uppercase tracking-widest text-slate-600 text-center">
+-          © 2024 ZAMARON PROTOCOL. SECURE THE FRONTIER.
+-        </p>
+-      </footer>
+-    </div>
+-  );
+-}
+diff --git a/src/components/certificate/CertificatePage.tsx b/src/components/certificate/CertificatePage.tsx
+deleted file mode 100644
+index 7532a59..0000000
+--- a/src/components/certificate/CertificatePage.tsx
++++ /dev/null
+@@ -1,83 +0,0 @@
+-import CertificateCard from "./CertificateCard";
+-import type { CertificateData } from "../../types/certificate";
+-
+-const certificate: CertificateData = {
+-  recipientName: "Alex",
+-  courseTitle: "Crypto Security 101",
+-  academyName: "ZAMARON ACADEMY",
+-  verificationHash: "0x7F4B2C9E...82D1A19",
+-  certificateId: "#ZMRN-2024-8892",
+-  auditorTitle: "LEAD SECURITY AUDITOR",
+-  auditorOrg: "ZAMARON PROTOCOL COMMAND",
+-  mentorTitle: "AI MENTOR",
+-  mentorOrg: "NEURAL INTERFACE SYSTEM",
+-  auditorSignatureUrl:
+-    "https://lh3.googleusercontent.com/aida-public/AB6AXuCQa6lqj7wQa_XEbTXtHvhagjlDGiS6Qh-YixdU_DKZpqi_v7yf4STXXl0mo7zqywK5BUSG7X3lXzeAR0OSQPVjnogeCypjKrnYBATI5-baS99tLcgp5CVT6gchAwNueQTh6Wcb2e7dZMPyxoH3VAyCrtLLgf-o9RtVqX-rYCs-xqhVUFkfGLNOJcZGyHdbt_EDBo1gGKwV5i07H2QYkxqUoGnZ2ftU31b3AMMW-7NBfAs3NziN6pCqfGrlhAliBWvYdMwsJKgsxUAV",
+-  mentorSignatureUrl:
+-    "https://lh3.googleusercontent.com/aida-public/AB6AXuDf4wPEFPaZyCj__GY6Wxrg82gpM2bdGG5eLIA1s2sPu4ONPkZClUf3-HvB4wrYaXPlOdMf7kJfoWr7rBqngflBwR3s6NVksgVJRKrU3wf2lf2EPojgJTUIqJxGxLfeROrDbfn70Y_ph_4f4iX4Xd0Vwl7s1BfWmlrbwIc_PiA8JKWqg0AMsu8fRsvdw91xxnukhsG1n_bTZ5apAsJB2_hyEaZmgYtnCVrh0v0MpLhIa8uy_HgcMM_RyF5AeQmm19bL3H4JOuzxJA8j",
+-};
+-
+-export default function CertificatePage() {
+-  return (
+-    <div className="matrix-bg min-h-screen flex flex-col font-body-md text-on-background">
+-      <main className="flex-1 w-full max-w-[1280px] mx-auto flex flex-col items-center justify-center relative overflow-hidden px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 pb-40 sm:pb-44">
+-        {/* Decorative Background Nodes */}
+-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+-          <div className="absolute top-[10%] left-[15%] w-40 sm:w-64 h-40 sm:h-64 bg-primary-container/20 rounded-full blur-[120px]" />
+-          <div className="absolute bottom-[20%] right-[10%] w-56 sm:w-96 h-56 sm:h-96 bg-secondary-container/10 rounded-full blur-[150px]" />
+-        </div>
+-
+-        <CertificateCard data={certificate} />
+-
+-        {/* Action Buttons */}
+-        <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-6 w-full sm:w-auto max-w-md sm:max-w-none">
+-          <button className="bg-surface-container-high/40 hover:bg-surface-container-highest transition-all px-6 sm:px-8 py-3 rounded-lg border border-white/10 flex items-center justify-center gap-3 group">
+-            <span className="material-symbols-outlined text-primary-container group-hover:scale-110 transition-transform">
+-              download
+-            </span>
+-            <span className="font-label-sm text-label-sm text-on-surface">
+-              DOWNLOAD PDF
+-            </span>
+-          </button>
+-          <button className="bg-primary-container text-on-primary-container hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all px-6 sm:px-8 py-3 rounded-lg flex items-center justify-center gap-3">
+-            <span className="material-symbols-outlined text-on-primary-container">
+-              share
+-            </span>
+-            <span className="font-label-sm text-label-sm">SHARE CREDENTIAL</span>
+-          </button>
+-        </div>
+-      </main>
+-
+-      {/* Footer */}
+-      <footer className="w-full flex flex-col items-center gap-4 sm:gap-6 bg-slate-950 py-8 sm:py-12 border-t border-white/5 mt-auto">
+-        <div className="max-w-[1280px] w-full px-4 sm:px-8 flex flex-col items-center gap-6 sm:gap-8">
+-          <div className="flex flex-wrap justify-center gap-4 sm:gap-8 md:gap-12">
+-            {[
+-              "Security Audit",
+-              "Privacy Matrix",
+-              "Terms of Intel",
+-              "Neural API",
+-            ].map((link) => (
+-              <a
+-                key={link}
+-                className="font-display-xl text-xs uppercase tracking-widest text-slate-600 hover:text-cyan-400 transition-colors"
+-                href="#"
+-              >
+-                {link}
+-              </a>
+-            ))}
+-          </div>
+-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center">
+-            <span className="font-display-xl text-xs uppercase tracking-widest font-bold text-slate-200">
+-              ZAMARON PROTOCOL
+-            </span>
+-            <span className="hidden sm:block w-1 h-1 bg-slate-700 rounded-full" />
+-            <span className="font-display-xl text-xs uppercase tracking-widest text-slate-600">
+-              © 2024 ZAMARON PROTOCOL. SECURE THE FRONTIER.
+-            </span>
+-          </div>
+-        </div>
+-      </footer>
+-    </div>
+-  );
+-}
+diff --git a/src/components/content/ContentPage.tsx b/src/components/content/ContentPage.tsx
+deleted file mode 100644
+index d4ce1ef..0000000
+--- a/src/components/content/ContentPage.tsx
++++ /dev/null
+@@ -1,72 +0,0 @@
+-import { useState } from "react";
+-import ContentSideNav from "./ContentSideNav";
+-import ContentTopNav from "./ContentTopNav";
+-import NeuralPatterns from "./NeuralPatterns";
+-import ScamDefinitions from "./ScamDefinitions";
+-import ModuleEditor from "./ModuleEditor";
+-import ReportTemplates from "./ReportTemplates";
+-
+-export default function ContentPage() {
+-  const [sidebarOpen, setSidebarOpen] = useState(false);
+-
+-  return (
+-    <div className="font-body-md text-on-surface min-h-screen bg-[radial-gradient(circle_at_50%_50%,#1d1e32_0%,#0b0c1f_100%)]">
+-      <ContentSideNav
+-        open={sidebarOpen}
+-        onClose={() => setSidebarOpen(false)}
+-      />
+-      <ContentTopNav onMenuClick={() => setSidebarOpen(true)} />
+-
+-      <main className="md:ml-72 p-4 sm:p-6 md:p-8 min-h-screen cyber-grid pb-24">
+-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 md:mb-10">
+-          <div>
+-            <h2 className="font-headline-lg text-xl sm:text-2xl md:text-headline-lg text-primary leading-none">
+-              Content Administration
+-            </h2>
+-            <p className="font-body-md text-slate-400 mt-2 text-sm md:text-base">
+-              Manage the neural-linked educational ecosystem of ZAMARON Academy.
+-            </p>
+-          </div>
+-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
+-            <button className="glass-panel px-4 md:px-6 py-2 rounded-lg text-label-sm font-label-sm text-cyan-400 flex items-center justify-center gap-2 hover:bg-cyan-500/10 transition-all border border-cyan-400/20">
+-              <span className="material-symbols-outlined text-sm">publish</span>
+-              DEPLOY MODULES
+-            </button>
+-            <button className="bg-primary-container px-4 md:px-6 py-2 rounded-lg text-label-sm font-label-sm text-on-primary-container flex items-center justify-center gap-2 neon-glow-primary hover:brightness-110 transition-all">
+-              <span className="material-symbols-outlined text-sm">
+-                add_circle
+-              </span>
+-              NEW COURSE
+-            </button>
+-          </div>
+-        </div>
+-
+-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+-          {/* Left column */}
+-          <div className="lg:col-span-4 flex flex-col gap-6">
+-            <NeuralPatterns />
+-            <ScamDefinitions />
+-          </div>
+-
+-          {/* Right column */}
+-          <div className="lg:col-span-8 space-y-6">
+-            <ModuleEditor />
+-            <ReportTemplates />
+-          </div>
+-        </div>
+-      </main>
+-
+-      {/* FAB */}
+-      <div className="fixed bottom-8 right-6 md:right-8 z-50">
+-        <button className="w-12 h-12 md:w-14 md:h-14 bg-cyan-400 rounded-full flex items-center justify-center text-on-primary shadow-[0_0_25px_rgba(0,219,233,0.5)] hover:scale-110 active:scale-95 transition-all">
+-          <span
+-            className="material-symbols-outlined text-2xl md:text-3xl"
+-            style={{ fontVariationSettings: "'FILL' 1" }}
+-          >
+-            smart_toy
+-          </span>
+-        </button>
+-      </div>
+-    </div>
+-  );
+-}
+diff --git a/src/components/courses/CourseCard.tsx b/src/components/courses/CourseCard.tsx
+index b04e20d..655f4fc 100644
+--- a/src/components/courses/CourseCard.tsx
++++ b/src/components/courses/CourseCard.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import type { CourseData, CourseAccent } from '../../types';
+ 
+ const ACCENT_STYLES: Record<
+diff --git a/src/components/courses/CourseGrid.tsx b/src/components/courses/CourseGrid.tsx
+index c9a2f70..1fd1840 100644
+--- a/src/components/courses/CourseGrid.tsx
++++ b/src/components/courses/CourseGrid.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import CourseCard from './CourseCard';
+ import { COURSES } from '../../data/coursesContent';
+ 
+diff --git a/src/components/courses/DashboardNavLink.tsx b/src/components/courses/DashboardNavLink.tsx
+index bed29c1..5c086bf 100644
+--- a/src/components/courses/DashboardNavLink.tsx
++++ b/src/components/courses/DashboardNavLink.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import type { DashboardNavItemData } from '../../types';
+ 
+ export default function DashboardNavLink({ icon, label, href, active = false }: DashboardNavItemData) {
+diff --git a/src/components/courses/DashboardSidebar.tsx b/src/components/courses/DashboardSidebar.tsx
+index e4cfb51..2ddf5ca 100644
+--- a/src/components/courses/DashboardSidebar.tsx
++++ b/src/components/courses/DashboardSidebar.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import DashboardNavLink from './DashboardNavLink';
+ import { DASHBOARD_NAV_ITEMS, SECONDARY_NAV_ITEMS } from '../../data/coursesContent';
+ 
+diff --git a/src/components/courses/FeaturedCourseHero.tsx b/src/components/courses/FeaturedCourseHero.tsx
+index 6034c58..2a393eb 100644
+--- a/src/components/courses/FeaturedCourseHero.tsx
++++ b/src/components/courses/FeaturedCourseHero.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import { FEATURED_COURSE } from '../../data/coursesContent';
+ 
+ export default function FeaturedCourseHero() {
+diff --git a/src/components/courses/MobileBottomNav.tsx b/src/components/courses/MobileBottomNav.tsx
+index 3063180..ff56501 100644
+--- a/src/components/courses/MobileBottomNav.tsx
++++ b/src/components/courses/MobileBottomNav.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import { DASHBOARD_NAV_ITEMS } from '../../data/coursesContent';
+ 
+ export default function MobileBottomNav() {
+diff --git a/src/components/courses/MobileTopNav.tsx b/src/components/courses/MobileTopNav.tsx
+index e00a231..54f4b4f 100644
+--- a/src/components/courses/MobileTopNav.tsx
++++ b/src/components/courses/MobileTopNav.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import { CURRENT_USER } from '../../data/coursesContent';
+ 
+ export default function MobileTopNav() {
+diff --git a/src/components/courses/SearchBar.tsx b/src/components/courses/SearchBar.tsx
+index 603e979..6f7631f 100644
+--- a/src/components/courses/SearchBar.tsx
++++ b/src/components/courses/SearchBar.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ 
+ export default function SearchBar() {
+   return (
+diff --git a/src/components/ecosystem/EcosystemPage.tsx b/src/components/ecosystem/EcosystemPage.tsx
+deleted file mode 100644
+index 04aa5e7..0000000
+--- a/src/components/ecosystem/EcosystemPage.tsx
++++ /dev/null
+@@ -1,59 +0,0 @@
+-import { useState } from "react";
+-import EcosystemSideNav from "./EcosystemSideNav";
+-import EcosystemTopNav from "./EcosystemTopNav";
+-import ClusterTelemetry from "./ClusterTelemetry";
+-import NeuralAccuracy from "./NeuralAccuracy";
+-import ScannerLoad from "./ScannerLoad";
+-import TrafficHeatmap from "./TrafficHeatmap";
+-import SystemAlerts from "./SystemAlerts";
+-import BannerStats from "./BannerStats";
+-
+-export default function EcosystemPage() {
+-  const [sidebarOpen, setSidebarOpen] = useState(false);
+-
+-  return (
+-    <div className="font-body-md text-on-surface min-h-screen bg-[radial-gradient(circle_at_top_right,#1d1e32,#111225)]">
+-      <EcosystemSideNav
+-        open={sidebarOpen}
+-        onClose={() => setSidebarOpen(false)}
+-      />
+-      <EcosystemTopNav onMenuClick={() => setSidebarOpen(true)} />
+-
+-      <main className="md:ml-72 p-4 sm:p-6 md:p-8 pb-24">
+-        <header className="mb-8 md:mb-10">
+-          <h2 className="font-display-xl text-2xl sm:text-3xl md:text-display-xl text-primary tracking-tight">
+-            Ecosystem Health Monitor
+-          </h2>
+-          <p className="font-body-md text-on-surface-variant max-w-2xl mt-2 text-sm md:text-base">
+-            Real-time telemetry and neural performance diagnostic for the
+-            ZAMARON global backbone.
+-          </p>
+-        </header>
+-
+-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+-          {/* Left column */}
+-          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
+-            <ClusterTelemetry />
+-            <NeuralAccuracy />
+-            <ScannerLoad />
+-            <TrafficHeatmap />
+-          </div>
+-
+-          {/* Right column - Alerts */}
+-          <div className="lg:col-span-4">
+-            <SystemAlerts />
+-          </div>
+-        </div>
+-
+-        <BannerStats />
+-      </main>
+-
+-      {/* FAB */}
+-      <button className="fixed bottom-8 right-6 md:bottom-10 md:right-10 w-14 h-14 md:w-16 md:h-16 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.6)] hover:scale-110 active:scale-95 transition-all z-50">
+-        <span className="material-symbols-outlined text-2xl md:text-3xl font-bold">
+-          terminal
+-        </span>
+-      </button>
+-    </div>
+-  );
+-}
+diff --git a/src/components/risk-report/ChatInput.tsx b/src/components/risk-report/ChatInput.tsx
+index a07d15c..b074739 100644
+--- a/src/components/risk-report/ChatInput.tsx
++++ b/src/components/risk-report/ChatInput.tsx
+@@ -1,5 +1,5 @@
+ import { useState, type FormEvent } from 'react';
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ 
+ interface ChatInputProps {
+   onSend?: (message: string) => void;
+diff --git a/src/components/risk-report/ChatSidebar.tsx b/src/components/risk-report/ChatSidebar.tsx
+index 05af727..216fb3a 100644
+--- a/src/components/risk-report/ChatSidebar.tsx
++++ b/src/components/risk-report/ChatSidebar.tsx
+@@ -1,5 +1,5 @@
+ import { useState } from 'react';
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import ChatMessage from './ChatMessage';
+ import ChatInput from './ChatInput';
+ import { CHAT_MESSAGES } from '../../data/riskReportContent';
+diff --git a/src/components/risk-report/NeuralRiskScoreCard.tsx b/src/components/risk-report/NeuralRiskScoreCard.tsx
+index 011c8e8..755e699 100644
+--- a/src/components/risk-report/NeuralRiskScoreCard.tsx
++++ b/src/components/risk-report/NeuralRiskScoreCard.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ 
+ interface NeuralRiskScoreCardProps {
+   score: number;
+diff --git a/src/components/risk-report/RiskBadge.tsx b/src/components/risk-report/RiskBadge.tsx
+index 4eed085..a6d6674 100644
+--- a/src/components/risk-report/RiskBadge.tsx
++++ b/src/components/risk-report/RiskBadge.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ 
+ interface RiskBadgeProps {
+   label: string;
+diff --git a/src/components/risk-report/Sidebar.tsx b/src/components/risk-report/Sidebar.tsx
+index f75cb7d..d049ce7 100644
+--- a/src/components/risk-report/Sidebar.tsx
++++ b/src/components/risk-report/Sidebar.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import SidebarNavLink from './SidebarNavLink';
+ import { SIDEBAR_NAV_ITEMS } from '../../data/riskReportContent';
+ 
+diff --git a/src/components/risk-report/SidebarNavLink.tsx b/src/components/risk-report/SidebarNavLink.tsx
+index d58c5bb..417874c 100644
+--- a/src/components/risk-report/SidebarNavLink.tsx
++++ b/src/components/risk-report/SidebarNavLink.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import type { SidebarNavItemData } from '../../types';
+ 
+ export default function SidebarNavLink({ icon, label, href, active = false }: SidebarNavItemData) {
+diff --git a/src/components/risk-report/StatusMetricCard.tsx b/src/components/risk-report/StatusMetricCard.tsx
+index f5b6762..0958d90 100644
+--- a/src/components/risk-report/StatusMetricCard.tsx
++++ b/src/components/risk-report/StatusMetricCard.tsx
+@@ -1,4 +1,4 @@
+-import Icon from '../Icon';
++import { Icon } from '@/components/ui/Icon';
+ import type { StatusMetricData } from '../../types';
+ 
+ export default function StatusMetricCard({ icon, statusIcon, label, value, description }: StatusMetricData) {
+diff --git a/src/components/scanner/ScannerPage.tsx b/src/components/scanner/ScannerPage.tsx
+deleted file mode 100644
+index d569694..0000000
+--- a/src/components/scanner/ScannerPage.tsx
++++ /dev/null
+@@ -1,44 +0,0 @@
+-import { useState } from "react";
+-import ScannerTopNav from "./ScannerTopNav";
+-import ScannerSideNav from "./ScannerSideNav";
+-import ScanSearch from "./ScanSearch";
+-import RiskMap from "./RiskMap";
+-import AuditStats from "./AuditStats";
+-import AuditHistory from "./AuditHistory";
+-import ThreatFeed from "./ThreatFeed";
+-
+-export default function ScannerPage() {
+-  const [sidebarOpen, setSidebarOpen] = useState(false);
+-
+-  return (
+-    <div className="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen selection:bg-primary-container selection:text-on-primary-container">
+-      <ScannerTopNav onMenuClick={() => setSidebarOpen(true)} />
+-      <ScannerSideNav
+-        open={sidebarOpen}
+-        onClose={() => setSidebarOpen(false)}
+-      />
+-
+-      <main className="lg:ml-64 min-h-screen pt-8 md:pt-12 pb-20 px-4 sm:px-6 md:px-margin-safe max-w-[1280px] mx-auto">
+-        <section className="mb-8 md:mb-12 text-center">
+-          <h1 className="text-xl sm:text-2xl md:text-headline-lg font-headline-lg text-primary glow-text-cyan mb-2">
+-            SCAM DETECTOR PROTOCOL
+-          </h1>
+-          <p className="text-sm md:text-body-lg font-body-lg text-on-surface-variant max-w-2xl mx-auto">
+-            Deploying heuristic neural analysis for smart contract auditing and
+-            phishing pattern recognition.
+-          </p>
+-        </section>
+-
+-        <ScanSearch />
+-
+-        <div className="grid grid-cols-12 gap-4 md:gap-gutter">
+-          <RiskMap />
+-          <AuditStats />
+-          <AuditHistory />
+-        </div>
+-      </main>
+-
+-      <ThreatFeed />
+-    </div>
+-  );
+-}
+diff --git a/src/components/FeatureCard.tsx b/src/components/sections/FeaturesSection.tsx
+similarity index 61%
+rename from src/components/FeatureCard.tsx
+rename to src/components/sections/FeaturesSection.tsx
+index f35ba55..24bb46f 100644
+--- a/src/components/FeatureCard.tsx
++++ b/src/components/sections/FeaturesSection.tsx
+@@ -1,7 +1,9 @@
+-import Icon from './Icon';
+-import type { FeatureData } from '../types';
++import { Icon } from '@/components/ui/Icon';
++import { Card } from '@/components/ui/Card';
++import { FEATURES } from '@/data/content';
++import type { FeatureData } from '@/types';
+ 
+-export default function FeatureCard({
++function FeatureCardItem({
+   icon,
+   eyebrow,
+   eyebrowColorClass,
+@@ -14,9 +16,11 @@ export default function FeatureCard({
+   offset = false,
+ }: FeatureData) {
+   return (
+-    <div
++    <Card
++      variant="glass"
++      hoverEffect
+       className={[
+-        'glass-panel rounded-xl p-card-padding flex flex-col gap-4 group transition-all duration-500 relative overflow-hidden',
++        'p-card-padding flex flex-col gap-4 group transition-all duration-500 relative overflow-hidden',
+         glowClass,
+         offset ? 'md:-translate-y-8 border-secondary-container/30' : '',
+       ]
+@@ -36,6 +40,20 @@ export default function FeatureCard({
+       </div>
+       <h3 className={`font-headline-lg text-[24px] font-semibold ${titleColorClass}`}>{title}</h3>
+       <p className="font-body-md text-body-md text-on-surface-variant flex-grow">{description}</p>
+-    </div>
++    </Card>
+   );
+ }
++
++export function FeaturesSection() {
++  return (
++    <section className="mb-section-gap relative z-20">
++      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
++        {FEATURES.map((feature) => (
++          <FeatureCardItem key={feature.title} {...feature} />
++        ))}
++      </div>
++    </section>
++  );
++}
++
++export default FeaturesSection;
+diff --git a/src/components/sections/Footer.tsx b/src/components/sections/Footer.tsx
+new file mode 100644
+index 0000000..81a0aba
+--- /dev/null
++++ b/src/components/sections/Footer.tsx
+@@ -0,0 +1,38 @@
++import { FOOTER_LINKS } from '@/data/content';
++
++interface FooterProps {
++  /** Compact variant used on in-app pages: no logo lockup, no solid background */
++  compact?: boolean;
++}
++
++export function Footer({ compact = false }: FooterProps) {
++  return (
++    <footer
++      className={`w-full flex flex-col items-center gap-6 py-12 border-t border-white/5 ${
++        compact ? 'mt-8' : 'bg-slate-950 mt-auto relative z-20'
++      }`}
++    >
++      {!compact && (
++        <div className="font-bold text-slate-200 text-lg tracking-wider font-['Space_Grotesk']">
++          ZAMARON
++        </div>
++      )}
++      <div className="flex gap-6 text-sm text-slate-400">
++        {FOOTER_LINKS.map((link) => (
++          <a
++            key={link.label}
++            href={link.href}
++            className="hover:text-cyan-400 transition-colors"
++          >
++            {link.label}
++          </a>
++        ))}
++      </div>
++      <div className="text-xs text-slate-500">
++        &copy; {new Date().getFullYear()} ZAMARON Protocol. All rights reserved.
++      </div>
++    </footer>
++  );
++}
++
++export default Footer;
+diff --git a/src/components/HeroSection.tsx b/src/components/sections/HeroSection.tsx
+similarity index 92%
+rename from src/components/HeroSection.tsx
+rename to src/components/sections/HeroSection.tsx
+index bdc2340..8d4cf93 100644
+--- a/src/components/HeroSection.tsx
++++ b/src/components/sections/HeroSection.tsx
+@@ -1,9 +1,9 @@
+-import Icon from './Icon';
+-import Button from './Button';
++import { Icon } from '@/components/ui/Icon';
++import { Button } from '@/components/ui/Button';
+ import TrustBadgeItem from './TrustBadgeItem';
+-import { TRUST_BADGES, HERO_IMAGE } from '../data/content';
++import { TRUST_BADGES, HERO_IMAGE } from '@/data/content';
+ 
+-export default function HeroSection() {
++export function HeroSection() {
+   return (
+     <section className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center min-h-[716px] mb-section-gap relative">
+       {/* Holographic background elements */}
+@@ -60,3 +60,5 @@ export default function HeroSection() {
+     </section>
+   );
+ }
++
++export default HeroSection;
+diff --git a/src/components/Navbar.tsx b/src/components/sections/Navbar.tsx
+similarity index 63%
+rename from src/components/Navbar.tsx
+rename to src/components/sections/Navbar.tsx
+index 6154b35..aa6c523 100644
+--- a/src/components/Navbar.tsx
++++ b/src/components/sections/Navbar.tsx
+@@ -1,30 +1,28 @@
+-import { NAV_LINKS } from '../data/content';
+-import Button from './Button';
++import { NAV_LINKS } from '@/data/content';
++import { Button } from '@/components/ui/Button';
+ 
+-export default function Navbar() {
++export function Navbar() {
+   return (
+     <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 max-w-[1280px] left-1/2 -translate-x-1/2 bg-slate-950/40 backdrop-blur-xl border-b border-white/10 shadow-[0_0_20px_rgba(0,240,255,0.1)]">
+       <div className="text-2xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 font-['Space_Grotesk']">
+         ZAMARON
+       </div>
+-
+-      <div className="hidden md:flex gap-8 items-center">
++      <div className="flex gap-8 items-center">
+         {NAV_LINKS.map((link) => (
+           <a
+             key={link.label}
+             href={link.href}
+-            className="font-label-sm text-label-sm text-slate-400 hover:text-white transition-colors hover:bg-white/5 duration-300 px-3 py-2 rounded"
++            className="text-slate-300 hover:text-cyan-400 text-sm font-medium transition-colors"
+           >
+             {link.label}
+           </a>
+         ))}
+-      </div>
+-
+-      <div className="flex items-center gap-4">
+         <Button variant="primary" size="sm">
+-          Launch App
++          Connect Wallet
+         </Button>
+       </div>
+     </nav>
+   );
+ }
++
++export default Navbar;
+diff --git a/src/components/TrustBadgeItem.tsx b/src/components/sections/TrustBadgeItem.tsx
+similarity index 51%
+rename from src/components/TrustBadgeItem.tsx
+rename to src/components/sections/TrustBadgeItem.tsx
+index e5c43e2..af31a96 100644
+--- a/src/components/TrustBadgeItem.tsx
++++ b/src/components/sections/TrustBadgeItem.tsx
+@@ -1,7 +1,7 @@
+-import Icon from './Icon';
+-import type { TrustBadgeData } from '../types';
++import { Icon } from '@/components/ui/Icon';
++import type { TrustBadgeData } from '@/types';
+ 
+-export default function TrustBadgeItem({ icon, label, iconColorClass }: TrustBadgeData) {
++export function TrustBadgeItem({ icon, label, iconColorClass }: TrustBadgeData) {
+   return (
+     <div className="flex items-center gap-2">
+       <Icon name={icon} className={`${iconColorClass} text-[16px]`} />
+@@ -9,3 +9,5 @@ export default function TrustBadgeItem({ icon, label, iconColorClass }: TrustBad
+     </div>
+   );
+ }
++
++export default TrustBadgeItem;
+diff --git a/src/components/security/SecurityPage.tsx b/src/components/security/SecurityPage.tsx
+deleted file mode 100644
+index ad2808c..0000000
+--- a/src/components/security/SecurityPage.tsx
++++ /dev/null
+@@ -1,58 +0,0 @@
+-import { useState } from "react";
+-import SecuritySideNav from "./SecuritySideNav";
+-import SecurityTopNav from "./SecurityTopNav";
+-import SecurityStats from "./SecurityStats";
+-import LogStream from "./LogStream";
+-
+-export default function SecurityPage() {
+-  const [sidebarOpen, setSidebarOpen] = useState(false);
+-
+-  return (
+-    <div className="bg-surface-container-lowest text-on-surface font-body-md min-h-screen md:h-screen md:overflow-hidden">
+-      {/* Background Decorations */}
+-      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-on-primary-container opacity-10 rounded-full blur-[120px]" />
+-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-on-tertiary-container opacity-10 rounded-full blur-[150px]" />
+-        <div
+-          className="absolute inset-0 opacity-[0.03]"
+-          style={{
+-            backgroundImage:
+-              "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
+-            backgroundSize: "40px 40px",
+-          }}
+-        />
+-      </div>
+-
+-      <SecuritySideNav
+-        open={sidebarOpen}
+-        onClose={() => setSidebarOpen(false)}
+-      />
+-
+-      <main className="md:ml-72 flex flex-col min-h-screen md:h-screen">
+-        <SecurityTopNav onMenuClick={() => setSidebarOpen(true)} />
+-
+-        <section className="flex-1 overflow-y-auto md:overflow-hidden p-4 sm:p-6 md:p-8 flex flex-col gap-6 md:gap-8 pb-24">
+-          {/* Header */}
+-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+-            <div>
+-              <h1 className="font-headline-lg text-xl sm:text-2xl md:text-headline-lg text-primary tracking-tight">
+-                Forensic Security Audit
+-              </h1>
+-              <p className="font-body-md text-on-surface-variant max-w-2xl mt-2 text-sm md:text-base">
+-                Real-time surveillance of administrative protocols, neural
+-                lattice modifications, and access authorization events.
+-              </p>
+-            </div>
+-            <button className="bg-cyan-500/10 border border-cyan-400/30 text-cyan-400 px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-label-sm text-label-sm uppercase hover:bg-cyan-400 hover:text-slate-950 transition-all active:scale-95 flex items-center gap-2 neon-glow-cyan shrink-0 w-full md:w-auto justify-center">
+-              <span className="material-symbols-outlined text-sm">terminal</span>
+-              Export Audit for Protocol Command
+-            </button>
+-          </div>
+-
+-          <SecurityStats />
+-          <LogStream />
+-        </section>
+-      </main>
+-    </div>
+-  );
+-}
+diff --git a/src/components/ui/Button.tsx b/src/components/ui/Button.tsx
+index 66591ed..489411a 100644
+--- a/src/components/ui/Button.tsx
++++ b/src/components/ui/Button.tsx
+@@ -5,6 +5,7 @@ import { Icon } from './Icon';
+ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'terminal';
+   size?: 'sm' | 'md' | 'lg' | 'icon';
++  glass?: boolean;
+   icon?: string;
+   iconRight?: string;
+   loading?: boolean;
+@@ -16,6 +17,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+       className,
+       variant = 'primary',
+       size = 'md',
++      glass = false,
+       icon,
+       iconRight,
+       loading,
+@@ -50,11 +52,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+         'bg-[#0b1326] text-primary border border-primary/30 hover:border-primary hover:bg-[#111a30] font-mono tracking-tight text-xs normal-case',
+     };
+ 
++    const glassStyles = glass ? 'backdrop-blur-xl bg-white/5 border-white/20 hover:bg-white/10' : '';
++
+     return (
+       <button
+         ref={ref}
+         disabled={disabled || loading}
+-        className={cn(baseStyles, sizeStyles[size], variantStyles[variant], className)}
++        className={cn(baseStyles, sizeStyles[size], variantStyles[variant], glassStyles, className)}
+         {...props}
+       >
+         {loading ? (
+@@ -72,3 +76,5 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+ );
+ 
+ Button.displayName = 'Button';
++
++export default Button;
+diff --git a/src/components/ui/Icon.tsx b/src/components/ui/Icon.tsx
+index f23fa19..9f7f1e6 100644
+--- a/src/components/ui/Icon.tsx
++++ b/src/components/ui/Icon.tsx
+@@ -1,10 +1,11 @@
+ import React from 'react';
+ import { cn } from '@/lib/utils';
+ 
+-interface IconProps extends React.HTMLAttributes<HTMLSpanElement> {
++export interface IconProps extends React.HTMLAttributes<HTMLSpanElement> {
+   name: string;
+   className?: string;
+   fill?: boolean;
++  filled?: boolean;
+   size?: number | string;
+ }
+ 
+@@ -12,15 +13,17 @@ export const Icon: React.FC<IconProps> = ({
+   name,
+   className,
+   fill = false,
++  filled = false,
+   size,
+   style,
+   ...props
+ }) => {
++  const isFilled = fill || filled;
+   return (
+     <span
+       className={cn(
+         'material-symbols-outlined select-none inline-flex items-center justify-center align-middle',
+-        fill && 'fill',
++        isFilled && 'fill filled',
+         className
+       )}
+       style={{
+@@ -33,3 +36,5 @@ export const Icon: React.FC<IconProps> = ({
+     </span>
+   );
+ };
++
++export default Icon;
+diff --git a/src/pages/AcademyLessonPage.tsx b/src/pages/AcademyLessonPage.tsx
+deleted file mode 100644
+index bf152d7..0000000
+--- a/src/pages/AcademyLessonPage.tsx
++++ /dev/null
+@@ -1,58 +0,0 @@
+-import TopNavBar from "../components/academy/TopNavBar";
+-import CourseSideNav from "../components/academy/CourseSideNav";
+-import VideoPlayer from "../components/academy/VideoPlayer";
+-import LessonNotes from "../components/academy/LessonNotes";
+-import AIMentorChat from "../components/academy/AIMentorChat";
+-import QuickQuizFab from "../components/academy/QuickQuizFab";
+-
+-export default function AcademyLessonPage() {
+-  return (
+-    <div className="bg-background text-on-surface font-body-md min-h-screen flex flex-col">
+-      <TopNavBar />
+-
+-      <div className="flex flex-1 pt-16">
+-        <CourseSideNav />
+-
+-        <main className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+-          <div className="max-w-[1200px] mx-auto">
+-            {/* Header */}
+-            <div className="flex items-center justify-between mb-8">
+-              <div>
+-                <h1 className="font-headline-lg text-headline-lg text-white mb-2">
+-                  Module 2: Identifying Rug Pulls
+-                </h1>
+-                <p className="text-on-surface-variant font-body-md">
+-                  Learn the forensic patterns of liquidity drain and developer
+-                  exit scams.
+-                </p>
+-              </div>
+-              <div className="flex items-center gap-4">
+-                <div className="px-4 py-2 glass-panel rounded-full flex items-center gap-2 border-primary-fixed-dim/30">
+-                  <span className="h-2 w-2 rounded-full bg-primary-fixed-dim neon-glow-primary animate-pulse" />
+-                  <span className="font-label-sm text-label-sm text-primary-fixed-dim">
+-                    LIVE LESSON
+-                  </span>
+-                </div>
+-              </div>
+-            </div>
+-
+-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+-              {/* Video + Notes */}
+-              <div className="lg:col-span-8 space-y-8">
+-                <VideoPlayer />
+-                <LessonNotes />
+-              </div>
+-
+-              {/* AI Mentor Sidebar */}
+-              <div className="lg:col-span-4">
+-                <AIMentorChat />
+-              </div>
+-            </div>
+-          </div>
+-        </main>
+-      </div>
+-
+-      <QuickQuizFab />
+-    </div>
+-  );
+-}
+diff --git a/src/pages/CoursesPage.tsx b/src/pages/CoursesPage.tsx
+deleted file mode 100644
+index aca89a5..0000000
+--- a/src/pages/CoursesPage.tsx
++++ /dev/null
+@@ -1,42 +0,0 @@
+-import DashboardSidebar from '../components/courses/DashboardSidebar';
+-import MobileTopNav from '../components/courses/MobileTopNav';
+-import MobileBottomNav from '../components/courses/MobileBottomNav';
+-import SearchBar from '../components/courses/SearchBar';
+-import FilterPills from '../components/courses/FilterPills';
+-import FeaturedCourseHero from '../components/courses/FeaturedCourseHero';
+-import CourseGrid from '../components/courses/CourseGrid';
+-import Icon from '../components/Icon';
+-
+-export default function CoursesPage() {
+-  return (
+-    <div className="flex min-h-screen font-body-md text-body-md overflow-hidden bg-background dashboard-grid-bg antialiased selection:bg-primary-container selection:text-on-primary-container">
+-      <MobileTopNav />
+-      <DashboardSidebar />
+-
+-      <main className="flex-1 md:ml-64 h-screen overflow-y-auto pt-24 md:pt-8 px-4 md:px-8 pb-24 md:pb-8">
+-        <header className="max-w-6xl mx-auto mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+-          <div>
+-            <h1 className="font-display-xl text-display-xl text-on-surface mb-2">
+-              Continue Learning, <span className="text-primary-fixed dashboard-holographic-glow">Alex</span>
+-            </h1>
+-            <p className="text-on-surface-variant">Your journey to mastering the digital frontier continues.</p>
+-          </div>
+-          <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
+-            <SearchBar />
+-            <button className="dashboard-glass-panel rounded-full p-2 text-on-surface hover:text-primary-fixed transition-colors">
+-              <Icon name="tune" />
+-            </button>
+-          </div>
+-        </header>
+-
+-        <div className="max-w-6xl mx-auto space-y-12">
+-          <FilterPills />
+-          <FeaturedCourseHero />
+-          <CourseGrid />
+-        </div>
+-      </main>
+-
+-      <MobileBottomNav />
+-    </div>
+-  );
+-}
+diff --git a/src/pages/LandingPage.tsx b/src/pages/LandingPage.tsx
+deleted file mode 100644
+index 7bab685..0000000
+--- a/src/pages/LandingPage.tsx
++++ /dev/null
+@@ -1,17 +0,0 @@
+-import Navbar from '../components/Navbar';
+-import HeroSection from '../components/HeroSection';
+-import FeaturesSection from '../components/FeaturesSection';
+-import Footer from '../components/Footer';
+-
+-export default function LandingPage() {
+-  return (
+-    <div className="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen flex flex-col relative matrix-bg">
+-      <Navbar />
+-      <main className="flex-grow pt-32 pb-section-gap relative max-w-[1280px] mx-auto w-full px-gutter z-10">
+-        <HeroSection />
+-        <FeaturesSection />
+-      </main>
+-      <Footer />
+-    </div>
+-  );
+-}
+diff --git a/src/pages/RiskReportPage.tsx b/src/pages/RiskReportPage.tsx
+deleted file mode 100644
+index da9d051..0000000
+--- a/src/pages/RiskReportPage.tsx
++++ /dev/null
+@@ -1,62 +0,0 @@
+-import Sidebar from '../components/risk-report/Sidebar';
+-import RiskBadge from '../components/risk-report/RiskBadge';
+-import NeuralRiskScoreCard from '../components/risk-report/NeuralRiskScoreCard';
+-import StatusMetricCard from '../components/risk-report/StatusMetricCard';
+-import ThreatVectorPanel from '../components/risk-report/ThreatVectorPanel';
+-import ChatSidebar from '../components/risk-report/ChatSidebar';
+-import Footer from '../components/Footer';
+-import { TARGET_ENTITY, NEURAL_RISK_SCORE, STATUS_METRICS } from '../data/riskReportContent';
+-
+-export default function RiskReportPage() {
+-  return (
+-    <div className="bg-background text-on-background font-body-md text-body-md min-h-screen flex overflow-hidden relative">
+-      <div className="fixed inset-0 pointer-events-none z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-surface-container-high/40 via-background to-background" />
+-      <div className="fixed inset-0 pointer-events-none z-[-1] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjAyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
+-
+-      <Sidebar />
+-
+-      <main className="flex-1 ml-0 md:ml-64 h-screen overflow-y-auto overflow-x-hidden relative">
+-        <div className="max-w-[1280px] mx-auto p-container-margin min-h-full flex flex-col gap-section-gap">
+-          <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mt-4">
+-            <div className="flex flex-col gap-2">
+-              <div className="flex items-center gap-3">
+-                <span className="font-label-sm text-label-sm text-outline tracking-[0.2em] uppercase">
+-                  Target Entity
+-                </span>
+-                <div className="h-[1px] w-12 bg-outline-variant" />
+-                <span className="font-label-sm text-label-sm text-outline-variant font-mono">
+-                  {TARGET_ENTITY.addressShort}
+-                </span>
+-              </div>
+-              <h1 className="font-display-xl text-display-xl text-on-surface">
+-                {TARGET_ENTITY.name} <span className="text-outline-variant">({TARGET_ENTITY.ticker})</span>
+-              </h1>
+-            </div>
+-            <RiskBadge label="High Risk" />
+-          </header>
+-
+-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter flex-1">
+-            <div className="lg:col-span-8 flex flex-col gap-gutter">
+-              <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+-                <NeuralRiskScoreCard
+-                  score={NEURAL_RISK_SCORE.score}
+-                  max={NEURAL_RISK_SCORE.max}
+-                  summary={NEURAL_RISK_SCORE.summary}
+-                />
+-                {STATUS_METRICS.map((metric) => (
+-                  <StatusMetricCard key={metric.label} {...metric} />
+-                ))}
+-              </div>
+-
+-              <ThreatVectorPanel />
+-            </div>
+-
+-            <ChatSidebar />
+-          </div>
+-
+-          <Footer compact />
+-        </div>
+-      </main>
+-    </div>
+-  );
+-}
+diff --git a/src/pages/ScamDectectorPage.tsx b/src/pages/ScamDectectorPage.tsx
+deleted file mode 100644
+index 00fec24..0000000
+--- a/src/pages/ScamDectectorPage.tsx
++++ /dev/null
+@@ -1,32 +0,0 @@
+-import SideNav from "../components/scam-detector/SideNav";
+-import TopNav from "../components/scam-detector/TopNav";
+-import HeroSearch from "../components/scam-detector/HeroSearch";
+-import ThreatFeed from "../components/scam-detector/ThreatFeed";
+-import NetworkHealth from "../components/scam-detector/NetworkHealth";
+-import MyHistory from "../components/scam-detector/MyHistory";
+-
+-export default function ScamDetectorPage() {
+-  return (
+-    <>
+-      {/* Cosmic Background Layers */}
+-      <div className="fixed inset-0 z-[-2] bg-surface-dim" />
+-      <div className="fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-surface-container-high/40 via-surface-dim to-background opacity-80 pointer-events-none" />
+-      <div className="fixed inset-0 z-[-1] bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-20" />
+-
+-      <SideNav />
+-      <TopNav />
+-
+-      <main className="pt-24 md:pt-8 px-6 md:pl-72 max-w-[1280px] mx-auto min-h-screen pb-section-gap flex flex-col gap-section-gap">
+-        <HeroSearch />
+-
+-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter mt-8">
+-          <ThreatFeed />
+-          <div className="lg:col-span-4 flex flex-col gap-6">
+-            <NetworkHealth />
+-            <MyHistory />
+-          </div>
+-        </div>
+-      </main>
+-    </>
+-  );
+-}
+\ No newline at end of file
+diff --git a/src/types/admin.ts:Zone.Identifier b/src/types/admin.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/admin.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/src/types/analytics.ts b/src/types/analytics.ts
+index 1730b5a..d6faf9c 100644
+--- a/src/types/analytics.ts
++++ b/src/types/analytics.ts
+@@ -17,3 +17,27 @@ export type AssessmentRow = {
+   score: string;
+   proficiency: "MASTER" | "ELITE" | "EXPERT";
+ };
++
++export type MetricCard = {
++  id: string;
++  label: string;
++  value: string;
++  badge?: string;
++  badgeVariant?: "primary" | "secondary" | "cyan";
++  icon?: string;
++  type: "sparkline" | "progress" | "status";
++  sparklineHeights?: number[];
++  progress?: number;
++  description?: string;
++};
++
++export type ProficiencyStats = {
++  score: number;
++  status: string;
++  title: string;
++  description: string;
++  highlight: string;
++  globalRank: string;
++  xpEarned: string;
++  streaks: string;
++};
+diff --git a/src/types/analytics.ts:Zone.Identifier b/src/types/analytics.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/analytics.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/src/types/assessment.ts:Zone.Identifier b/src/types/assessment.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/assessment.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/src/types/certificate.ts:Zone.Identifier b/src/types/certificate.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/certificate.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/src/types/content.ts:Zone.Identifier b/src/types/content.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/content.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/src/types/courses.ts:Zone.Identifier b/src/types/courses.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/courses.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/src/types/ecosystem.ts:Zone.Identifier b/src/types/ecosystem.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/ecosystem.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/src/types/scanner.ts:Zone.Identifier b/src/types/scanner.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/scanner.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/src/types/security.ts:Zone.Identifier b/src/types/security.ts:Zone.Identifier
+deleted file mode 100644
+index 24b66b9..0000000
+--- a/src/types/security.ts:Zone.Identifier
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ZoneTransfer]
+-ZoneId=3
+-ReferrerUrl=C:\Users\EliteBook 850 G5\Downloads\files-464d80f3 (1).zip
+diff --git a/tsconfig.json b/tsconfig.json
+index f50b75c..9060d14 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -6,6 +6,11 @@
+     "module": "ESNext",
+     "skipLibCheck": true,
+ 
++    "baseUrl": ".",
++    "paths": {
++      "@/*": ["src/*"]
++    },
++
+     "moduleResolution": "bundler",
+     "allowImportingTsExtensions": true,
+     "resolveJsonModule": true,
+diff --git a/tsconfig.node.tsbuildinfo b/tsconfig.node.tsbuildinfo
+new file mode 100644
+index 0000000..1659f11
+--- /dev/null
++++ b/tsconfig.node.tsbuildinfo
+@@ -0,0 +1 @@
++{"fileNames":["./node_modules/typescript/lib/lib.d.ts","./node_modules/typescript/lib/lib.es5.d.ts","./node_modules/typescript/lib/lib.es2015.d.ts","./node_modules/typescript/lib/lib.es2016.d.ts","./node_modules/typescript/lib/lib.es2017.d.ts","./node_modules/typescript/lib/lib.es2018.d.ts","./node_modules/typescript/lib/lib.es2019.d.ts","./node_modules/typescript/lib/lib.es2020.d.ts","./node_modules/typescript/lib/lib.dom.d.ts","./node_modules/typescript/lib/lib.webworker.importscripts.d.ts","./node_modules/typescript/lib/lib.scripthost.d.ts","./node_modules/typescript/lib/lib.es2015.core.d.ts","./node_modules/typescript/lib/lib.es2015.collection.d.ts","./node_modules/typescript/lib/lib.es2015.generator.d.ts","./node_modules/typescript/lib/lib.es2015.iterable.d.ts","./node_modules/typescript/lib/lib.es2015.promise.d.ts","./node_modules/typescript/lib/lib.es2015.proxy.d.ts","./node_modules/typescript/lib/lib.es2015.reflect.d.ts","./node_modules/typescript/lib/lib.es2015.symbol.d.ts","./node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts","./node_modules/typescript/lib/lib.es2016.array.include.d.ts","./node_modules/typescript/lib/lib.es2016.intl.d.ts","./node_modules/typescript/lib/lib.es2017.arraybuffer.d.ts","./node_modules/typescript/lib/lib.es2017.date.d.ts","./node_modules/typescript/lib/lib.es2017.object.d.ts","./node_modules/typescript/lib/lib.es2017.sharedmemory.d.ts","./node_modules/typescript/lib/lib.es2017.string.d.ts","./node_modules/typescript/lib/lib.es2017.intl.d.ts","./node_modules/typescript/lib/lib.es2017.typedarrays.d.ts","./node_modules/typescript/lib/lib.es2018.asyncgenerator.d.ts","./node_modules/typescript/lib/lib.es2018.asynciterable.d.ts","./node_modules/typescript/lib/lib.es2018.intl.d.ts","./node_modules/typescript/lib/lib.es2018.promise.d.ts","./node_modules/typescript/lib/lib.es2018.regexp.d.ts","./node_modules/typescript/lib/lib.es2019.array.d.ts","./node_modules/typescript/lib/lib.es2019.object.d.ts","./node_modules/typescript/lib/lib.es2019.string.d.ts","./node_modules/typescript/lib/lib.es2019.symbol.d.ts","./node_modules/typescript/lib/lib.es2019.intl.d.ts","./node_modules/typescript/lib/lib.es2020.bigint.d.ts","./node_modules/typescript/lib/lib.es2020.date.d.ts","./node_modules/typescript/lib/lib.es2020.promise.d.ts","./node_modules/typescript/lib/lib.es2020.sharedmemory.d.ts","./node_modules/typescript/lib/lib.es2020.string.d.ts","./node_modules/typescript/lib/lib.es2020.symbol.wellknown.d.ts","./node_modules/typescript/lib/lib.es2020.intl.d.ts","./node_modules/typescript/lib/lib.es2020.number.d.ts","./node_modules/typescript/lib/lib.esnext.disposable.d.ts","./node_modules/typescript/lib/lib.esnext.float16.d.ts","./node_modules/typescript/lib/lib.decorators.d.ts","./node_modules/typescript/lib/lib.decorators.legacy.d.ts","./node_modules/@types/node/globals.typedarray.d.ts","./node_modules/@types/node/buffer.buffer.d.ts","./node_modules/@types/node/globals.d.ts","./node_modules/@types/node/web-globals/abortcontroller.d.ts","./node_modules/@types/node/web-globals/blob.d.ts","./node_modules/@types/node/web-globals/console.d.ts","./node_modules/@types/node/web-globals/crypto.d.ts","./node_modules/@types/node/web-globals/domexception.d.ts","./node_modules/@types/node/web-globals/encoding.d.ts","./node_modules/@types/node/web-globals/events.d.ts","./node_modules/undici-types/utility.d.ts","./node_modules/undici-types/header.d.ts","./node_modules/undici-types/readable.d.ts","./node_modules/undici-types/fetch.d.ts","./node_modules/undici-types/formdata.d.ts","./node_modules/undici-types/connector.d.ts","./node_modules/undici-types/client-stats.d.ts","./node_modules/undici-types/client.d.ts","./node_modules/undici-types/errors.d.ts","./node_modules/undici-types/dispatcher.d.ts","./node_modules/undici-types/global-dispatcher.d.ts","./node_modules/undici-types/global-origin.d.ts","./node_modules/undici-types/pool-stats.d.ts","./node_modules/undici-types/pool.d.ts","./node_modules/undici-types/handlers.d.ts","./node_modules/undici-types/balanced-pool.d.ts","./node_modules/undici-types/round-robin-pool.d.ts","./node_modules/undici-types/h2c-client.d.ts","./node_modules/undici-types/agent.d.ts","./node_modules/undici-types/dispatcher1-wrapper.d.ts","./node_modules/undici-types/mock-interceptor.d.ts","./node_modules/undici-types/mock-call-history.d.ts","./node_modules/undici-types/mock-agent.d.ts","./node_modules/undici-types/mock-client.d.ts","./node_modules/undici-types/mock-pool.d.ts","./node_modules/undici-types/snapshot-agent.d.ts","./node_modules/undici-types/mock-errors.d.ts","./node_modules/undici-types/proxy-agent.d.ts","./node_modules/undici-types/socks5-proxy-agent.d.ts","./node_modules/undici-types/env-http-proxy-agent.d.ts","./node_modules/undici-types/retry-handler.d.ts","./node_modules/undici-types/retry-agent.d.ts","./node_modules/undici-types/api.d.ts","./node_modules/undici-types/cache-interceptor.d.ts","./node_modules/undici-types/interceptors.d.ts","./node_modules/undici-types/util.d.ts","./node_modules/undici-types/cookies.d.ts","./node_modules/undici-types/patch.d.ts","./node_modules/undici-types/websocket.d.ts","./node_modules/undici-types/eventsource.d.ts","./node_modules/undici-types/diagnostics-channel.d.ts","./node_modules/undici-types/content-type.d.ts","./node_modules/undici-types/cache.d.ts","./node_modules/undici-types/index.d.ts","./node_modules/@types/node/web-globals/fetch.d.ts","./node_modules/@types/node/web-globals/importmeta.d.ts","./node_modules/@types/node/web-globals/messaging.d.ts","./node_modules/@types/node/web-globals/navigator.d.ts","./node_modules/@types/node/web-globals/performance.d.ts","./node_modules/@types/node/web-globals/storage.d.ts","./node_modules/@types/node/web-globals/streams.d.ts","./node_modules/@types/node/web-globals/timers.d.ts","./node_modules/@types/node/web-globals/url.d.ts","./node_modules/@types/node/assert.d.ts","./node_modules/@types/node/assert/strict.d.ts","./node_modules/@types/node/async_hooks.d.ts","./node_modules/@types/node/buffer.d.ts","./node_modules/@types/node/child_process.d.ts","./node_modules/@types/node/cluster.d.ts","./node_modules/@types/node/console.d.ts","./node_modules/@types/node/constants.d.ts","./node_modules/@types/node/crypto.d.ts","./node_modules/@types/node/dgram.d.ts","./node_modules/@types/node/diagnostics_channel.d.ts","./node_modules/@types/node/dns.d.ts","./node_modules/@types/node/dns/promises.d.ts","./node_modules/@types/node/domain.d.ts","./node_modules/@types/node/events.d.ts","./node_modules/@types/node/ffi.d.ts","./node_modules/@types/node/fs.d.ts","./node_modules/@types/node/fs/promises.d.ts","./node_modules/@types/node/http.d.ts","./node_modules/@types/node/http2.d.ts","./node_modules/@types/node/https.d.ts","./node_modules/@types/node/inspector.d.ts","./node_modules/@types/node/inspector.generated.d.ts","./node_modules/@types/node/inspector/promises.d.ts","./node_modules/@types/node/module.d.ts","./node_modules/@types/node/net.d.ts","./node_modules/@types/node/os.d.ts","./node_modules/@types/node/path.d.ts","./node_modules/@types/node/path/posix.d.ts","./node_modules/@types/node/path/win32.d.ts","./node_modules/@types/node/perf_hooks.d.ts","./node_modules/@types/node/process.d.ts","./node_modules/@types/node/punycode.d.ts","./node_modules/@types/node/querystring.d.ts","./node_modules/@types/node/quic.d.ts","./node_modules/@types/node/readline.d.ts","./node_modules/@types/node/readline/promises.d.ts","./node_modules/@types/node/repl.d.ts","./node_modules/@types/node/sea.d.ts","./node_modules/@types/node/sqlite.d.ts","./node_modules/@types/node/stream.d.ts","./node_modules/@types/node/stream/consumers.d.ts","./node_modules/@types/node/stream/iter.d.ts","./node_modules/@types/node/stream/promises.d.ts","./node_modules/@types/node/stream/web.d.ts","./node_modules/@types/node/string_decoder.d.ts","./node_modules/@types/node/test.d.ts","./node_modules/@types/node/test/reporters.d.ts","./node_modules/@types/node/timers.d.ts","./node_modules/@types/node/timers/promises.d.ts","./node_modules/@types/node/tls.d.ts","./node_modules/@types/node/trace_events.d.ts","./node_modules/@types/node/tty.d.ts","./node_modules/@types/node/url.d.ts","./node_modules/@types/node/util.d.ts","./node_modules/@types/node/util/types.d.ts","./node_modules/@types/node/v8.d.ts","./node_modules/@types/node/vm.d.ts","./node_modules/@types/node/wasi.d.ts","./node_modules/@types/node/worker_threads.d.ts","./node_modules/@types/node/zlib.d.ts","./node_modules/@types/node/zlib/iter.d.ts","./node_modules/@types/node/index.d.ts","./node_modules/@types/estree/index.d.ts","./node_modules/rollup/dist/rollup.d.ts","./node_modules/rollup/dist/parseAst.d.ts","./node_modules/vite/types/hmrPayload.d.ts","./node_modules/vite/types/customEvent.d.ts","./node_modules/vite/types/hot.d.ts","./node_modules/vite/dist/node/types.d-aGj9QkWt.d.ts","./node_modules/esbuild/lib/main.d.ts","./node_modules/source-map-js/source-map.d.ts","./node_modules/postcss/lib/previous-map.d.ts","./node_modules/postcss/lib/input.d.ts","./node_modules/postcss/lib/css-syntax-error.d.ts","./node_modules/postcss/lib/declaration.d.ts","./node_modules/postcss/lib/root.d.ts","./node_modules/postcss/lib/warning.d.ts","./node_modules/postcss/lib/lazy-result.d.ts","./node_modules/postcss/lib/no-work-result.d.ts","./node_modules/postcss/lib/processor.d.ts","./node_modules/postcss/lib/result.d.ts","./node_modules/postcss/lib/document.d.ts","./node_modules/postcss/lib/rule.d.ts","./node_modules/postcss/lib/node.d.ts","./node_modules/postcss/lib/comment.d.ts","./node_modules/postcss/lib/container.d.ts","./node_modules/postcss/lib/at-rule.d.ts","./node_modules/postcss/lib/list.d.ts","./node_modules/postcss/lib/postcss.d.ts","./node_modules/postcss/lib/postcss.d.mts","./node_modules/vite/dist/node/runtime.d.ts","./node_modules/vite/types/importGlob.d.ts","./node_modules/vite/types/metadata.d.ts","./node_modules/vite/dist/node/index.d.ts","./node_modules/@babel/types/lib/index.d.ts","./node_modules/@types/babel__generator/index.d.ts","./node_modules/@babel/parser/typings/babel-parser.d.ts","./node_modules/@types/babel__template/index.d.ts","./node_modules/@types/babel__traverse/index.d.ts","./node_modules/@types/babel__core/index.d.ts","./node_modules/@vitejs/plugin-react/dist/index.d.ts","./node_modules/@tailwindcss/vite/dist/index.d.mts","./vite.config.ts","./node_modules/@types/prop-types/index.d.ts","./node_modules/@types/react/global.d.ts","./node_modules/csstype/index.d.ts","./node_modules/@types/react/index.d.ts","./node_modules/@types/react-dom/index.d.ts"],"fileIdsList":[[53,118,126,131,134,136,137,138,150,210],[53,118,126,131,134,136,137,138,150],[53,118,126,131,134,136,137,138,150,209],[53,118,126,131,134,136,137,138,150,210,211,212,213,214],[53,118,126,131,134,136,137,138,150,210,212],[53,115,116,118,126,131,134,136,137,138,150],[53,117,118,126,131,134,136,137,138,150],[118,126,131,134,136,137,138,150],[53,118,126,131,134,136,137,138,150,159],[53,118,119,124,126,129,131,134,136,137,138,140,150,155,168],[53,118,119,120,126,129,131,134,136,137,138,150],[53,118,121,126,131,134,136,137,138,150,169],[53,118,122,123,126,131,134,136,137,138,141,150],[53,118,123,126,131,134,136,137,138,150,155,165],[53,118,124,126,129,131,134,136,137,138,140,150],[53,117,118,125,126,131,134,136,137,138,150],[53,118,126,127,131,134,136,137,138,150],[53,118,126,128,129,131,134,136,137,138,150],[53,117,118,126,129,131,134,136,137,138,150],[53,118,126,129,131,132,134,136,137,138,150,155,168],[53,118,126,129,131,132,134,136,137,138,150,155,157,159],[53,105,118,126,129,131,133,134,136,137,138,140,150,155,168],[53,118,126,129,131,133,134,136,137,138,140,150,155,165,168],[53,118,126,131,133,134,135,136,137,138,150,155,165,168],[52,53,54,55,56,57,58,59,60,61,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176],[53,118,126,129,131,134,136,137,138,150],[53,118,126,131,134,136,138,150],[53,118,126,131,134,136,137,138,139,150,168],[53,118,126,129,131,134,136,137,138,140,150,155],[53,118,126,131,134,136,137,138,141,150],[53,118,126,131,134,136,137,138,142,150],[53,118,126,129,131,134,136,137,138,145,150],[53,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175],[53,118,126,131,134,136,137,138,147,150],[53,118,126,131,134,136,137,138,148,150],[53,118,123,126,131,132,134,136,137,138,140,150,157,165],[53,118,126,129,131,134,136,137,138,150,151],[53,118,126,131,134,136,137,138,150,152,169,172],[53,118,126,129,131,134,136,137,138,150,155,157,158,159],[53,118,126,131,134,136,137,138,150,156,159],[53,118,126,129,131,134,136,137,138,150,155,157],[53,118,126,129,131,134,136,137,138,150,155,158,159],[53,118,126,131,134,136,137,138,150,159,169],[53,118,126,131,134,136,137,138,150,160],[53,115,118,126,131,134,136,137,138,150,155,162,168],[53,118,126,131,134,136,137,138,150,155,161],[53,118,126,129,131,134,136,137,138,150,163,164],[53,118,126,131,134,136,137,138,150,163,164],[53,118,123,126,131,134,136,137,138,140,150,155,165],[53,118,126,131,134,136,137,138,150,166],[53,118,126,131,134,136,137,138,140,150,167],[53,118,126,131,133,134,136,137,138,148,150,168],[53,118,126,131,134,136,137,138,150,169,170],[53,118,123,126,131,134,136,137,138,150,170],[53,118,126,131,134,136,137,138,150,155,171],[53,118,126,131,134,136,137,138,139,150,172],[53,118,126,131,134,136,137,138,150,173],[53,118,121,126,131,134,136,137,138,150],[53,118,123,126,131,134,136,137,138,150],[53,118,126,131,134,136,137,138,150,169],[53,105,118,126,131,134,136,137,138,150],[53,118,126,131,134,136,137,138,150,168],[53,118,126,131,134,136,137,138,150,174],[53,118,126,131,134,136,137,138,145,150],[53,118,126,131,134,136,137,138,150,164],[53,105,118,126,129,131,132,134,136,137,138,145,150,155,159,168,171,172,174],[53,118,126,131,134,136,137,138,150,155,175],[53,118,126,131,134,136,137,138,150,157,176],[53,118,126,131,134,136,137,138,150,222],[53,118,126,131,134,136,137,138,150,219,220,221],[53,118,126,131,134,136,137,138,150,209,215],[53,118,126,131,134,136,137,138,150,201],[53,118,126,131,134,136,137,138,150,199,201],[53,118,126,131,134,136,137,138,150,190,198,199,200,202,204],[53,118,126,131,134,136,137,138,150,188],[53,118,126,131,134,136,137,138,150,191,196,201,204],[53,118,126,131,134,136,137,138,150,187,204],[53,118,126,131,134,136,137,138,150,191,192,195,196,197,204],[53,118,126,131,134,136,137,138,150,191,192,193,195,196,204],[53,118,126,131,134,136,137,138,150,188,189,190,191,192,196,197,198,200,201,202,204],[53,118,126,131,134,136,137,138,150,204],[53,118,126,131,134,136,137,138,150,186,188,189,190,191,192,193,195,196,197,198,199,200,201,202,203],[53,118,126,131,134,136,137,138,150,186,204],[53,118,126,131,134,136,137,138,150,191,193,194,196,197,204],[53,118,126,131,134,136,137,138,150,195,204],[53,118,126,131,134,136,137,138,150,196,197,201,204],[53,118,126,131,134,136,137,138,150,189,199],[53,118,126,131,134,136,137,138,150,179,208],[53,118,126,131,134,136,137,138,150,178,179],[53,68,71,74,75,118,126,131,134,136,137,138,150,168],[53,71,118,126,131,134,136,137,138,150,155,168],[53,71,75,118,126,131,134,136,137,138,150,168],[53,118,126,131,134,136,137,138,150,155],[53,65,118,126,131,134,136,137,138,150],[53,69,118,126,131,134,136,137,138,150],[53,67,68,71,118,126,131,134,136,137,138,150,168],[53,118,126,131,134,136,137,138,140,150,165],[53,118,126,131,134,136,137,138,150,177],[53,65,118,126,131,134,136,137,138,150,177],[53,67,71,118,126,131,134,136,137,138,140,150,168],[53,62,63,64,66,70,118,126,129,131,134,136,137,138,150,155,168],[53,71,118,126,131,134,136,137,138,150],[53,71,80,89,118,126,131,134,136,137,138,150],[53,63,69,118,126,131,134,136,137,138,150],[53,71,99,100,118,126,131,134,136,137,138,150],[53,63,66,71,118,126,131,134,136,137,138,150,159,168,177],[53,67,71,118,126,131,134,136,137,138,150,168],[53,62,118,126,131,134,136,137,138,150],[53,65,66,67,69,70,71,72,73,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,100,101,102,103,104,118,126,131,134,136,137,138,150],[53,71,92,95,118,126,131,134,136,137,138,150],[53,71,80,82,83,118,126,131,134,136,137,138,150],[53,69,71,82,84,118,126,131,134,136,137,138,150],[53,70,118,126,131,134,136,137,138,150],[53,63,65,71,118,126,131,134,136,137,138,150],[53,71,75,82,84,118,126,131,134,136,137,138,150],[53,75,118,126,131,134,136,137,138,150],[53,69,71,74,118,126,131,134,136,137,138,150,168],[53,63,67,71,80,118,126,131,134,136,137,138,150],[53,71,92,118,126,131,134,136,137,138,150],[53,84,118,126,131,134,136,137,138,150],[53,63,67,71,75,118,126,131,134,136,137,138,150],[53,65,71,99,118,126,131,134,136,137,138,150,159,174,177],[53,118,126,129,131,133,134,135,136,137,138,140,150,155,165,168,175,177,179,180,181,182,183,184,185,205,206,207,208],[53,118,126,131,134,136,137,138,150,181,182,183,184],[53,118,126,131,134,136,137,138,150,181,182,183],[53,118,126,131,134,136,137,138,150,181],[53,118,126,131,134,136,137,138,150,182],[53,118,126,131,134,136,137,138,150,179],[53,118,126,131,134,136,137,138,150,168,209,216,217]],"fileInfos":[{"version":"a7297ff837fcdf174a9524925966429eb8e5feecc2cc55cc06574e6b092c1eaa","impliedFormat":1},{"version":"c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1","affectsGlobalScope":true,"impliedFormat":1},{"version":"45b7ab580deca34ae9729e97c13cfd999df04416a79116c3bfb483804f85ded4","impliedFormat":1},{"version":"3facaf05f0c5fc569c5649dd359892c98a85557e3e0c847964caeb67076f4d75","impliedFormat":1},{"version":"e44bb8bbac7f10ecc786703fe0a6a4b952189f908707980ba8f3c8975a760962","impliedFormat":1},{"version":"5e1c4c362065a6b95ff952c0eab010f04dcd2c3494e813b493ecfd4fcb9fc0d8","impliedFormat":1},{"version":"68d73b4a11549f9c0b7d352d10e91e5dca8faa3322bfb77b661839c42b1ddec7","impliedFormat":1},{"version":"5efce4fc3c29ea84e8928f97adec086e3dc876365e0982cc8479a07954a3efd4","impliedFormat":1},{"version":"080941d9f9ff9307f7e27a83bcd888b7c8270716c39af943532438932ec1d0b9","affectsGlobalScope":true,"impliedFormat":1},{"version":"80e18897e5884b6723488d4f5652167e7bb5024f946743134ecc4aa4ee731f89","affectsGlobalScope":true,"impliedFormat":1},{"version":"cd034f499c6cdca722b60c04b5b1b78e058487a7085a8e0d6fb50809947ee573","affectsGlobalScope":true,"impliedFormat":1},{"version":"c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671","affectsGlobalScope":true,"impliedFormat":1},{"version":"dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44","affectsGlobalScope":true,"impliedFormat":1},{"version":"515d0b7b9bea2e31ea4ec968e9edd2c39d3eebf4a2d5cbd04e88639819ae3b71","affectsGlobalScope":true,"impliedFormat":1},{"version":"0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3","affectsGlobalScope":true,"impliedFormat":1},{"version":"0dc1e7ceda9b8b9b455c3a2d67b0412feab00bd2f66656cd8850e8831b08b537","affectsGlobalScope":true,"impliedFormat":1},{"version":"ce691fb9e5c64efb9547083e4a34091bcbe5bdb41027e310ebba8f7d96a98671","affectsGlobalScope":true,"impliedFormat":1},{"version":"8d697a2a929a5fcb38b7a65594020fcef05ec1630804a33748829c5ff53640d0","affectsGlobalScope":true,"impliedFormat":1},{"version":"4ff2a353abf8a80ee399af572debb8faab2d33ad38c4b4474cff7f26e7653b8d","affectsGlobalScope":true,"impliedFormat":1},{"version":"fb0f136d372979348d59b3f5020b4cdb81b5504192b1cacff5d1fbba29378aa1","affectsGlobalScope":true,"impliedFormat":1},{"version":"d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a","affectsGlobalScope":true,"impliedFormat":1},{"version":"68d18b664c9d32a7336a70235958b8997ebc1c3b8505f4f1ae2b7e7753b87618","affectsGlobalScope":true,"impliedFormat":1},{"version":"eb3d66c8327153d8fa7dd03f9c58d351107fe824c79e9b56b462935176cdf12a","affectsGlobalScope":true,"impliedFormat":1},{"version":"38f0219c9e23c915ef9790ab1d680440d95419ad264816fa15009a8851e79119","affectsGlobalScope":true,"impliedFormat":1},{"version":"69ab18c3b76cd9b1be3d188eaf8bba06112ebbe2f47f6c322b5105a6fbc45a2e","affectsGlobalScope":true,"impliedFormat":1},{"version":"a680117f487a4d2f30ea46f1b4b7f58bef1480456e18ba53ee85c2746eeca012","affectsGlobalScope":true,"impliedFormat":1},{"version":"2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893","affectsGlobalScope":true,"impliedFormat":1},{"version":"4de680d5bb41c17f7f68e0419412ca23c98d5749dcaaea1896172f06435891fc","affectsGlobalScope":true,"impliedFormat":1},{"version":"954296b30da6d508a104a3a0b5d96b76495c709785c1d11610908e63481ee667","affectsGlobalScope":true,"impliedFormat":1},{"version":"ac9538681b19688c8eae65811b329d3744af679e0bdfa5d842d0e32524c73e1c","affectsGlobalScope":true,"impliedFormat":1},{"version":"0a969edff4bd52585473d24995c5ef223f6652d6ef46193309b3921d65dd4376","affectsGlobalScope":true,"impliedFormat":1},{"version":"9e9fbd7030c440b33d021da145d3232984c8bb7916f277e8ffd3dc2e3eae2bdb","affectsGlobalScope":true,"impliedFormat":1},{"version":"811ec78f7fefcabbda4bfa93b3eb67d9ae166ef95f9bff989d964061cbf81a0c","affectsGlobalScope":true,"impliedFormat":1},{"version":"717937616a17072082152a2ef351cb51f98802fb4b2fdabd32399843875974ca","affectsGlobalScope":true,"impliedFormat":1},{"version":"d7e7d9b7b50e5f22c915b525acc5a49a7a6584cf8f62d0569e557c5cfc4b2ac2","affectsGlobalScope":true,"impliedFormat":1},{"version":"71c37f4c9543f31dfced6c7840e068c5a5aacb7b89111a4364b1d5276b852557","affectsGlobalScope":true,"impliedFormat":1},{"version":"576711e016cf4f1804676043e6a0a5414252560eb57de9faceee34d79798c850","affectsGlobalScope":true,"impliedFormat":1},{"version":"89c1b1281ba7b8a96efc676b11b264de7a8374c5ea1e6617f11880a13fc56dc6","affectsGlobalScope":true,"impliedFormat":1},{"version":"74f7fa2d027d5b33eb0471c8e82a6c87216223181ec31247c357a3e8e2fddc5b","affectsGlobalScope":true,"impliedFormat":1},{"version":"d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca","affectsGlobalScope":true,"impliedFormat":1},{"version":"063600664504610fe3e99b717a1223f8b1900087fab0b4cad1496a114744f8df","affectsGlobalScope":true,"impliedFormat":1},{"version":"934019d7e3c81950f9a8426d093458b65d5aff2c7c1511233c0fd5b941e608ab","affectsGlobalScope":true,"impliedFormat":1},{"version":"52ada8e0b6e0482b728070b7639ee42e83a9b1c22d205992756fe020fd9f4a47","affectsGlobalScope":true,"impliedFormat":1},{"version":"3bdefe1bfd4d6dee0e26f928f93ccc128f1b64d5d501ff4a8cf3c6371200e5e6","affectsGlobalScope":true,"impliedFormat":1},{"version":"59fb2c069260b4ba00b5643b907ef5d5341b167e7d1dbf58dfd895658bda2867","affectsGlobalScope":true,"impliedFormat":1},{"version":"639e512c0dfc3fad96a84caad71b8834d66329a1f28dc95e3946c9b58176c73a","affectsGlobalScope":true,"impliedFormat":1},{"version":"368af93f74c9c932edd84c58883e736c9e3d53cec1fe24c0b0ff451f529ceab1","affectsGlobalScope":true,"impliedFormat":1},{"version":"51ad4c928303041605b4d7ae32e0c1ee387d43a24cd6f1ebf4a2699e1076d4fa","affectsGlobalScope":true,"impliedFormat":1},{"version":"196cb558a13d4533a5163286f30b0509ce0210e4b316c56c38d4c0fd2fb38405","affectsGlobalScope":true,"impliedFormat":1},{"version":"8e7f8264d0fb4c5339605a15daadb037bf238c10b654bb3eee14208f860a32ea","affectsGlobalScope":true,"impliedFormat":1},{"version":"782dec38049b92d4e85c1585fbea5474a219c6984a35b004963b00beb1aab538","affectsGlobalScope":true,"impliedFormat":1},{"version":"0ccdaa19852d25ecd84eec365c3bfa16e7859cadecf6e9ca6d0dbbbee439743f","affectsGlobalScope":true,"impliedFormat":1},{"version":"cc2110f7decca6bfb9392e30421cfa1436479e4a6756e8fec6cbc22625d4f881","affectsGlobalScope":true,"impliedFormat":1},{"version":"f53a7652392cf26ebbe4e29fd0672aa87c93bd6d0241289c13fab87b9ac35c8a","affectsGlobalScope":true,"impliedFormat":1},{"version":"e5e01375c9e124a83b52ee4b3244ed1a4d214a6cfb54ac73e164a823a4a7860a","affectsGlobalScope":true,"impliedFormat":1},{"version":"f90ae2bbce1505e67f2f6502392e318f5714bae82d2d969185c4a6cecc8af2fc","affectsGlobalScope":true,"impliedFormat":1},{"version":"4b58e207b93a8f1c88bbf2a95ddc686ac83962b13830fe8ad3f404ffc7051fb4","affectsGlobalScope":true,"impliedFormat":1},{"version":"1fefabcb2b06736a66d2904074d56268753654805e829989a46a0161cd8412c5","affectsGlobalScope":true,"impliedFormat":1},{"version":"b00a630557d1622ad312633bdbfbdb9c6b7220d948dca9f899db30679f160074","affectsGlobalScope":true,"impliedFormat":1},{"version":"c18a99f01eb788d849ad032b31cafd49de0b19e083fe775370834c5675d7df8e","affectsGlobalScope":true,"impliedFormat":1},{"version":"5247874c2a23b9a62d178ae84f2db6a1d54e6c9a2e7e057e178cc5eea13757fc","affectsGlobalScope":true,"impliedFormat":1},{"version":"cdcf9ea426ad970f96ac930cd176d5c69c6c24eebd9fc580e1572d6c6a88f62c","impliedFormat":1},{"version":"88809d6c1b9c78d04a133646a6feb926def05a8774c308c7c93bc32ee163d271","impliedFormat":1},{"version":"156a859e21ef3244d13afeeba4e49760a6afa035c149dda52f0c45ea8903b338","impliedFormat":1},{"version":"3ac40516c33b87f751f7507346933081a26cdb8a3e11a6b3aa07d23f803c85db","impliedFormat":1},{"version":"615754924717c0b1e293e083b83503c0a872717ad5aa60ed7f1a699eb1b4ea5c","impliedFormat":1},{"version":"14e9acf826baba0ef4b5665704084896e7bcc06f65a9ab13af7e93d27d6b7069","impliedFormat":1},{"version":"68834d631c8838c715f225509cfc3927913b9cc7a4870460b5b60c8dbdb99baf","impliedFormat":1},{"version":"829bc57ee8f287b490ab5bbc5a962fca57e432c1e38ec680ecd3ecaf12800613","impliedFormat":1},{"version":"eec76bf6b9346f3f95fa402621b889489e96930e72295b0369022f332e9b4a6a","impliedFormat":1},{"version":"3a3ff14da53d5013f3e6d8c4ad55225e3649c08786c4421ce639c00d8d589b7d","impliedFormat":1},{"version":"ea6bc8de8b59f90a7a3960005fd01988f98fd0784e14bc6922dde2e93305ec7d","impliedFormat":1},{"version":"36107995674b29284a115e21a0618c4c2751b32a8766dd4cb3ba740308b16d59","impliedFormat":1},{"version":"914a0ae30d96d71915fc519ccb4efbf2b62c0ddfb3a3fc6129151076bc01dc60","impliedFormat":1},{"version":"38004e6801340cb890afb8cb5a9fc8972297e7f88ab94026e4b0b3c61fb32f8a","impliedFormat":1},{"version":"d243db6b25788f439e7e2f03c05688e92f46764351673bb0e7b2f3631232e186","impliedFormat":1},{"version":"4d327f7d72ad0918275cea3eee49a6a8dc8114ae1d5b7f3f5d0774de75f7439a","impliedFormat":1},{"version":"149f9a9e7f04e67afa0e2a49fc0ff421035c01d6b793cfcae7d2e9f6819431e2","impliedFormat":1},{"version":"e8a9dfa4c75ef6d25df8b40eaa9c31e0a69452aaf2ced4a3f4215dbdbaa876f4","impliedFormat":1},{"version":"a70af845a2eb9dd6e2723e319e14ea7fb28b129ec1361c21509b49305448c323","impliedFormat":1},{"version":"b53dc572d4f187904207ae1166652de47aab8eeb00c254d009cb226863076b56","impliedFormat":1},{"version":"0a60a292b89ca7218b8616f78e5bbd1c96b87e048849469cccb4355e98af959a","impliedFormat":1},{"version":"0b6e25234b4eec6ed96ab138d96eb70b135690d7dd01f3dd8a8ab291c35a683a","impliedFormat":1},{"version":"9666f2f84b985b62400d2e5ab0adae9ff44de9b2a34803c2c5bd3c8325b17dc0","impliedFormat":1},{"version":"40cd35c95e9cf22cfa5bd84e96408b6fcbca55295f4ff822390abb11afbc3dca","impliedFormat":1},{"version":"b1616b8959bf557feb16369c6124a97a0e74ed6f49d1df73bb4b9ddf68acf3f3","impliedFormat":1},{"version":"f501234c5aeeeb5d7659412335227466aaacf30b952372d60afeb21c02c96348","impliedFormat":1},{"version":"40b463c6766ca1b689bfcc46d26b5e295954f32ad43e37ee6953c0a677e4ae2b","impliedFormat":1},{"version":"9ac977503f15bf13ca7c82ad9a32a782f42d43e474824e8b3bffe228fd5f2639","impliedFormat":1},{"version":"8b91ff5bb912be3ea213cbcf0075aace1f5d4ff249a0d227ed673868cb7bfabc","impliedFormat":1},{"version":"80aae6afc67faa5ac0b32b5b8bc8cc9f7fa299cff15cf09cc2e11fd28c6ae29e","impliedFormat":1},{"version":"f473cd2288991ff3221165dcf73cd5d24da30391f87e85b3dd4d0450c787a391","impliedFormat":1},{"version":"499e5b055a5aba1e1998f7311a6c441a369831c70905cc565ceac93c28083d53","impliedFormat":1},{"version":"8aee8b6d4f9f62cf3776cda1305fb18763e2aade7e13cea5bbe699112df85214","impliedFormat":1},{"version":"98498b101803bb3dde9f76a56e65c14b75db1cc8bec5f4db72be541570f74fc5","impliedFormat":1},{"version":"7cb4f431a4591b0e23002bed805dc871a874dfed6b9a3994dce68a6df73e6739","impliedFormat":1},{"version":"5d0375ca7310efb77e3ef18d068d53784faf62705e0ad04569597ae0e755c401","impliedFormat":1},{"version":"59af37caec41ecf7b2e76059c9672a49e682c1a2aa6f9d7dc78878f53aa284d6","impliedFormat":1},{"version":"addf417b9eb3f938fddf8d81e96393a165e4be0d4a8b6402292f9c634b1cb00d","impliedFormat":1},{"version":"436d7b4543b340b0f3eef4310d524242e41369b9652aa9c70428767c4dcac455","impliedFormat":1},{"version":"adf27937dba6af9f08a68c5b1d3fce0ca7d4b960c57e6d6c844e7d1a8e53adae","impliedFormat":1},{"version":"12950411eeab8563b349cb7959543d92d8d02c289ed893d78499a19becb5a8cc","impliedFormat":1},{"version":"2e85db9e6fd73cfa3d7f28e0ab6b55417ea18931423bd47b409a96e4a169e8e6","impliedFormat":1},{"version":"c46e079fe54c76f95c67fb89081b3e399da2c7d109e7dca8e4b58d83e332e605","impliedFormat":1},{"version":"e99963ae1e3a48ca7a7958c02f3e88bb963eb7978c28b68ae6b8c9f03309d83c","impliedFormat":1},{"version":"c3f5289820990ab66b70c7fb5b63cb674001009ff84b13de40619619a9c8175f","affectsGlobalScope":true,"impliedFormat":1},{"version":"b3275d55fac10b799c9546804126239baf020d220136163f763b55a74e50e750","affectsGlobalScope":true,"impliedFormat":1},{"version":"fa68a0a3b7cb32c00e39ee3cd31f8f15b80cac97dce51b6ee7fc14a1e8deb30b","affectsGlobalScope":true,"impliedFormat":1},{"version":"1cf059eaf468efcc649f8cf6075d3cb98e9a35a0fe9c44419ec3d2f5428d7123","affectsGlobalScope":true,"impliedFormat":1},{"version":"6c36e755bced82df7fb6ce8169265d0a7bb046ab4e2cb6d0da0cb72b22033e89","affectsGlobalScope":true,"impliedFormat":1},{"version":"e7721c4f69f93c91360c26a0a84ee885997d748237ef78ef665b153e622b36c1","affectsGlobalScope":true,"impliedFormat":1},{"version":"7a93de4ff8a63bafe62ba86b89af1df0ccb5e40bb85b0c67d6bbcfdcf96bf3d4","affectsGlobalScope":true,"impliedFormat":1},{"version":"90e85f9bc549dfe2b5749b45fe734144e96cd5d04b38eae244028794e142a77e","affectsGlobalScope":true,"impliedFormat":1},{"version":"e0a5deeb610b2a50a6350bd23df6490036a1773a8a71d70f2f9549ab009e67ee","affectsGlobalScope":true,"impliedFormat":1},{"version":"594ae90cacd813fa392ff80d2e0a8eff4e41f4a136329a940e321399dd8895b4","impliedFormat":1},{"version":"d1f333ade8ff35a409b4984e1f11956fe11c61855b0c7e9b59f0313e48b40c4a","impliedFormat":1},{"version":"0224aa4b3464895d69c413a640a19ac2166778a74eb5eb3b36b021c72d42b274","impliedFormat":1},{"version":"2e6fca0024dd8a076a886d9ec031a936ea59ad878a25b944820495d92f8381dd","affectsGlobalScope":true,"impliedFormat":1},{"version":"47d917e731d06acf182baa38ac2fbd720c3555fa9160e6a40d47994515f7f0ea","impliedFormat":1},{"version":"2fbf504c4791f9d32cd766cfe6b605bcda63289b925401953a7900db9af85348","impliedFormat":1},{"version":"ed0fb633cae35948d9e144004299a4bdf1ab912667c787b7fbffcd6d8c7b92a2","impliedFormat":1},{"version":"1678b04557dca52feab73cc67610918a7f5e25bfdba3e7fa081acd625d93106d","impliedFormat":1},{"version":"aa7b2f4e5f2fced2d34405e729ee7e09903d3330fb896a8b3d44c8fbd16be04d","impliedFormat":1},{"version":"2ea729503db9793f2691162fec3dd1118cab62e96d025f8eeb376d43ec293395","impliedFormat":1},{"version":"98fc7231d6c846a8ed19bdef026ddffe5e2182cc818be74899287421ad370a87","impliedFormat":1},{"version":"e494b286c8e27c52f8c7f945aa80ff223f2a3cd4f7a2619fa8991f1459e26f07","impliedFormat":1},{"version":"f54f5f9e10bbceba7515dfad0ffc89dffdb8d749d0604594c57a725cf6d79c20","impliedFormat":1},{"version":"41d17e1ad9a002feb11c8cdd2777e5bbc0cdb1e3f595d237e4dded0b6949983b","impliedFormat":1},{"version":"8c7e618c2a91ea7f6b5cca272a295864e92c16413be8fc56a943e8c7d5320011","affectsGlobalScope":true,"impliedFormat":1},{"version":"79a85c64bf083c5f4dd7074e804d1000c0c47301b84d48417a224decd681be30","impliedFormat":1},{"version":"6d81823c5704398a68b98e3c7a459334fc0403ad5e6953f4317b5b4919e289e4","impliedFormat":1},{"version":"4f1fd541f720030367b5d7ebfea7ae5f9edc8481422993b9a363f459c5412437","impliedFormat":1},{"version":"baa9cafc61ef8b42b6e8f7a1aa1f75841ec9c9d2f59229277ed282ccb99b72c9","impliedFormat":1},{"version":"af960bc194044cd1f0c8a9857461f0e5fd88a5e33326f38a738d6ef0e1b56fbf","impliedFormat":1},{"version":"2c2bdaa1d8ead9f68628d6d9d250e46ee8e81aa4898b4769a36956ae15e060fe","impliedFormat":1},{"version":"57a0d1b3d59063d4af2d3f8aac27cfe3c20a0f5d1faf0f8598ccf0b779637939","impliedFormat":1},{"version":"5ff4433a2deae4f85ab1377e90a7554ce6b47ae51c69a84ca30a6e22fae85834","impliedFormat":1},{"version":"82b91e4e42e6c41bc7fc1b6c2dc5eba6a2ba98375eb1f210e6ff6bba2d54177e","impliedFormat":1},{"version":"97234c5303866576f913d0ccae7d58d6322d9e803c7bf1228a3fda46ab8087b2","affectsGlobalScope":true,"impliedFormat":1},{"version":"93ecf87143cac7b9d05cffc1d6bdc075b7e4fdd48ff05f1fad85043f6ae678d3","impliedFormat":1},{"version":"73eeb740dacc45adc607a4f59f90fa9dbe2717d93d82f115f45f34e18f8d644a","impliedFormat":1},{"version":"ec501101c2a96133a6c695f934c8f6642149cc728571b29cbb7b770984c1088e","impliedFormat":1},{"version":"b214ebcf76c51b115453f69729ee8aa7b7f8eccdae2a922b568a45c2d7ff52f7","impliedFormat":1},{"version":"429c9cdfa7d126255779efd7e6d9057ced2d69c81859bbab32073bad52e9ba76","impliedFormat":1},{"version":"b17f272f903d155b9ec21791b5889b638977bc1dee181efb2bc317ce006d8c9b","impliedFormat":1},{"version":"1c16d778cc142455f35a3f1a411227b9901c671756338af12a9175958500ce66","affectsGlobalScope":true,"impliedFormat":1},{"version":"230763250f20449fa7b3c9273e1967adb0023dc890d4be1553faca658ee65971","impliedFormat":1},{"version":"c3e9078b60cb329d1221f5878e88cecfa3e74460550e605a58fcfb41a66029ff","impliedFormat":1},{"version":"1940d3dcf5bc8fdaf65d4a6fe08b9c9d6e6481186baec210d6e5ed57ced8c26b","impliedFormat":1},{"version":"441b9bb09013654aa3d050e68b06464d8959b473e85868249d9d18f692acd35b","impliedFormat":1},{"version":"bc18a1991ba681f03e13285fa1d7b99b03b67ee671b7bc936254467177543890","impliedFormat":1},{"version":"55246f15e33ff1e2e9e679b25fa9790a48db55dc63d567fe25fac8b6a0efe911","impliedFormat":1},{"version":"fa94bbf532b7af8f394b95fa310980d6e20bd2d4c871c6a6cb9f70f03750a44b","impliedFormat":1},{"version":"9f979aaeb0e4ab8456942064596786aa2720c1984fea198ae0caa526f77547b1","impliedFormat":1},{"version":"5b26c4dd672d88336bb929787c9bfb55119e80ba89ec6dc923da1c063892843e","affectsGlobalScope":true,"impliedFormat":1},{"version":"7fa2214bb0d64701bc6f9ce8cde2fd2ff8c571e0b23065fa04a8a5a6beb91511","impliedFormat":1},{"version":"79e9c2d48d413b4d1f1c574d604e663231770e8883f53ba5773b32618aefd799","impliedFormat":1},{"version":"f12624a4a8d042b68914eac1b0a16571fc1c523173fcdf2517c65d191bd5a86c","impliedFormat":1},{"version":"b4769767f13a1692a66186e01c3aa186ff808d5ff72ed36eda8c37738fb2ac92","impliedFormat":1},{"version":"841983e39bd4cbb463be385e92fda11057cab368bf27100a801c492f1d86cbaa","impliedFormat":1},{"version":"9b82f9d3cd32399278813e2de0eed4b059d362fbac5222c815e2ab01879893d7","impliedFormat":1},{"version":"1ec3f3a5f04cc42df33274fbe5c0937d9a9e06f249a7a26288d7d54f0763ffd4","impliedFormat":1},{"version":"e4156ddb25aa0e3b5303d372f26957b36778f0f6bbd4326359269873295e3058","affectsGlobalScope":true,"impliedFormat":1},{"version":"cc1b433a84cae05ddc5672d4823170af78606ad21ecef60dbc4570190cbf1357","impliedFormat":1},{"version":"e47f532d6e1617833f13a5b0710c0089d402c89c2f2b54f324e5a20e418d287a","impliedFormat":1},{"version":"7f78cfb2b343838612c192cb251746e3a7c62ac7675726a47e130d9b213f6580","impliedFormat":1},{"version":"201db9cf1687fab1adf5282fcba861f382b32303dc4f67c89d59655e78a25461","impliedFormat":1},{"version":"8e2577e7262051fd3c5bd6ca2b2056d358ff8853565720f92455860824c25188","impliedFormat":1},{"version":"7ec8d7d483f7394f9da611b10d3a0e402f76ff5c991261e6ce43a15f81ca4258","impliedFormat":1},{"version":"bb9dbb4b2ad81e3e71ec5ba4314973718555b9d04ba2a17dfbf875efecb8e2c0","impliedFormat":1},{"version":"9021dc5be8f3a87af5cede29221188a6497e2092b6889e0be212ef6b6b7153e9","impliedFormat":1},{"version":"045a210189ec63c5488410b33f9fca53d77d051599d0d6506d8048551399c5f3","impliedFormat":1},{"version":"99ab6d0d660ce4d21efb52288a39fd35bb3f556980ec5463b1ae8f304a3bbc85","impliedFormat":1},{"version":"632c45ccb4cdc2c3a80c7a36a63dd7763016e59cac5e07bfb3e37e3548957028","impliedFormat":1},{"version":"c9a2daf6cd1eb854cd5b9e424247c5e306692055738c2effd35f7871d942b76e","impliedFormat":1},{"version":"afa1c49f8e559e413d57343339db857d2a8159435cf9cf7d4deb41718fff1b88","impliedFormat":1},{"version":"e50a7130339a951e6da9e968ed5521b0997a5b0479e148914087213839b5474c","impliedFormat":1},{"version":"751764bb94219b4ce8f5475dc35d3de2e432fea01a0c9610cd7f69ad05e398c6","impliedFormat":1},{"version":"21944c138a48dc23382cb6558b1d4498908faad2104ba7ff390ba8b27c06f3c0","affectsGlobalScope":true,"impliedFormat":1},{"version":"a660aa95476042d3fdcc1343cf6bb8fdf24772d31712b1db321c5a4dcc325434","impliedFormat":1},{"version":"282f98006ed7fa9bb2cd9bdbe2524595cfc4bcd58a0bb3232e4519f2138df811","impliedFormat":1},{"version":"6222e987b58abfe92597e1273ad7233626285bc2d78409d4a7b113d81a83496b","impliedFormat":1},{"version":"cbe726263ae9a7bf32352380f7e8ab66ee25b3457137e316929269c19e18a2be","impliedFormat":1},{"version":"8b96046bf5fb0a815cba6b0880d9f97b7f3a93cf187e8dcfe8e2792e97f38f87","impliedFormat":99},{"version":"bacf2c84cf448b2cd02c717ad46c3d7fd530e0c91282888c923ad64810a4d511","affectsGlobalScope":true,"impliedFormat":1},{"version":"402e5c534fb2b85fa771170595db3ac0dd532112c8fa44fc23f233bc6967488b","impliedFormat":1},{"version":"52dcc257df5119fb66d864625112ce5033ac51a4c2afe376a0b299d2f7f76e4a","impliedFormat":1},{"version":"e5bab5f871ef708d52d47b3e5d0aa72a08ee7a152f33931d9a60809711a2a9a3","impliedFormat":1},{"version":"e16dc2a81595736024a206c7d5c8a39bfe2e6039208ef29981d0d95434ba8fcf","impliedFormat":1},{"version":"cc4a4903fb698ca1d961d4c10dce658aa3a479faf40509d526f122b044eaf6a4","impliedFormat":1},{"version":"19ee8416e6473ed6c7adb868fa796b5653cf0fa2a337658e677eaa0d134388c3","impliedFormat":1},{"version":"1328ab4e442614b28cdb3d4b414cf68325c0da0dca07287a338d0654b7a00261","impliedFormat":1},{"version":"a039dc21f045919f3cbee2ec13812cc6cc3eebc99dae4be00973230f468d19a6","impliedFormat":1},{"version":"3fbe57af01460e49dcd29df55d6931e1672bc6f1be0fb073d11410bc16f9037d","impliedFormat":1},{"version":"f760be449e8562ec5c09bb5187e8e1eabf3c113c0c58cddda53ef8c69f3e2131","impliedFormat":1},{"version":"44325ed13294fce6ab825b82947bbeed2611db7dad9d9135260192f375e5a189","impliedFormat":1},{"version":"e392e8fb5b514eafc585601c1d781485aa6dd6a320e75daf1064a4c6918a1b45","impliedFormat":1},{"version":"46e4a36e8ddbdfb4e7330e11c81c970dc8b218611df9183d39c41c5f8c653b55","impliedFormat":1},{"version":"3cc8a3d123b6b232d48d34b51b785f9da8d193f5b5817fa521fcd2f3b9315c55","impliedFormat":1},{"version":"6332f565867cf4a740a70e30f31cefba37ef7cebcf74f22eab8d744fde6d193e","impliedFormat":1},{"version":"2977b7884aedc895a1d0c9c210c7cf3272c29d6959a08a6fa3ff71e0aff08175","impliedFormat":1},{"version":"17f2922d41ddd032830a91371c948cd9ce903b35c95adca72271a54584f19b0b","impliedFormat":1},{"version":"3eed76ede2a1a14d7c9bb0a642041282dcc264811139d3dd275c9fe14efc9840","impliedFormat":1},{"version":"354a7f8e1287d9d6b7561bc97fdd8cbc2f7c1dd79e4cb37b942e8a5cfaff1085","impliedFormat":1},{"version":"8d369483f0c2b9ee388129cfdb6a43bc8112b377e86a41884bd06e19ce04f4c1","impliedFormat":99},{"version":"82e687ebd99518bc63ea04b0c3810fb6e50aa6942decd0ca6f7a56d9b9a212a6","impliedFormat":99},{"version":"7f698624bbbb060ece7c0e51b7236520ebada74b747d7523c7df376453ed6fea","impliedFormat":1},{"version":"8f07f2b6514744ac96e51d7cb8518c0f4de319471237ea10cf688b8d0e9d0225","impliedFormat":1},{"version":"257b83faa134d971c738a6b9e4c47e59bb7b23274719d92197580dd662bfafc3","impliedFormat":99},{"version":"69d4b61c408556b97b796782a1110f7e01a03ed80f31741f2c59b722185830ed","impliedFormat":1},{"version":"b6d03c9cfe2cf0ba4c673c209fcd7c46c815b2619fd2aad59fc4229aaef2ed43","impliedFormat":1},{"version":"e6ca59368dce5a594dcde9bbb6ae640d668fa6c28c31639dd2a75b731bb036a2","impliedFormat":1},{"version":"670a76db379b27c8ff42f1ba927828a22862e2ab0b0908e38b671f0e912cc5ed","impliedFormat":1},{"version":"13b77ab19ef7aadd86a1e54f2f08ea23a6d74e102909e3c00d31f231ed040f62","impliedFormat":1},{"version":"069bebfee29864e3955378107e243508b163e77ab10de6a5ee03ae06939f0bb9","impliedFormat":1},{"version":"26e0ffceb2198feb1ef460d5d14111c69ad07d44c5a67fd4bfeb74c969aa9afb","impliedFormat":99},{"version":"7757c6ca7a8ad1992401c6aff33633d6a088515be5a39d7ee188b35bfc8e5f8e","impliedFormat":99},{"version":"1c307dc035ca4ee01f1d8ddf005496f29808a5e0101be30cb5c35d8250cf69b6","signature":"4b96dd19fd2949d28ce80e913412b0026dc421e5bf6c31d87c7b5eb11b5753b4"},{"version":"87d9d29dbc745f182683f63187bf3d53fd8673e5fca38ad5eaab69798ed29fbc","impliedFormat":1},{"version":"eb5b19b86227ace1d29ea4cf81387279d04bb34051e944bc53df69f58914b788","affectsGlobalScope":true,"impliedFormat":1},{"version":"ac51dd7d31333793807a6abaa5ae168512b6131bd41d9c5b98477fc3b7800f9f","impliedFormat":1},{"version":"09ddcfcfbe77a8232d155ca1030005106b1328f6210df43629d0be750da07c16","affectsGlobalScope":true,"impliedFormat":1},{"version":"17ed71200119e86ccef2d96b73b02ce8854b76ad6bd21b5021d4269bec527b5f","impliedFormat":1}],"root":[218],"options":{"allowSyntheticDefaultImports":true,"composite":true,"module":99,"skipLibCheck":true},"referencedMap":[[212,1],[210,2],[217,3],[215,4],[211,1],[213,5],[214,1],[178,2],[115,6],[116,6],[117,7],[53,8],[118,9],[119,10],[120,11],[121,12],[122,13],[123,14],[124,15],[125,16],[126,17],[127,17],[128,18],[129,19],[130,2],[131,20],[132,21],[54,2],[52,2],[133,22],[134,23],[135,24],[177,25],[136,26],[137,27],[138,26],[139,28],[140,29],[141,30],[142,31],[143,31],[144,31],[145,32],[146,33],[147,34],[148,35],[149,36],[150,37],[151,37],[152,38],[153,2],[154,2],[155,39],[156,40],[157,41],[158,42],[159,43],[160,44],[161,45],[162,46],[163,47],[164,48],[165,49],[166,50],[167,51],[168,52],[169,53],[170,54],[171,55],[172,56],[173,57],[55,26],[56,2],[57,58],[58,59],[59,2],[60,60],[61,2],[106,61],[107,62],[108,63],[109,63],[110,64],[111,2],[112,9],[113,65],[114,62],[174,66],[175,67],[176,68],[219,2],[223,69],[220,2],[222,70],[216,71],[221,2],[185,2],[202,72],[200,73],[201,74],[189,75],[190,73],[197,76],[188,77],[193,78],[203,2],[194,79],[199,80],[205,81],[204,82],[187,83],[195,84],[196,85],[191,86],[198,72],[192,87],[180,88],[179,89],[186,2],[1,2],[50,2],[51,2],[9,2],[13,2],[12,2],[3,2],[14,2],[15,2],[16,2],[17,2],[18,2],[19,2],[20,2],[21,2],[4,2],[22,2],[23,2],[5,2],[24,2],[28,2],[25,2],[26,2],[27,2],[29,2],[30,2],[31,2],[6,2],[32,2],[33,2],[34,2],[35,2],[7,2],[39,2],[36,2],[37,2],[38,2],[40,2],[8,2],[41,2],[46,2],[47,2],[42,2],[43,2],[44,2],[45,2],[2,2],[48,2],[49,2],[11,2],[10,2],[80,90],[94,91],[77,92],[95,93],[104,94],[68,95],[69,96],[67,97],[103,98],[98,99],[102,100],[71,101],[81,102],[91,103],[70,104],[101,105],[65,106],[66,99],[72,102],[73,2],[79,107],[76,102],[63,108],[105,109],[96,110],[84,111],[83,102],[85,112],[88,113],[82,114],[86,115],[99,98],[74,116],[75,117],[89,118],[64,93],[93,119],[92,102],[78,117],[87,120],[90,121],[97,2],[62,2],[100,122],[209,123],[206,124],[184,125],[182,126],[181,2],[183,127],[207,2],[208,128],[218,129]],"latestChangedDtsFile":"./vite.config.d.ts","version":"5.9.3"}
+\ No newline at end of file
+diff --git a/tsconfig.tsbuildinfo b/tsconfig.tsbuildinfo
+new file mode 100644
+index 0000000..18ebc0e
+--- /dev/null
++++ b/tsconfig.tsbuildinfo
+@@ -0,0 +1 @@
++{"root":["./src/App.tsx","./src/main.tsx","./src/components/academy/AIMentorChat.tsx","./src/components/academy/CourseSideNav.tsx","./src/components/academy/LessonNotes.tsx","./src/components/academy/QuickQuizFab.tsx","./src/components/academy/TopNavBar.tsx","./src/components/academy/VideoPlayer.tsx","./src/components/admin/ActivityStream.tsx","./src/components/admin/AdminSideNav.tsx","./src/components/admin/AdminStats.tsx","./src/components/admin/AdminTopNav.tsx","./src/components/admin/MasterRegistry.tsx","./src/components/admin/RiskHeatmap.tsx","./src/components/analytics/AnalyticsSideNav.tsx","./src/components/analytics/AnalyticsTopBar.tsx","./src/components/analytics/AnalyticsTopNav.tsx","./src/components/analytics/AssessmentHistory.tsx","./src/components/analytics/KpiCards.tsx","./src/components/analytics/MetricsGrid.tsx","./src/components/analytics/ProficiencyGauge.tsx","./src/components/analytics/ProficiencyHero.tsx","./src/components/analytics/SkillRadar.tsx","./src/components/assessment/AssessmentSideNav.tsx","./src/components/assessment/CodeSnippet.tsx","./src/components/assessment/InfoCards.tsx","./src/components/assessment/QuizHeader.tsx","./src/components/assessment/QuizOptions.tsx","./src/components/certificate/CertificateCard.tsx","./src/components/certificate/SecuritySeal.tsx","./src/components/content/ContentSideNav.tsx","./src/components/content/ContentTopNav.tsx","./src/components/content/ModuleEditor.tsx","./src/components/content/NeuralPatterns.tsx","./src/components/content/ReportTemplates.tsx","./src/components/content/ScamDefinitions.tsx","./src/components/courses/CourseCard.tsx","./src/components/courses/CourseGrid.tsx","./src/components/courses/DashboardNavLink.tsx","./src/components/courses/DashboardSidebar.tsx","./src/components/courses/FeaturedCourseHero.tsx","./src/components/courses/FilterPills.tsx","./src/components/courses/MobileBottomNav.tsx","./src/components/courses/MobileTopNav.tsx","./src/components/courses/SearchBar.tsx","./src/components/ecosystem/BannerStats.tsx","./src/components/ecosystem/ClusterTelemetry.tsx","./src/components/ecosystem/EcosystemSideNav.tsx","./src/components/ecosystem/EcosystemTopNav.tsx","./src/components/ecosystem/NeuralAccuracy.tsx","./src/components/ecosystem/ScannerLoad.tsx","./src/components/ecosystem/SystemAlerts.tsx","./src/components/ecosystem/TrafficHeatmap.tsx","./src/components/layouts/AuthLayout.tsx","./src/components/layouts/DashboardLayout.tsx","./src/components/layouts/MarketingLayout.tsx","./src/components/risk-report/ChatInput.tsx","./src/components/risk-report/ChatMessage.tsx","./src/components/risk-report/ChatSidebar.tsx","./src/components/risk-report/NeuralRiskScoreCard.tsx","./src/components/risk-report/RiskBadge.tsx","./src/components/risk-report/Sidebar.tsx","./src/components/risk-report/SidebarNavLink.tsx","./src/components/risk-report/StatusMetricCard.tsx","./src/components/risk-report/ThreatItem.tsx","./src/components/risk-report/ThreatVectorPanel.tsx","./src/components/scam-detector/HeroSearch.tsx","./src/components/scam-detector/MyHistory.tsx","./src/components/scam-detector/NetworkHealth.tsx","./src/components/scam-detector/SideNav.tsx","./src/components/scam-detector/ThreatFeed.tsx","./src/components/scam-detector/TopNav.tsx","./src/components/scanner/AuditHistory.tsx","./src/components/scanner/AuditStats.tsx","./src/components/scanner/RiskMap.tsx","./src/components/scanner/ScanSearch.tsx","./src/components/scanner/ScannerSideNav.tsx","./src/components/scanner/ScannerTopNav.tsx","./src/components/scanner/ThreatFeed.tsx","./src/components/sections/FeaturesSection.tsx","./src/components/sections/Footer.tsx","./src/components/sections/HeroSection.tsx","./src/components/sections/Navbar.tsx","./src/components/sections/TrustBadgeItem.tsx","./src/components/security/LogStream.tsx","./src/components/security/SecuritySideNav.tsx","./src/components/security/SecurityStats.tsx","./src/components/security/SecurityTopNav.tsx","./src/components/shared/AddressBadge.tsx","./src/components/shared/CodeViewer.tsx","./src/components/shared/LiveLogStream.tsx","./src/components/shared/MasterCatalogDrawer.tsx","./src/components/shared/QuorumProgress.tsx","./src/components/shared/RadarChart.tsx","./src/components/shared/StatCard.tsx","./src/components/ui/Badge.tsx","./src/components/ui/Button.tsx","./src/components/ui/Card.tsx","./src/components/ui/Icon.tsx","./src/components/ui/Input.tsx","./src/components/ui/Modal.tsx","./src/components/ui/Select.tsx","./src/components/ui/Switch.tsx","./src/components/ui/Tabs.tsx","./src/context/AuthContext.tsx","./src/data/content.ts","./src/data/coursesContent.ts","./src/data/riskReportContent.ts","./src/lib/utils.ts","./src/mock/data.ts","./src/pages/academy/AssessmentQuizPage.tsx","./src/pages/academy/CertificatePage.tsx","./src/pages/academy/CoursePlayerPage.tsx","./src/pages/admin/BillingHistoryPage.tsx","./src/pages/admin/InvoiceTemplatePage.tsx","./src/pages/admin/SecurityConfigPage.tsx","./src/pages/admin/SecurityLogsPage.tsx","./src/pages/auditor/AiTerminalPage.tsx","./src/pages/auditor/AuditorLeaderboardPage.tsx","./src/pages/auditor/AuditorQueuePage.tsx","./src/pages/auditor/ForensicsPage.tsx","./src/pages/auth/InductionPage.tsx","./src/pages/auth/LoginPage.tsx","./src/pages/auth/SecureGatePage.tsx","./src/pages/catalog/MasterCatalogPage.tsx","./src/pages/client/CheckoutPage.tsx","./src/pages/client/ClientDashboardPage.tsx","./src/pages/client/DocumentVaultPage.tsx","./src/pages/client/DualPaneReviewPage.tsx","./src/pages/client/FinalReportPage.tsx","./src/pages/client/LiveAuditTrackerPage.tsx","./src/pages/client/NewAuditRequestPage.tsx","./src/pages/client/VulnerabilityTriagePage.tsx","./src/pages/governance/GovernancePage.tsx","./src/pages/governance/ProposalDetailPage.tsx","./src/pages/governance/UserProfilePage.tsx","./src/pages/marketing/HomePage.tsx","./src/pages/marketing/PricingPage.tsx","./src/pages/marketing/SolutionsAuditingPage.tsx","./src/pages/marketing/SupportPage.tsx","./src/pages/threat-hub/SkynetDashboardPage.tsx","./src/pages/threat-hub/TokenAnalyzerPage.tsx","./src/pages/threat-hub/WhaleAlertsPage.tsx","./src/types/academy.ts","./src/types/admin.ts","./src/types/analytics.ts","./src/types/assessment.ts","./src/types/certificate.ts","./src/types/content.ts","./src/types/courses.ts","./src/types/ecosystem.ts","./src/types/index.ts","./src/types/scanner.ts","./src/types/security.ts","./src/types/threat.ts"],"version":"5.9.3"}
+\ No newline at end of file
+diff --git a/vite.config.d.ts b/vite.config.d.ts
+deleted file mode 100644
+index 340562a..0000000
+--- a/vite.config.d.ts
++++ /dev/null
+@@ -1,2 +0,0 @@
+-declare const _default: import("vite").UserConfig;
+-export default _default;
+diff --git a/vite.config.js b/vite.config.js
+index b28fb9d..9b54285 100644
+--- a/vite.config.js
++++ b/vite.config.js
+@@ -1,6 +1,20 @@
+ import { defineConfig } from 'vite';
+ import react from '@vitejs/plugin-react';
+ import tailwindcss from '@tailwindcss/vite';
++import { fileURLToPath, URL } from 'node:url';
+ export default defineConfig({
+     plugins: [react(), tailwindcss()],
++    resolve: {
++        alias: {
++            '@': fileURLToPath(new URL('./src', import.meta.url)),
++        },
++    },
++    server: {
++        host: '0.0.0.0',
++        allowedHosts: true,
++    },
++    preview: {
++        host: '0.0.0.0',
++        allowedHosts: true,
++    },
+ });
+diff --git a/vite.config.ts b/vite.config.ts
+index da17daf..0e552cc 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -1,7 +1,21 @@
+ import { defineConfig } from 'vite';
+ import react from '@vitejs/plugin-react';
+ import tailwindcss from '@tailwindcss/vite';
++import { fileURLToPath, URL } from 'node:url';
+ 
+ export default defineConfig({
+   plugins: [react(), tailwindcss()],
++  resolve: {
++    alias: {
++      '@': fileURLToPath(new URL('./src', import.meta.url)),
++    },
++  },
++  server: {
++    host: '0.0.0.0',
++    allowedHosts: true,
++  },
++  preview: {
++    host: '0.0.0.0',
++    allowedHosts: true,
++  },
+ });

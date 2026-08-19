@@ -1,10 +1,11 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-interface IconProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface IconProps extends React.HTMLAttributes<HTMLSpanElement> {
   name: string;
   className?: string;
   fill?: boolean;
+  filled?: boolean;
   size?: number | string;
 }
 
@@ -12,15 +13,17 @@ export const Icon: React.FC<IconProps> = ({
   name,
   className,
   fill = false,
+  filled = false,
   size,
   style,
   ...props
 }) => {
+  const isFilled = fill || filled;
   return (
     <span
       className={cn(
         'material-symbols-outlined select-none inline-flex items-center justify-center align-middle',
-        fill && 'fill',
+        isFilled && 'fill filled',
         className
       )}
       style={{
@@ -33,3 +36,5 @@ export const Icon: React.FC<IconProps> = ({
     </span>
   );
 };
+
+export default Icon;

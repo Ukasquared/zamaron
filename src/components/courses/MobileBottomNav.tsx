@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import { DASHBOARD_NAV_ITEMS } from '../../data/coursesContent';
 
 export default function MobileBottomNav() {
