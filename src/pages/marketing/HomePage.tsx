@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { StatCard } from '@/components/shared/StatCard';
-import { ALL_PAGE_CATALOG, MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { ALL_PAGE_CATALOG } from '@/config/pageCatalog';
 
 export const HomePage: React.FC = () => {
   const [catalogOpen, setCatalogOpen] = useState(false);

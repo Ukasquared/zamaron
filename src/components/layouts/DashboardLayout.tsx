@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { AddressBadge } from '@/components/shared/AddressBadge';
-import { ALL_PAGE_CATALOG, MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { ALL_PAGE_CATALOG } from '@/config/pageCatalog';
 import { Icon } from '@/components/ui/Icon';
 import type { UserRole } from '@/types';
 

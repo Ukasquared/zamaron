@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
-import { ALL_PAGE_CATALOG } from '@/components/shared/MasterCatalogDrawer';
+import { ALL_PAGE_CATALOG } from '@/config/pageCatalog';
 
 export const MasterCatalogPage: React.FC = () => {
   const [search, setSearch] = useState('');

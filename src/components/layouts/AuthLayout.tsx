@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { Icon } from '@/components/ui/Icon';
-import { ALL_PAGE_CATALOG, MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { ALL_PAGE_CATALOG } from '@/config/pageCatalog';
 
 export const AuthLayout: React.FC = () => {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
