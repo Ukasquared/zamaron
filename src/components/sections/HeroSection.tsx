@@ -1,9 +1,9 @@
-import Icon from './Icon';
-import Button from './Button';
+import { Icon } from '@/components/ui/Icon';
+import { Button } from '@/components/ui/Button';
 import TrustBadgeItem from './TrustBadgeItem';
-import { TRUST_BADGES, HERO_IMAGE } from '../data/content';
+import { TRUST_BADGES, HERO_IMAGE } from '@/data/content';
 
-export default function HeroSection() {
+export function HeroSection() {
   return (
     <section className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center min-h-[716px] mb-section-gap relative">
       {/* Holographic background elements */}
@@ -60,3 +60,5 @@ export default function HeroSection() {
     </section>
   );
 }
+
+export default HeroSection;

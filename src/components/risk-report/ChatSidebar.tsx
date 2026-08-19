@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { CHAT_MESSAGES } from '../../data/riskReportContent';

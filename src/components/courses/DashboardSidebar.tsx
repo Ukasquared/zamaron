@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import DashboardNavLink from './DashboardNavLink';
 import { DASHBOARD_NAV_ITEMS, SECONDARY_NAV_ITEMS } from '../../data/coursesContent';
 

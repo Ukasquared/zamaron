@@ -17,3 +17,27 @@ export type AssessmentRow = {
   score: string;
   proficiency: "MASTER" | "ELITE" | "EXPERT";
 };
+
+export type MetricCard = {
+  id: string;
+  label: string;
+  value: string;
+  badge?: string;
+  badgeVariant?: "primary" | "secondary" | "cyan";
+  icon?: string;
+  type: "sparkline" | "progress" | "status";
+  sparklineHeights?: number[];
+  progress?: number;
+  description?: string;
+};
+
+export type ProficiencyStats = {
+  score: number;
+  status: string;
+  title: string;
+  description: string;
+  highlight: string;
+  globalRank: string;
+  xpEarned: string;
+  streaks: string;
+};

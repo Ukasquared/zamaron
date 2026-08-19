@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import type { DashboardNavItemData } from '../../types';
 
 export default function DashboardNavLink({ icon, label, href, active = false }: DashboardNavItemData) {

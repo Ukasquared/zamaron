@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import { CURRENT_USER } from '../../data/coursesContent';
 
 export default function MobileTopNav() {

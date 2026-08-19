@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import type { StatusMetricData } from '../../types';
 
 export default function StatusMetricCard({ icon, statusIcon, label, value, description }: StatusMetricData) {

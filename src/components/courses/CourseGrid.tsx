@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import { Icon } from '@/components/ui/Icon';
 import CourseCard from './CourseCard';
 import { COURSES } from '../../data/coursesContent';
 
