@@ -38,6 +38,9 @@ import { AuditorLeaderboardPage } from '@/pages/auditor/AuditorLeaderboardPage';
 import { SkynetDashboardPage } from '@/pages/threat-hub/SkynetDashboardPage';
 import { WhaleAlertsPage } from '@/pages/threat-hub/WhaleAlertsPage';
 import { TokenAnalyzerPage } from '@/pages/threat-hub/TokenAnalyzerPage';
+import { SecurityLeaderboardPage } from '@/pages/threat-hub/SecurityLeaderboardPage';
+import { ProjectProfilePage } from '@/pages/threat-hub/ProjectProfilePage';
+import { SecurityIncidentsPage } from '@/pages/threat-hub/SecurityIncidentsPage';
 
 // Governance & Profile
 import { GovernancePage } from '@/pages/governance/GovernancePage';
@@ -104,6 +107,9 @@ export const App: React.FC = () => {
             <Route path="/threat-hub/ecosystem" element={<SkynetDashboardPage />} />
             <Route path="/threat-hub/whales" element={<WhaleAlertsPage />} />
             <Route path="/threat-hub/token-analyzer" element={<TokenAnalyzerPage />} />
+            <Route path="/threat-hub/leaderboard" element={<SecurityLeaderboardPage />} />
+            <Route path="/threat-hub/projects/:id" element={<ProjectProfilePage />} />
+            <Route path="/threat-hub/incidents" element={<SecurityIncidentsPage />} />
             <Route path="/threat-hub/protocols/:id" element={<TokenAnalyzerPage />} />
             <Route path="/threat-hub/vaults" element={<DocumentVaultPage />} />
 

@@ -225,3 +225,25 @@ export interface NavItem {
   badge?: string;
   isExternal?: boolean;
 }
+
+// Re-export the security intelligence domain types so they are available
+// through the `@/types` barrel used across the app.
+export type {
+  ScoreDimensionKey,
+  ScoreDimension,
+  SecurityTier,
+  ProjectCategory,
+  ProjectStage,
+  TrustBadge,
+  AuditHistoryEntry,
+  MonitorTarget,
+  MonitorStatus,
+  ActiveMonitor,
+  TokenRiskIndicators,
+  SecurityProject,
+  IncidentSeverity,
+  IncidentType,
+  SecurityIncident,
+  LeaderboardFilters,
+  SecurityScoreResult,
+} from './security';

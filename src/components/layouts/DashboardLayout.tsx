@@ -43,9 +43,11 @@ export const DashboardLayout: React.FC = () => {
       items: [
         { label: 'Skynet Threat Radar', href: '/threat-hub/skynet', icon: 'radar', badge: 'LIVE' },
         { label: 'Ecosystem Vitality', href: '/threat-hub/ecosystem', icon: 'public' },
+        { label: 'Security Leaderboard', href: '/threat-hub/leaderboard', icon: 'leaderboard' },
+        { label: 'Project Profiles', href: '/threat-hub/projects/nexus-defi', icon: 'verified_user' },
+        { label: 'Incident Monitor', href: '/threat-hub/incidents', icon: 'crisis_alert', badge: 'LIVE' },
         { label: 'Whale Alerts Terminal', href: '/threat-hub/whales', icon: 'tsunami', badge: 'HOT' },
         { label: 'Token Risk Analyzer', href: '/threat-hub/token-analyzer', icon: 'query_stats' },
-        { label: 'Protocol Security Profile', href: '/threat-hub/protocols/nexus-defi', icon: 'verified_user' },
         { label: 'Security Vaults', href: '/threat-hub/vaults', icon: 'account_balance' },
       ],
     },
