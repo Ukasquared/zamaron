@@ -25,6 +25,7 @@ export const DashboardLayout: React.FC = () => {
         { label: 'Dual-Pane Code Review', href: '/client/audits/ZM-8492-NX/review', icon: 'code' },
         { label: 'Vulnerability Triage', href: '/client/audits/ZM-8492-NX/triage', icon: 'bug_report' },
         { label: 'Final Report Generation', href: '/client/audits/ZM-8492-NX/report', icon: 'description' },
+        { label: 'Neural Risk Assessment', href: '/risk-report', icon: 'warning' },
         { label: 'Document Vault', href: '/client/vault', icon: 'lock' },
         { label: 'Checkout & Settlement', href: '/client/checkout', icon: 'credit_card' },
       ],
@@ -37,6 +38,8 @@ export const DashboardLayout: React.FC = () => {
         { label: 'Forensic Bytecode', href: '/auditor/forensics', icon: 'terminal' },
         { label: 'Auditor Leaderboard', href: '/leaderboard/auditors', icon: 'military_tech' },
         { label: 'Security Leaderboard', href: '/leaderboard/security', icon: 'shield_locked' },
+        { label: 'Performance Analytics', href: '/analytics', icon: 'analytics' },
+        { label: 'Neural Scanner', href: '/scanner', icon: 'radar' },
       ],
     },
     {
@@ -44,6 +47,7 @@ export const DashboardLayout: React.FC = () => {
       items: [
         { label: 'Skynet Threat Radar', href: '/threat-hub/skynet', icon: 'radar', badge: 'LIVE' },
         { label: 'Ecosystem Vitality', href: '/threat-hub/ecosystem', icon: 'public' },
+        { label: 'Scam Detector', href: '/threat-hub/scam-detector', icon: 'policy', badge: 'NEW' },
         { label: 'Whale Alerts Terminal', href: '/threat-hub/whales', icon: 'tsunami', badge: 'HOT' },
         { label: 'Token Risk Analyzer', href: '/threat-hub/token-analyzer', icon: 'query_stats' },
         { label: 'Protocol Security Profile', href: '/threat-hub/protocols/nexus-defi', icon: 'verified_user' },
@@ -56,6 +60,7 @@ export const DashboardLayout: React.FC = () => {
         { label: 'Protocol Governance', href: '/governance', icon: 'gavel' },
         { label: 'Neural Sandbox (ZAM-842)', href: '/governance/proposals/ZAM-842', icon: 'how_to_vote' },
         { label: 'Operator Skill Tree', href: '/profile/alex-chen', icon: 'psychology' },
+        { label: 'Academy Course Library', href: '/courses', icon: 'library_books' },
         { label: 'Academy Course Player', href: '/academy/learn/crypto-security-101', icon: 'school' },
         { label: 'Assessment Quiz', href: '/academy/assessment/crs-101', icon: 'fact_check' },
         { label: 'Completion Certificate', href: '/academy/certificate/CERT-9981', icon: 'workspace_premium' },
@@ -64,7 +69,9 @@ export const DashboardLayout: React.FC = () => {
     {
       title: 'Admin Suite & Config',
       items: [
+        { label: 'Admin Operations Overview', href: '/admin/overview', icon: 'admin_panel_settings' },
         { label: 'Content Administration', href: '/admin/content', icon: 'view_list' },
+        { label: 'Security Operations Monitor', href: '/admin/security-monitor', icon: 'security' },
         { label: 'Course Builder', href: '/admin/course-builder', icon: 'edit_note' },
         { label: 'Course Builder (Video+)', href: '/admin/course-builder-enhanced', icon: 'video_library' },
         { label: 'Token Risk Editor', href: '/admin/token-reports', icon: 'edit_document' },

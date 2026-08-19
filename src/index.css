@@ -10,19 +10,26 @@
   --color-primary-hover: #00f0ff;
   --color-primary-dim: #006970;
   --color-primary-container: #004f58;
+  --color-primary-fixed: #7df4ff;
+  --color-primary-fixed-dim: #00dbe9;
   --color-on-primary: #00363d;
   --color-on-primary-container: #00daf3;
 
   --color-secondary: #ddb7ff;
   --color-secondary-dim: #9b51e0;
   --color-secondary-container: #533379;
+  --color-secondary-fixed: #f8d8ff;
+  --color-secondary-fixed-dim: #ecb2ff;
   --color-on-secondary: #401869;
   --color-on-secondary-container: #f0dbff;
 
   --color-tertiary: #ff80ab;
   --color-tertiary-container: #66002c;
+  --color-tertiary-fixed-dim: #ffb1c3;
+  --color-on-tertiary-container: #bb0058;
 
   --color-background: #060e20;
+  --color-surface-dim: #111225;
   --color-surface: #0b1326;
   --color-surface-variant: #161f36;
   --color-surface-container: #111a30;
@@ -49,8 +56,35 @@
 
   /* Shared typography */
   --font-display: "Space Grotesk", sans-serif;
+  --font-display-xl: "Space Grotesk", sans-serif;
+  --font-headline-lg: "Space Grotesk", sans-serif;
+  --font-label-sm: "Space Grotesk", sans-serif;
+  --font-data-lg: "Space Grotesk", sans-serif;
+  --font-title-md: "Space Grotesk", sans-serif;
+  --font-body: "Manrope", "Inter", sans-serif;
+  --font-body-md: "Manrope", "Inter", sans-serif;
+  --font-body-lg: "Manrope", "Inter", sans-serif;
   --font-sans: "Manrope", "Inter", sans-serif;
   --font-mono: "JetBrains Mono", "Space Mono", monospace;
+
+  /* Shared named scales used by the feature surfaces. */
+  --spacing-gutter: 24px;
+  --spacing-card-padding: 24px;
+  --spacing-margin-safe: 24px;
+  --text-body-md: 16px;
+  --text-body-md--line-height: 1.6;
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 1.6;
+  --text-title-md: 20px;
+  --text-title-md--line-height: 1.25;
+  --text-display-xl: 48px;
+  --text-display-xl--line-height: 1.1;
+  --text-label-sm: 12px;
+  --text-label-sm--line-height: 1;
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 1.2;
+  --text-data-lg: 24px;
+  --text-data-lg--line-height: 1.2;
 }
 
 @layer components {
@@ -141,6 +175,180 @@
     linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
+}
+
+/* Feature-surface utilities retained for the active domain pages. */
+.glass-panel {
+  background: rgba(25, 26, 45, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-panel-heavy {
+  background: rgba(11, 12, 31, 0.7);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+.fresnel-edge {
+  border-top: 1px solid rgba(195, 245, 255, 0.3);
+  border-left: 1px solid rgba(195, 245, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 218, 243, 0.15);
+}
+
+.neon-glow-primary {
+  box-shadow: 0 0 20px rgba(0, 218, 243, 0.3);
+}
+
+.neon-glow-secondary {
+  box-shadow: 0 0 20px rgba(207, 92, 255, 0.3);
+}
+
+.neon-glow-cyan {
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+.neon-glow-pink {
+  box-shadow: 0 0 15px rgba(255, 92, 255, 0.3);
+}
+
+.neon-glow-error {
+  box-shadow: 0 0 15px rgba(255, 180, 171, 0.3);
+}
+
+.glow-text-error {
+  text-shadow: 0 0 10px rgba(255, 180, 171, 0.7);
+}
+
+.glow-box-error {
+  box-shadow: 0 0 20px rgba(255, 180, 171, 0.2);
+}
+
+.glow-text-cyan {
+  text-shadow: 0 0 10px rgba(0, 218, 243, 0.5);
+}
+
+.dashboard-glass-panel {
+  background: rgba(25, 26, 45, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(132, 148, 149, 0.2);
+}
+
+.dashboard-glass-card-inner {
+  background: rgba(25, 26, 45, 0.6);
+}
+
+.dashboard-neon-border {
+  border: 1px solid var(--color-primary-fixed);
+  box-shadow: 0 0 10px rgba(125, 244, 255, 0.2), inset 0 0 10px rgba(125, 244, 255, 0.1);
+}
+
+.cyber-grid,
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(0, 219, 233, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 219, 233, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.code-block {
+  background: rgba(11, 12, 31, 0.8);
+  font-family: var(--font-mono);
+}
+
+.neon-border-glow:hover {
+  box-shadow: 0 0 15px rgba(0, 219, 233, 0.3);
+  border-color: rgba(0, 219, 233, 0.5);
+}
+
+.holographic-glow {
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.cyan-purple-gradient {
+  background: linear-gradient(135deg, #00e5ff 0%, #6f00be 100%);
+}
+
+.gauge-ring {
+  stroke-dasharray: 283;
+  stroke-dashoffset: 17;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.scanning-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanning-sweep::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background: linear-gradient(to bottom right, transparent, rgba(0, 240, 255, 0.05), transparent);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar,
+.terminal-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+.terminal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.terminal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 219, 233, 0.3);
+  border-radius: 4px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.animate-scan {
+  animation: scan 4s linear infinite;
+}
+
+@keyframes shimmer {
+  100% { left: 200%; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(195, 245, 255, 0.2), transparent);
+  background-size: 200% 100%;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: fit-content;
+  animation: marquee 30s linear infinite;
 }
 
 body {

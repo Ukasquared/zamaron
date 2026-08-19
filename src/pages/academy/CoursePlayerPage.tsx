@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Icon } from '@/components/ui/Icon';
+import AIMentorChat from '@/components/academy/AIMentorChat';
+import LessonNotes from '@/components/academy/LessonNotes';
+import QuickQuizFab from '@/components/academy/QuickQuizFab';
+import VideoPlayer from '@/components/academy/VideoPlayer';
 
 export const CoursePlayerPage: React.FC = () => {
   const [activeModule, setActiveModule] = useState(2);
@@ -33,17 +36,7 @@ export const CoursePlayerPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Main Video Canvas & Transcript (8 cols) */}
         <div className="lg:col-span-8 space-y-4">
-          <Card variant="fresnel" className="p-0 overflow-hidden bg-black aspect-video flex items-center justify-center relative group">
-            <div className="text-center space-y-3 p-6">
-              <div className="w-16 h-16 rounded-full bg-primary/20 border border-primary text-primary flex items-center justify-center mx-auto group-hover:scale-110 transition-transform cursor-pointer shadow-[0_0_25px_rgba(0,218,243,0.4)]">
-                <Icon name="play_arrow" size={36} />
-              </div>
-              <h3 className="font-display font-bold text-lg text-white">
-                Module 2: Identifying Rug Pulls & Liquidity Drain
-              </h3>
-              <p className="text-xs font-mono text-slate-400">Lesson Duration: 38:15 • Instructor: Alex Chen</p>
-            </div>
-          </Card>
+          <VideoPlayer />
 
           <Card variant="glass" className="p-6 space-y-3">
             <h4 className="font-display font-bold text-base text-white">Key Takeaways & Core Concepts</h4>
@@ -81,6 +74,13 @@ export const CoursePlayerPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <LessonNotes />
+        <AIMentorChat />
+      </div>
+
+      <QuickQuizFab />
     </div>
   );
 };

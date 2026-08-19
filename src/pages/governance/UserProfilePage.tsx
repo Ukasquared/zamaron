@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
+import { Tabs } from '@/components/ui/Tabs';
 import { RadarChart } from '@/components/shared/RadarChart';
 import { AddressBadge } from '@/components/shared/AddressBadge';
 import { mockCurrentUser } from '@/mock/data';
@@ -80,26 +81,16 @@ export const UserProfilePage: React.FC = () => {
       </div>
 
       {/* Navigation Segment Tabs */}
-      <div className="flex items-center gap-2 border-b border-outline/60 pb-3 font-mono text-xs">
-        {[
+      <Tabs
+        variant="underline"
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id as 'CREDENTIALS' | 'SKILL_TREE' | 'ACTIVITY')}
+        items={[
           { id: 'CREDENTIALS', label: 'Certification Vault', icon: 'workspace_premium' },
           { id: 'SKILL_TREE', label: 'Protocol Progression Tree', icon: 'account_tree' },
           { id: 'ACTIVITY', label: 'Recent Activity Ledger', icon: 'history' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as 'CREDENTIALS' | 'SKILL_TREE' | 'ACTIVITY')}
-            className={`flex items-center gap-2 px-4 py-2 rounded transition-all cursor-pointer ${
-              activeTab === tab.id
-                ? 'bg-primary text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
-                : 'text-slate-400 hover:text-white hover:bg-surface-variant'
-            }`}
-          >
-            <Icon name={tab.icon} size={16} />
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
+        ]}
+      />
 
       {/* Tab 1: Certification Vault & Radar */}
       {activeTab === 'CREDENTIALS' && (

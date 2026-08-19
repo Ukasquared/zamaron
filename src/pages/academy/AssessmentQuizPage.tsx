@@ -1,83 +1,85 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Card } from '@/components/ui/Card';
+import { Link, useNavigate } from 'react-router-dom';
+import CodeSnippet from '@/components/assessment/CodeSnippet';
+import InfoCards from '@/components/assessment/InfoCards';
+import QuizHeader from '@/components/assessment/QuizHeader';
+import QuizOptions from '@/components/assessment/QuizOptions';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
+import type { AssessmentMeta, QuizOption } from '@/types/assessment';
+
+const meta: AssessmentMeta = {
+  courseTitle: 'Crypto Security 101',
+  phaseLabel: 'Final Assessment Phase',
+  timeRemaining: '14:52',
+  progressPercent: 80,
+};
+
+const options: QuizOption[] = [
+  { id: 'a', label: 'A', text: 'Integer overflow in the withdrawal calculation.' },
+  { id: 'b', label: 'B', text: 'Reentrancy attack via low-level call before state update.' },
+  { id: 'c', label: 'C', text: 'Front-running vulnerability due to public visibility.' },
+  { id: 'd', label: 'D', text: 'Incorrect use of msg.sender in a delegated context.' },
+];
 
 export const AssessmentQuizPage: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleNext = () => {
-    navigate('/academy/certificate/CERT-9981');
-  };
-
   return (
-    <div className="max-w-3xl mx-auto space-y-8 pb-16">
+    <div className="max-w-5xl mx-auto space-y-6 pb-16">
+      <QuizHeader meta={meta} onMenuClick={() => undefined} />
+
       <div className="flex items-center justify-between">
         <Link to="/academy/learn/crypto-security-101" className="text-xs font-mono text-slate-400 hover:text-white flex items-center gap-1">
           <Icon name="arrow_back" size={16} /> Exit Assessment
         </Link>
-        <Badge variant="primary" size="md">FINAL ASSESSMENT • QUESTION 1 OF 10</Badge>
+        <Badge variant="primary" size="md">QUESTION 8 OF 10</Badge>
       </div>
 
-      <Card variant="fresnel" className="p-8 space-y-6">
+      <Card variant="fresnel" className="p-6 md:p-8 space-y-6">
         <div className="space-y-3">
           <h2 className="font-display font-bold text-xl text-white">
-            Analyze the following smart contract snippet for reentrancy vulnerabilities:
+            Identify the primary risk factor in the provided smart contract snippet.
           </h2>
-
-          <div className="p-4 bg-[#060e20] border border-outline rounded font-mono text-xs text-slate-200 overflow-x-auto cyber-scrollbar">
-            <pre>
-{`function withdraw(uint256 amount) public {
-    require(balances[msg.sender] >= amount, "Insufficient");
-    (bool sent, ) = msg.sender.call{value: amount}("");
-    require(sent, "Failed");
-    balances[msg.sender] -= amount;
-}`}
-            </pre>
-          </div>
+          <CodeSnippet
+            language="Solidity v0.8.0"
+            lines={[
+              { text: 'function ', type: 'keyword' },
+              { text: 'withdrawBalance', type: 'function' },
+              { text: '() public {\n', type: 'plain' },
+              { text: '    uint amountToWithdraw = userBalances[msg.sender];\n', type: 'plain' },
+              { text: '    // Vulnerable operation below\n', type: 'comment' },
+              { text: '    (bool success, ) = msg.sender.', type: 'plain' },
+              { text: 'call', type: 'function' },
+              { text: '{value: amountToWithdraw}("" );\n', type: 'string' },
+              { text: '    require', type: 'error' },
+              { text: '(success);\n', type: 'plain' },
+              { text: '    userBalances[msg.sender] = ', type: 'plain' },
+              { text: '0', type: 'number' },
+              { text: ';\n}', type: 'plain' },
+            ]}
+          />
         </div>
 
-        {/* Options */}
-        <div className="space-y-3 pt-2">
-          {[
-            { id: 0, text: 'The contract is safe because it verifies the balance before making the transfer with require.' },
-            { id: 1, text: 'The contract is vulnerable to reentrancy because the state is deducted after the external call.' },
-            { id: 2, text: 'The contract will fail to compile due to a missing visibility specifier.' },
-            { id: 3, text: 'The contract is immune because call() forwards a 2300 gas stipend cap.' },
-          ].map((opt) => (
-            <div
-              key={opt.id}
-              onClick={() => setSelectedOption(opt.id)}
-              className={`p-4 rounded border transition-all cursor-pointer flex items-center gap-3 font-sans text-xs sm:text-sm ${
-                selectedOption === opt.id
-                  ? 'bg-primary/15 border-primary text-white shadow-[0_0_15px_rgba(0,218,243,0.25)]'
-                  : 'bg-[#060e20] border-outline/70 text-slate-300 hover:border-slate-500'
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full border flex items-center justify-center font-mono text-[10px] shrink-0 ${
-                  selectedOption === opt.id
-                    ? 'border-primary bg-primary text-[#00363d] font-bold'
-                    : 'border-slate-500 text-slate-400'
-                }`}
-              >
-                {String.fromCharCode(65 + opt.id)}
-              </div>
-              <span className="leading-relaxed">{opt.text}</span>
-            </div>
-          ))}
-        </div>
+        <QuizOptions options={options} selectedId={selectedId} onSelect={setSelectedId} />
 
-        <div className="pt-4 border-t border-outline/50 flex items-center justify-between">
+        <div className="pt-4 border-t border-outline/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <span className="text-xs font-mono text-slate-400">Score Requirement: 80% to graduate</span>
-          <Button size="lg" onClick={handleNext} disabled={selectedOption === null} iconRight="arrow_forward">
+          <Button
+            size="lg"
+            onClick={() => navigate('/academy/certificate/CERT-9981')}
+            disabled={selectedId === null}
+            iconRight="arrow_forward"
+          >
             Submit & View Certificate
           </Button>
         </div>
       </Card>
+
+      <InfoCards />
     </div>
   );
 };
