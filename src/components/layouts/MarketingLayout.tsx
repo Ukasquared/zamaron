@@ -132,6 +132,8 @@ export const MarketingLayout: React.FC = () => {
               <ul className="space-y-2 text-xs">
                 <li><Link to="/solutions/auditing" className="hover:text-primary">Smart Contract Auditing</Link></li>
                 <li><Link to="/threat-hub/skynet" className="hover:text-primary">Skynet Threat Radar</Link></li>
+                <li><Link to="/threat-hub/leaderboard" className="hover:text-primary">Security Leaderboard</Link></li>
+                <li><Link to="/threat-hub/incidents" className="hover:text-primary">Incident Monitor</Link></li>
                 <li><Link to="/threat-hub/whales" className="hover:text-primary">Whale Alerts Terminal</Link></li>
                 <li><Link to="/threat-hub/token-analyzer" className="hover:text-primary">Token Risk Analyzer</Link></li>
                 <li><Link to="/pricing" className="hover:text-primary">Audit Pricing & Tiers</Link></li>
