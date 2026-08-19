@@ -37,7 +37,7 @@ export const MasterCatalogPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <Badge variant="primary">MASTER INDEX</Badge>
-            <span className="text-xs font-mono text-slate-400">47 Screens Catalog</span>
+            <span className="text-xs font-mono text-slate-400">{ALL_PAGE_CATALOG.length} Screens Catalog</span>
           </div>
           <h1 className="font-display font-black text-2xl sm:text-3xl text-white mt-1">
             ZAMARON Complete Application Architecture
@@ -51,7 +51,7 @@ export const MasterCatalogPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-[#081024] p-4 rounded border border-outline/70">
         <div className="w-full sm:w-80">
           <Input
-            placeholder="Search all 47 pages by keyword, HTML file, or path..."
+            placeholder={`Search all ${ALL_PAGE_CATALOG.length} pages by keyword, HTML file, or path...`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             icon="search"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { SeverityLevel } from '@/types';
+import type { SeverityLevel } from '@/types';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?:

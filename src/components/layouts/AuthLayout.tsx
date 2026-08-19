@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { Icon } from '@/components/ui/Icon';
-import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { ALL_PAGE_CATALOG, MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
 
 export const AuthLayout: React.FC = () => {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -50,7 +50,7 @@ export const AuthLayout: React.FC = () => {
             className="px-2.5 py-1 rounded bg-[#0b1326] border border-outline/70 hover:border-primary/50 text-xs font-mono text-slate-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
           >
             <Icon name="grid_view" size={14} className="text-primary" />
-            <span>47 Screens Catalog</span>
+            <span>{ALL_PAGE_CATALOG.length} Screens Catalog</span>
           </button>
           <Link
             to="/"
@@ -75,7 +75,7 @@ export const AuthLayout: React.FC = () => {
         <p>© 2026 ZAMARON Protocol • Institutional Cryptographic Protection</p>
       </footer>
 
-      {/* Master 47 Screens Catalog Drawer */}
+      {/* Master screen catalog drawer */}
       <MasterCatalogDrawer isOpen={catalogOpen} onClose={() => setCatalogOpen(false)} />
     </div>
   );

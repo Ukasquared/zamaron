@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { Icon } from '@/components/ui/Icon';
 import { SeverityBadge } from '@/components/ui/Badge';
-import { SeverityLevel } from '@/types';
+import type { SeverityLevel } from '@/types';
 
 export interface CodeAnnotation {
   lineNumber: number;

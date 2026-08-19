@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { AddressBadge } from '@/components/shared/AddressBadge';
-import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { ALL_PAGE_CATALOG, MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
 import { Icon } from '@/components/ui/Icon';
-import { UserRole } from '@/types';
+import type { UserRole } from '@/types';
 
 export const DashboardLayout: React.FC = () => {
   const { user, role, setRole, walletConnected, connectWallet } = useAuth();
@@ -122,14 +122,14 @@ export const DashboardLayout: React.FC = () => {
 
         {/* Right Side: Role Selector, Matrix Drawer Button, Wallet, Profile */}
         <div className="flex items-center gap-3">
-          {/* Quick 47-Screens Master Matrix Button */}
+          {/* Master matrix shortcut */}
           <button
             onClick={() => setCatalogOpen(true)}
             className="px-2.5 py-1 rounded bg-primary/10 border border-primary/40 hover:bg-primary/20 text-primary transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono font-bold shadow-[0_0_10px_rgba(0,218,243,0.2)]"
-            title="Open Master Navigation Matrix for all 47 screens"
+            title={`Open Master Navigation Matrix for all ${ALL_PAGE_CATALOG.length} screens`}
           >
             <Icon name="grid_view" size={16} />
-            <span className="hidden sm:inline">47 Screens Matrix</span>
+            <span className="hidden sm:inline">{ALL_PAGE_CATALOG.length} Screens Matrix</span>
           </button>
 
           {/* Role Switcher */}
@@ -334,12 +334,12 @@ export const DashboardLayout: React.FC = () => {
             onClick={() => setCatalogOpen(true)}
             className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-bold"
           >
-            All 47 Screens Matrix <Icon name="open_in_new" size={12} />
+            All {ALL_PAGE_CATALOG.length} Screens Matrix <Icon name="open_in_new" size={12} />
           </button>
         </div>
       </footer>
 
-      {/* Master 47 Screens Catalog Drawer */}
+      {/* Master screen catalog drawer */}
       <MasterCatalogDrawer isOpen={catalogOpen} onClose={() => setCatalogOpen(false)} />
     </div>
   );

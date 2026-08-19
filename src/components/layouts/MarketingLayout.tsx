@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { ALL_PAGE_CATALOG, MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
 
 export const MarketingLayout: React.FC = () => {
   const [catalogOpen, setCatalogOpen] = useState(false);
@@ -31,7 +31,7 @@ export const MarketingLayout: React.FC = () => {
           onClick={() => setCatalogOpen(true)}
           className="text-primary hover:text-cyan-300 underline font-semibold flex items-center gap-1 cursor-pointer"
         >
-          View All 47 Screens Matrix <Icon name="grid_view" size={14} />
+          View All {ALL_PAGE_CATALOG.length} Screens Matrix <Icon name="grid_view" size={14} />
         </button>
       </div>
 
@@ -79,7 +79,7 @@ export const MarketingLayout: React.FC = () => {
               title="Open Master Navigation Matrix"
             >
               <Icon name="grid_view" size={16} className="text-primary" />
-              <span>47 Screens</span>
+              <span>{ALL_PAGE_CATALOG.length} Screens</span>
             </button>
 
             <Link to="/auth/login">
@@ -178,7 +178,7 @@ export const MarketingLayout: React.FC = () => {
         </div>
       </footer>
 
-      {/* Master 47 Screens Catalog Drawer */}
+      {/* Master screen catalog drawer */}
       <MasterCatalogDrawer isOpen={catalogOpen} onClose={() => setCatalogOpen(false)} />
     </div>
   );

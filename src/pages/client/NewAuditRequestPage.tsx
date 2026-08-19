@@ -152,7 +152,7 @@ export const NewAuditRequestPage: React.FC = () => {
             ].map((t) => (
               <div
                 key={t.id}
-                onClick={() => setSelectedTier(t.id as any)}
+                onClick={() => setSelectedTier(t.id as 'STANDARD' | 'PROFESSIONAL' | 'ENTERPRISE')}
                 className={`p-4 rounded border transition-all cursor-pointer ${
                   selectedTier === t.id
                     ? 'bg-primary/15 border-primary shadow-[0_0_15px_rgba(0,218,243,0.3)]'

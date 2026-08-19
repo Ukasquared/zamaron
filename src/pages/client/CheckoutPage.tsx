@@ -46,7 +46,7 @@ export const CheckoutPage: React.FC = () => {
               ].map((rail) => (
                 <div
                   key={rail.id}
-                  onClick={() => setPaymentRail(rail.id as any)}
+                  onClick={() => setPaymentRail(rail.id as 'USDC' | 'ETH' | 'WIRE')}
                   className={`p-4 rounded border transition-all cursor-pointer flex items-center justify-between ${
                     paymentRail === rail.id
                       ? 'bg-primary/15 border-primary shadow-[0_0_15px_rgba(0,218,243,0.3)]'

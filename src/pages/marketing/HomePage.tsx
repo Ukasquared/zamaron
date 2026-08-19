@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { StatCard } from '@/components/shared/StatCard';
-import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { ALL_PAGE_CATALOG, MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
 
 export const HomePage: React.FC = () => {
   const [catalogOpen, setCatalogOpen] = useState(false);
@@ -82,7 +82,7 @@ export const HomePage: React.FC = () => {
             className="px-5 py-3 rounded text-sm font-mono font-bold bg-[#0b1326] border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Icon name="grid_view" size={18} />
-            <span>Browse All 47 Screens Matrix</span>
+            <span>Browse All {ALL_PAGE_CATALOG.length} Screens Matrix</span>
           </button>
         </div>
 
@@ -193,7 +193,7 @@ export const HomePage: React.FC = () => {
               onClick={() => setCatalogOpen(true)}
               className="px-5 py-2.5 rounded bg-primary text-[#00363d] font-mono font-bold text-xs hover:bg-cyan-300 cursor-pointer shadow-[0_0_15px_rgba(0,218,243,0.4)]"
             >
-              Open Full 47-Screen Index
+              Open Full {ALL_PAGE_CATALOG.length}-Screen Index
             </button>
           </div>
 

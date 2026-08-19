@@ -88,7 +88,7 @@ export const UserProfilePage: React.FC = () => {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id as 'CREDENTIALS' | 'SKILL_TREE' | 'ACTIVITY')}
             className={`flex items-center gap-2 px-4 py-2 rounded transition-all cursor-pointer ${
               activeTab === tab.id
                 ? 'bg-primary text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
