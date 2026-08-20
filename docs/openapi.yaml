@@ -1,0 +1,2851 @@
+openapi: 3.1.0
+info:
+  title: Zamaron API
+  version: 0.1.0
+  description: |
+    Backend API contract for the Zamaron platform, reverse-engineered from the
+    frontend (Vite + React + TypeScript SPA).
+
+    IMPORTANT: The repository contains NO backend today. Every endpoint defined
+    here is **REQUIRED BACKEND ENDPOINT — NOT CURRENTLY IMPLEMENTED**. This file
+    is the specification to build against; it is not documentation of a live API.
+
+    Companion document: docs/API-SPECIFICATION.md
+  license:
+    name: Proprietary
+servers:
+  - url: /api/v1
+    description: Same-origin API (v1)
+tags:
+  - name: Auth
+  - name: Users
+  - name: Audits
+  - name: Billing
+  - name: Vault
+  - name: Governance
+  - name: Academy
+  - name: Admin
+  - name: Security
+  - name: Support
+security:
+  - cookieAuth: []
+  - bearerAuth: []
+
+paths:
+  # ------------------------------------------------------------------ AUTH
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Password login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 1 }
+      responses:
+        "200":
+          description: Authenticated session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthSession" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /auth/login/webauthn:
+    post:
+      tags: [Auth]
+      summary: WebAuthn (passkey) login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, assertion]
+              properties:
+                email: { type: string, format: email }
+                assertion: { type: object }
+      responses:
+        "200":
+          description: Authenticated session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthSession" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/login/wallet:
+    post:
+      tags: [Auth]
+      summary: Sign-In with Ethereum (EIP-4361)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [address, message, signature]
+              properties:
+                address: { type: string }
+                message: { type: string }
+                signature: { type: string }
+      responses:
+        "200":
+          description: Authenticated session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthSession" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Operator induction (registration)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string, minLength: 1 }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+      responses:
+        "201":
+          description: Created + authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthSession" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Invalidate current session
+      responses:
+        "204": { description: Logged out }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/session:
+    get:
+      tags: [Auth]
+      summary: Restore / introspect current session
+      responses:
+        "200":
+          description: Session if any
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/AuthSession" }
+                  - { type: "null" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/secure-gate:
+    post:
+      tags: [Auth]
+      summary: Verify second factor (TOTP / hardware enclave)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, pattern: "^[0-9]{6}$" }
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verified: { type: boolean }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /auth/wallet/connect:
+    post:
+      tags: [Auth]
+      summary: Attach wallet to profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [address]
+              properties:
+                address: { type: string }
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthSession" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /auth/wallet/disconnect:
+    post:
+      tags: [Auth]
+      summary: Detach wallet from profile
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthSession" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ------------------------------------------------------------------ USERS
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Current operator profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserProfile" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /users/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Users]
+      summary: Fetch a user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserProfile" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Users]
+      summary: Update profile (self or admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                avatarUrl: { type: string }
+                walletAddress: { type: string }
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserProfile" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /users/{id}/certificates:
+    get:
+      tags: [Users]
+      summary: User's certificates
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Certificates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CertificateRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /users/{id}/activity:
+    get:
+      tags: [Users]
+      summary: Recent activity ledger
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200":
+          description: Paginated activity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PagedActivity" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /users/{id}/skills:
+    get:
+      tags: [Users]
+      summary: Skill tree nodes
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Skill nodes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/SkillNode" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /users/{id}/proficiency:
+    get:
+      tags: [Users]
+      summary: Mastery radar + summary
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Proficiency stats
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Proficiency" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /leaderboard/auditors:
+    get:
+      tags: [Users]
+      summary: Auditor leaderboard
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [xp, verifiedBugs, bountiesEarned] }
+      responses:
+        "200":
+          description: Paginated leaderboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/AuditorRow" }
+                  total: { type: integer }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ------------------------------------------------------------------ AUDITS
+  /audits:
+    get:
+      tags: [Audits]
+      summary: "List audits (client: own; auditor/admin: queue)"
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/AuditStatus" }
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [submittedAt, progressPercent] }
+        - name: dir
+          in: query
+          schema: { type: string, enum: [asc, desc], default: desc }
+      responses:
+        "200":
+          description: Paginated audits
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/AuditRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Audits]
+      summary: Create audit request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuditDraft" }
+      responses:
+        "201":
+          description: Created audit
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /audits/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Audits]
+      summary: Fetch one audit
+      responses:
+        "200":
+          description: Audit
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Audits]
+      summary: Advance status / assign lead / progress (auditor)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { $ref: "#/components/schemas/AuditStatus" }
+                leadAuditor: { type: string }
+                progressPercent: { type: integer, minimum: 0, maximum: 100 }
+      responses:
+        "200":
+          description: Updated audit
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /audits/{id}/claim:
+    post:
+      tags: [Audits]
+      summary: Auditor claims an engagement
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Claimed audit
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /audits/{id}/findings:
+    get:
+      tags: [Audits]
+      summary: List findings for an engagement
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: severity
+          in: query
+          schema: { $ref: "#/components/schemas/SeverityLevel" }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/FindingStatus" }
+      responses:
+        "200":
+          description: Paginated findings
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/AuditFinding" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /audits/{id}/findings/{findingId}:
+    patch:
+      tags: [Audits]
+      summary: Triage a finding (status + notes)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: findingId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { $ref: "#/components/schemas/FindingStatus" }
+                notes: { type: string }
+      responses:
+        "200":
+          description: Updated finding
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditFinding" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /audits/{id}/timeline:
+    get:
+      tags: [Audits]
+      summary: 4-phase progress timeline
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Timeline
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditTimeline" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /audits/{id}/report:
+    get:
+      tags: [Audits]
+      summary: Final report data
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Report payload
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FinalReport" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /audits/{id}/report.pdf:
+    get:
+      tags: [Audits]
+      summary: Signed PDF export
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: PDF binary
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /audits/{id}/report/sign:
+    post:
+      tags: [Audits]
+      summary: Sign and anchor the final report
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [signature]
+              properties:
+                signature: { type: string }
+      responses:
+        "200":
+          description: Signed report
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FinalReport" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  # ------------------------------------------------------------------ BILLING
+  /pricing/tiers:
+    get:
+      tags: [Billing]
+      summary: Audit pricing tiers
+      security: []
+      responses:
+        "200":
+          description: Tiers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tiers:
+                    type: array
+                    items: { $ref: "#/components/schemas/PricingTier" }
+
+  /gateways:
+    get:
+      tags: [Billing]
+      summary: List settlement gateways (admin)
+      responses:
+        "200":
+          description: Gateways
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PaymentGateway" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /gateways/{id}:
+    patch:
+      tags: [Billing]
+      summary: Update a gateway (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enabled: { type: boolean }
+                address: { type: string }
+                settlementDelay: { type: string }
+      responses:
+        "200":
+          description: Updated gateway
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentGateway" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /checkout/settlement:
+    post:
+      tags: [Billing]
+      summary: Confirm escrow deposit and launch audit (atomic)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [audit, rail, amountMinor]
+              properties:
+                audit: { $ref: "#/components/schemas/AuditDraft" }
+                rail: { $ref: "#/components/schemas/Rail" }
+                txHash: { type: string }
+                amountMinor: { type: integer, minimum: 0 }
+      responses:
+        "201":
+          description: Audit + billing record created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audit: { $ref: "#/components/schemas/AuditRequest" }
+                  billing: { $ref: "#/components/schemas/BillingTransaction" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /billing:
+    get:
+      tags: [Billing]
+      summary: Billing history (admin)
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: rail
+          in: query
+          schema: { $ref: "#/components/schemas/Rail" }
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Paginated billing
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/BillingTransaction" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /billing/{id}:
+    get:
+      tags: [Billing]
+      summary: Single invoice
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Invoice
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingTransaction" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /billing/export.csv:
+    get:
+      tags: [Billing]
+      summary: CSV statement export (admin)
+      responses:
+        "200":
+          description: CSV
+          content:
+            text/csv:
+              schema: { type: string }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /refunds:
+    get:
+      tags: [Billing]
+      summary: List refund requests (admin)
+      responses:
+        "200":
+          description: Refunds
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RefundRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Billing]
+      summary: Queue a refund (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoiceId, reason]
+              properties:
+                invoiceId: { type: string }
+                client: { type: string }
+                amount: { type: string }
+                reason: { type: string }
+      responses:
+        "201":
+          description: Refund queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RefundRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /refunds/{id}/decision:
+    post:
+      tags: [Billing]
+      summary: Approve/deny a refund (admin multi-sig)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [APPROVED, DENIED] }
+      responses:
+        "200":
+          description: Decided refund
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RefundRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  # ------------------------------------------------------------------ VAULT
+  /vault/documents:
+    get:
+      tags: [Vault]
+      summary: List vault documents
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: category
+          in: query
+          schema: { type: string, enum: [REPORTS, CERTIFICATES, SPECS, ALL], default: ALL }
+        - name: q
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Paginated documents
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/VaultDocument" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Vault]
+      summary: Upload a document
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, title, category]
+              properties:
+                file: { type: string, format: binary }
+                title: { type: string }
+                category: { type: string, enum: [REPORTS, CERTIFICATES, SPECS] }
+                type: { type: string, enum: [PDF, ZIP, TXT] }
+      responses:
+        "201":
+          description: Uploaded document
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/VaultDocument" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /vault/documents/{id}/download:
+    get:
+      tags: [Vault]
+      summary: Download a document
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Binary download
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ GOVERNANCE
+  /governance/proposals:
+    get:
+      tags: [Governance]
+      summary: List DAO proposals
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ProposalStatus" }
+      responses:
+        "200":
+          description: Paginated proposals
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/GovernanceProposal" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /governance/proposals/{id}:
+    get:
+      tags: [Governance]
+      summary: Proposal detail (id or proposalNumber)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Proposal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GovernanceProposal" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /governance/proposals/{id}/votes:
+    post:
+      tags: [Governance]
+      summary: Cast or change a weighted vote
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vote]
+              properties:
+                vote: { type: string, enum: [FOR, AGAINST, ABSTAIN] }
+      responses:
+        "200":
+          description: Updated proposal with tallies
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GovernanceProposal" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  # ------------------------------------------------------------------ ACADEMY
+  /academy/courses:
+    get:
+      tags: [Academy]
+      summary: Published course catalog (learner)
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: category
+          in: query
+          schema: { $ref: "#/components/schemas/CourseCategory" }
+        - name: difficulty
+          in: query
+          schema: { $ref: "#/components/schemas/Difficulty" }
+      responses:
+        "200":
+          description: Paginated catalog
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/AcademyCourse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /academy/courses/{idOrSlug}:
+    get:
+      tags: [Academy]
+      summary: Full course with modules and lessons
+      parameters:
+        - { name: idOrSlug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Course
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ManagedCourse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /academy/courses/{id}/progress:
+    get:
+      tags: [Academy]
+      summary: Current user's progress
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - name: userId
+          in: query
+          schema: { type: string }
+          description: Admin only; defaults to caller
+      responses:
+        "200":
+          description: Progress or null
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/LearnerProgress" }
+                  - { type: "null" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /academy/courses/{id}/lessons/{lessonId}/complete:
+    post:
+      tags: [Academy]
+      summary: Mark lesson complete
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: lessonId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Updated progress
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnerProgress" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /academy/courses/{id}/assessment:
+    get:
+      tags: [Academy]
+      summary: Assessment questions (answers stripped)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Questions + threshold
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  questions:
+                    type: array
+                    items: { $ref: "#/components/schemas/AssessmentQuestionPublic" }
+                  passThreshold: { type: integer, example: 80 }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /academy/courses/{id}/assessment/submit:
+    post:
+      tags: [Academy]
+      summary: Grade attempt, issue certificate if passed
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: object
+                  additionalProperties: { type: string }
+      responses:
+        "200":
+          description: Attempt + optional certificate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attempt: { $ref: "#/components/schemas/AssessmentAttempt" }
+                  certificate:
+                    oneOf:
+                      - { $ref: "#/components/schemas/CertificateRecord" }
+                      - { type: "null" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /academy/courses/{id}/assessment/latest:
+    get:
+      tags: [Academy]
+      summary: Latest attempt for a course
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Latest attempt or null
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/AssessmentAttempt" }
+                  - { type: "null" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /academy/certificates:
+    get:
+      tags: [Academy]
+      summary: List my certificates (userId for admin)
+      parameters:
+        - name: userId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Certificates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CertificateRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /academy/certificates/{id}:
+    get:
+      tags: [Academy]
+      summary: Fetch a certificate
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Certificate
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CertificateRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ ADMIN
+  /admin/courses:
+    get:
+      tags: [Admin]
+      summary: Full course catalog incl. drafts (admin)
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/CourseStatus" }
+        - name: q
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Paginated courses
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/ManagedCourse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Admin]
+      summary: Create a draft course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CourseDraftInput" }
+      responses:
+        "201":
+          description: Created draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ManagedCourse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /admin/courses/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Admin]
+      summary: Open a course (builder)
+      responses:
+        "200":
+          description: Course
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ManagedCourse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Admin]
+      summary: Save metadata + full curriculum
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ManagedCoursePatch" }
+      responses:
+        "200":
+          description: Saved course
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ManagedCourse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      tags: [Admin]
+      summary: Delete a course
+      responses:
+        "204": { description: Deleted }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /admin/courses/{id}/status:
+    post:
+      tags: [Admin]
+      summary: Publish or archive a course
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [PUBLISHED, ARCHIVED] }
+      responses:
+        "200":
+          description: Updated course
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ManagedCourse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /admin/courses/{id}/modules:
+    post:
+      tags: [Admin]
+      summary: Append a new module
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "201":
+          description: Created module
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseModule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /admin/courses/{id}/modules/{moduleId}/lessons:
+    post:
+      tags: [Admin]
+      summary: Append a new lesson to a module
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: moduleId, in: path, required: true, schema: { type: string } }
+      responses:
+        "201":
+          description: Created lesson
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseLesson" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /admin/logs:
+    get:
+      tags: [Admin]
+      summary: Security logs with faceted filters
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: eventSource
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [BLOCKED, ALLOWED, FLAGGED, RESOLVED] }
+        - name: severity
+          in: query
+          schema: { type: string, enum: [CRIT, WARN, INFO] }
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Paginated logs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/SecurityLogEntry" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Admin]
+      summary: Ingest a security event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [severity, eventSource, actor, action, ipAddress, status]
+              properties:
+                severity: { type: string, enum: [CRIT, WARN, INFO] }
+                eventSource: { type: string }
+                actor: { type: string }
+                action: { type: string }
+                ipAddress: { type: string }
+                status: { type: string, enum: [BLOCKED, ALLOWED, FLAGGED, RESOLVED] }
+      responses:
+        "201":
+          description: Created log entry
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SecurityLogEntry" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /admin/logs/export.csv:
+    get:
+      tags: [Admin]
+      summary: Export (filtered) logs as CSV
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: eventSource
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: CSV
+          content:
+            text/csv:
+              schema: { type: string }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /admin/security-config:
+    get:
+      tags: [Admin]
+      summary: Get security configuration
+      responses:
+        "200":
+          description: Config
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SecurityConfig" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    put:
+      tags: [Admin]
+      summary: Update security configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SecurityConfig" }
+      responses:
+        "200":
+          description: Updated config
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SecurityConfig" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /admin/operators:
+    get:
+      tags: [Admin]
+      summary: Operator registry
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: q
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Paginated operators
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/OperatorRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /admin/operators/{id}:
+    patch:
+      tags: [Admin]
+      summary: Update operator role/status/clearance
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { $ref: "#/components/schemas/UserRole" }
+                status: { type: string, enum: [ACTIVE, SUSPENDED, ISOLATED] }
+                clearance: { type: string, enum: [ALPHA, BETA, GAMMA, OPERATOR] }
+      responses:
+        "200":
+          description: Updated operator
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OperatorRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /admin/protocols:
+    get:
+      tags: [Admin]
+      summary: Watched protocol registry
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: q
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Paginated protocols
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/ProtocolRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /admin/protocols/{id}:
+    patch:
+      tags: [Admin]
+      summary: Update protocol status / gas threshold
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [MONITORING, ISOLATED, RESTORED, BLACKLISTED] }
+                gasThresholdGwei: { type: number, minimum: 0 }
+      responses:
+        "200":
+          description: Updated protocol
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProtocolRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /admin/api-keys:
+    get:
+      tags: [Admin]
+      summary: List API keys (no secrets)
+      responses:
+        "200":
+          description: Keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ApiKeyRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Admin]
+      summary: Mint an API key (secret returned once)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, scopes, rateLimit]
+              properties:
+                name: { type: string }
+                scopes: { type: string }
+                rateLimit: { type: integer, minimum: 0 }
+      responses:
+        "201":
+          description: Created key incl. secret
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiKeyRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /admin/api-keys/{id}/revoke:
+    post:
+      tags: [Admin]
+      summary: Revoke an API key
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Revoked key
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiKeyRecord" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /admin/alerts:
+    get:
+      tags: [Admin]
+      summary: List alert routes
+      responses:
+        "200":
+          description: Routes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AlertRoute" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Admin]
+      summary: Create an alert route
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AlertRouteInput" }
+      responses:
+        "201":
+          description: Created route
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlertRoute" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /admin/alerts/{id}:
+    put:
+      tags: [Admin]
+      summary: Upsert an alert route
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AlertRoute" }
+      responses:
+        "200":
+          description: Saved route
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlertRoute" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /admin/token-reports:
+    get:
+      tags: [Admin]
+      summary: Token risk overrides
+      responses:
+        "200":
+          description: Overrides
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TokenReportOverride" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Admin]
+      summary: Create a token risk override
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TokenReportOverrideInput" }
+      responses:
+        "201":
+          description: Created override
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenReportOverride" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /admin/token-reports/{id}:
+    put:
+      tags: [Admin]
+      summary: Update a token risk override
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TokenReportOverrideInput" }
+      responses:
+        "200":
+          description: Updated override
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenReportOverride" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      tags: [Admin]
+      summary: Delete a token risk override
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ SECURITY
+  /security/projects:
+    get:
+      tags: [Security]
+      summary: Ranked, scored project list
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: category
+          in: query
+          schema: { $ref: "#/components/schemas/ProjectCategory" }
+        - name: chain
+          in: query
+          schema: { type: string }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [score, marketCap, incidents, name], default: score }
+        - name: dir
+          in: query
+          schema: { type: string, enum: [asc, desc], default: desc }
+      responses:
+        "200":
+          description: Paginated scored projects
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/ScoredProject" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /security/projects/meta:
+    get:
+      tags: [Security]
+      summary: Facet options (chains + categories)
+      responses:
+        "200":
+          description: Facets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chains:
+                    type: array
+                    items: { type: string }
+                  categories:
+                    type: array
+                    items: { $ref: "#/components/schemas/ProjectCategory" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /security/projects/{id}:
+    get:
+      tags: [Security]
+      summary: Full project profile
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Scored project
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScoredProject" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /security/leaderboard/ecosystem:
+    get:
+      tags: [Security]
+      summary: Chain/ecosystem Z-Score matrix
+      responses:
+        "200":
+          description: Ecosystem leaderboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/EcosystemRow" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /skynet/overview:
+    get:
+      tags: [Security]
+      summary: Skynet dashboard aggregates
+      responses:
+        "200":
+          description: Overview
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SkynetOverview" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /security/incidents:
+    get:
+      tags: [Security]
+      summary: Incident feed
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: severity
+          in: query
+          schema: { $ref: "#/components/schemas/IncidentSeverity" }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/IncidentStatus" }
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Paginated incidents
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/SecurityIncident" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /security/incidents/stats:
+    get:
+      tags: [Security]
+      summary: Incident aggregates
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalFundsLost: { type: integer }
+                  critical: { type: integer }
+                  ongoing: { type: integer }
+                  last24h: { type: integer }
+                  total: { type: integer }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /whale-alerts:
+    get:
+      tags: [Security]
+      summary: Whale alert feed
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+        - name: chain
+          in: query
+          schema: { type: string, enum: [ETH, SOL, BSC, AVAX, ARB] }
+        - name: flagType
+          in: query
+          schema: { $ref: "#/components/schemas/FlagType" }
+        - name: minUsdValue
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Paginated whale alerts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/WhaleAlert" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /token/scan:
+    post:
+      tags: [Security]
+      summary: Analyze a contract address for risk indicators
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contractAddress]
+              properties:
+                contractAddress:
+                  type: string
+                  pattern: "^0x[a-fA-F0-9]{40}$"
+      responses:
+        "200":
+          description: Scan result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenScanResult" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /ecosystem/nodes:
+    get:
+      tags: [Security]
+      summary: Node latency/load telemetry
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [HEALTHY, DEGRADED, HOT] }
+      responses:
+        "200":
+          description: Node telemetry
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nodes:
+                    type: array
+                    items: { $ref: "#/components/schemas/NodeRow" }
+                  avgLatency: { type: integer }
+                  hot: { type: integer }
+                  uptimeWindow: { type: string }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /status/services:
+    get:
+      tags: [Support]
+      summary: Public service diagnostics
+      security: []
+      responses:
+        "200":
+          description: Service statuses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  services:
+                    type: array
+                    items: { $ref: "#/components/schemas/ServiceStatus" }
+
+  # ------------------------------------------------------------------ SUPPORT
+  /support/articles:
+    get:
+      tags: [Support]
+      summary: Knowledge base articles
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200":
+          description: Articles
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/PageMeta" }
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/KnowledgeArticle" }
+
+  /support/articles/search:
+    get:
+      tags: [Support]
+      summary: Search knowledge base
+      security: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Matching articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/KnowledgeArticle" }
+
+  /support/tickets:
+    post:
+      tags: [Support]
+      summary: Submit a support/incident ticket
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, subject, body, severity]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                subject: { type: string }
+                body: { type: string }
+                severity: { type: string, enum: [LOW, HIGH, CRITICAL] }
+      responses:
+        "201":
+          description: Ticket queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportTicket" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: zamaron_session
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    Forbidden:
+      description: Insufficient role/permission or cross-tenant access
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    Conflict:
+      description: State conflict
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    RateLimited:
+      description: Too many requests
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    PayloadTooLarge:
+      description: Upload exceeds size limit
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  schemas:
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [UNAUTHENTICATED, FORBIDDEN, VALIDATION_ERROR, NOT_FOUND, CONFLICT, RATE_LIMITED, INTERNAL]
+            message: { type: string }
+            details:
+              type: object
+              additionalProperties:
+                type: array
+                items: { type: string }
+
+    UserRole:
+      type: string
+      enum: [CLIENT, AUDITOR, ADMIN, STUDENT]
+    SecurityClearance:
+      type: string
+      enum: [ALPHA, BETA, GAMMA, OPERATOR]
+
+    UserProfile:
+      type: object
+      required: [id, name, email, role, walletAddress, securityClearance]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: "#/components/schemas/UserRole" }
+        walletAddress: { type: string }
+        avatarUrl: { type: string }
+        rank: { type: string }
+        xp: { type: integer }
+        certificationsCount: { type: integer }
+        securityClearance: { $ref: "#/components/schemas/SecurityClearance" }
+
+    AuthSession:
+      type: object
+      required: [user, walletConnected, issuedAt]
+      properties:
+        user: { $ref: "#/components/schemas/UserProfile" }
+        walletConnected: { type: boolean }
+        issuedAt: { type: string, format: date-time }
+
+    AuditStatus:
+      type: string
+      enum: [QUEUED, SCANNING, IN_REVIEW, VERIFIED, COMPLETED]
+    AuditTier:
+      type: string
+      enum: [STANDARD, PROFESSIONAL, ENTERPRISE]
+    SeverityLevel:
+      type: string
+      enum: [CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL]
+    FindingStatus:
+      type: string
+      enum: [OPEN, CONFIRMED, RESOLVED, FALSE_POSITIVE]
+
+    AuditRequest:
+      type: object
+      required: [id, projectName, protocolType, targetRepo, commitHash, submittedAt, status, progressPercent, findingsCount, tier]
+      properties:
+        id: { type: string }
+        projectName: { type: string }
+        protocolType: { type: string }
+        targetRepo: { type: string }
+        commitHash: { type: string }
+        submittedAt: { type: string, format: date-time }
+        status: { $ref: "#/components/schemas/AuditStatus" }
+        leadAuditor: { type: string }
+        progressPercent: { type: integer, minimum: 0, maximum: 100 }
+        findingsCount:
+          type: object
+          properties:
+            critical: { type: integer }
+            high: { type: integer }
+            medium: { type: integer }
+            low: { type: integer }
+            info: { type: integer }
+        tier: { $ref: "#/components/schemas/AuditTier" }
+        tvlProtected: { type: string }
+        ownerId: { type: string }
+        ownerName: { type: string }
+        attachments:
+          type: array
+          items: { type: string }
+
+    AuditDraft:
+      type: object
+      required: [projectName, protocolType, targetRepo, commitHash, tier]
+      properties:
+        projectName: { type: string }
+        protocolType: { type: string }
+        targetRepo: { type: string }
+        commitHash: { type: string }
+        tier: { $ref: "#/components/schemas/AuditTier" }
+        attachments:
+          type: array
+          items: { type: string }
+
+    AuditFinding:
+      type: object
+      required: [id, title, severity, category, location, lineRange, description, remediation, status]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        severity: { $ref: "#/components/schemas/SeverityLevel" }
+        category: { type: string }
+        swcCode: { type: string }
+        location: { type: string }
+        lineRange: { type: string }
+        description: { type: string }
+        remediation: { type: string }
+        status: { $ref: "#/components/schemas/FindingStatus" }
+        codeSnippet: { type: string }
+        notes: { type: string }
+
+    AuditTimeline:
+      type: object
+      properties:
+        currentPhase: { type: integer, minimum: 1, maximum: 4 }
+        phases:
+          type: array
+          items:
+            type: object
+            properties:
+              num: { type: integer }
+              title: { type: string }
+              status: { type: string, enum: [PENDING, IN_PROGRESS, COMPLETED] }
+              timestamp: { type: string }
+              inspector: { type: string }
+              findings: { type: string }
+
+    FinalReport:
+      type: object
+      properties:
+        reportId: { type: string }
+        issueDate: { type: string, format: date }
+        finalScore: { type: integer }
+        criticalOpen: { type: integer }
+        totalRemediated: { type: integer }
+        totalFindings: { type: integer }
+        findings:
+          type: array
+          items: { $ref: "#/components/schemas/AuditFinding" }
+        anchor:
+          type: object
+          properties:
+            hash: { type: string }
+            auditor: { type: string }
+            keyId: { type: string }
+            block: { type: string }
+
+    Rail:
+      type: string
+      enum: [USDC, ETH, WIRE, SOL]
+
+    BillingTransaction:
+      type: object
+      required: [id, invoiceNumber, client, clientWallet, tier, amountMinor, currency, status, date, rail, description, txHash]
+      properties:
+        id: { type: string }
+        invoiceNumber: { type: string }
+        client: { type: string }
+        clientWallet: { type: string }
+        tier: { type: string }
+        amountMinor: { type: integer }
+        currency: { type: string }
+        status: { type: string }
+        date: { type: string, format: date }
+        rail: { $ref: "#/components/schemas/Rail" }
+        description: { type: string }
+        txHash: { type: string }
+
+    RefundRequest:
+      type: object
+      required: [id, invoiceId, client, amount, reason, status, requestedAt]
+      properties:
+        id: { type: string }
+        invoiceId: { type: string }
+        client: { type: string }
+        amount: { type: string }
+        reason: { type: string }
+        status: { type: string, enum: [PENDING, APPROVED, DENIED] }
+        requestedAt: { type: string, format: date }
+        decidedAt: { type: string, format: date }
+        decidedBy: { type: string }
+
+    PaymentGateway:
+      type: object
+      required: [id, name, rail, address, enabled, settlementDelay]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        rail: { $ref: "#/components/schemas/Rail" }
+        address: { type: string }
+        enabled: { type: boolean }
+        settlementDelay: { type: string }
+
+    PricingTier:
+      type: object
+      required: [id, name, priceMinor, currency, turnaround]
+      properties:
+        id: { $ref: "#/components/schemas/AuditTier" }
+        name: { type: string }
+        priceMinor: { type: integer }
+        currency: { type: string, default: USD }
+        turnaround: { type: string }
+        features:
+          type: array
+          items: { type: string }
+
+    VaultDocument:
+      type: object
+      required: [id, title, category, fileSize, updatedAt, hash, type]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { type: string, enum: [REPORTS, CERTIFICATES, SPECS] }
+        fileSize: { type: string }
+        updatedAt: { type: string, format: date }
+        hash: { type: string }
+        type: { type: string, enum: [PDF, ZIP, TXT] }
+        body: { type: string }
+        ownerId: { type: string }
+
+    ProposalStatus:
+      type: string
+      enum: [ACTIVE, PASSED, REJECTED, EXECUTING]
+
+    GovernanceProposal:
+      type: object
+      required: [id, proposalNumber, title, author, createdDate, endDate, status, summary, forVotes, againstVotes, abstainVotes, quorumPercent, quorumTarget]
+      properties:
+        id: { type: string }
+        proposalNumber: { type: string }
+        title: { type: string }
+        author: { type: string }
+        createdDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status: { $ref: "#/components/schemas/ProposalStatus" }
+        summary: { type: string }
+        forVotes: { type: integer }
+        againstVotes: { type: integer }
+        abstainVotes: { type: integer }
+        quorumPercent: { type: number }
+        quorumTarget: { type: number }
+        userVote: { type: string, enum: [FOR, AGAINST, ABSTAIN] }
+
+    CourseCategory:
+      type: string
+      enum: [SMART_CONTRACT, DEFI_SECURITY, FORENSICS, OPCODES]
+    Difficulty:
+      type: string
+      enum: [BEGINNER, INTERMEDIATE, ADVANCED, ELITE]
+    CourseStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED, ARCHIVED]
+
+    AcademyCourse:
+      type: object
+      required: [id, slug, title, description, category, difficulty, durationMinutes, modulesCount, xpReward, progressPercent, thumbnail, instructor]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        description: { type: string }
+        category: { $ref: "#/components/schemas/CourseCategory" }
+        difficulty: { $ref: "#/components/schemas/Difficulty" }
+        durationMinutes: { type: integer }
+        modulesCount: { type: integer }
+        xpReward: { type: integer }
+        progressPercent: { type: integer, minimum: 0, maximum: 100 }
+        thumbnail: { type: string }
+        instructor: { type: string }
+
+    LessonTimestamp:
+      type: object
+      required: [id, time, label]
+      properties:
+        id: { type: string }
+        time: { type: string }
+        label: { type: string }
+
+    CourseLesson:
+      type: object
+      required: [id, title, durationMinutes, content, timestamps]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        durationMinutes: { type: integer }
+        content: { type: string }
+        videoUrl: { type: string }
+        instructor: { type: string }
+        takeaways: { type: string }
+        timestamps:
+          type: array
+          items: { $ref: "#/components/schemas/LessonTimestamp" }
+
+    CourseModule:
+      type: object
+      required: [id, title, order, lessons]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        order: { type: integer }
+        lessons:
+          type: array
+          items: { $ref: "#/components/schemas/CourseLesson" }
+
+    ManagedCourse:
+      type: object
+      required: [id, slug, title, description, category, difficulty, instructor, thumbnail, xpReward, status, modules, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        description: { type: string }
+        category: { $ref: "#/components/schemas/CourseCategory" }
+        difficulty: { $ref: "#/components/schemas/Difficulty" }
+        instructor: { type: string }
+        thumbnail: { type: string }
+        xpReward: { type: integer }
+        status: { $ref: "#/components/schemas/CourseStatus" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        publishedAt: { type: string, format: date-time }
+        modules:
+          type: array
+          items: { $ref: "#/components/schemas/CourseModule" }
+
+    CourseDraftInput:
+      type: object
+      required: [title, description, category, difficulty, instructor]
+      properties:
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        category: { $ref: "#/components/schemas/CourseCategory" }
+        difficulty: { $ref: "#/components/schemas/Difficulty" }
+        instructor: { type: string }
+        thumbnail: { type: string }
+        xpReward: { type: integer }
+
+    ManagedCoursePatch:
+      type: object
+      properties:
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        category: { $ref: "#/components/schemas/CourseCategory" }
+        difficulty: { $ref: "#/components/schemas/Difficulty" }
+        instructor: { type: string }
+        thumbnail: { type: string }
+        xpReward: { type: integer }
+        modules:
+          type: array
+          items: { $ref: "#/components/schemas/CourseModule" }
+
+    LearnerProgress:
+      type: object
+      required: [userId, courseId, completedLessonIds, progressPercent, startedAt]
+      properties:
+        userId: { type: string }
+        courseId: { type: string }
+        completedLessonIds:
+          type: array
+          items: { type: string }
+        lastLessonId: { type: string }
+        progressPercent: { type: integer, minimum: 0, maximum: 100 }
+        startedAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time }
+
+    AssessmentQuestionPublic:
+      type: object
+      required: [id, prompt, options]
+      properties:
+        id: { type: string }
+        prompt: { type: string }
+        codeSnippet: { type: string }
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              text: { type: string }
+
+    AssessmentAttempt:
+      type: object
+      required: [id, userId, userName, courseId, answers, scorePercent, passed, completedAt]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        userName: { type: string }
+        courseId: { type: string }
+        answers:
+          type: object
+          additionalProperties: { type: string }
+        scorePercent: { type: integer }
+        passed: { type: boolean }
+        completedAt: { type: string, format: date-time }
+
+    CertificateRecord:
+      type: object
+      required: [id, userId, userName, courseId, courseTitle, scorePercent, issuedAt, hash]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        userName: { type: string }
+        courseId: { type: string }
+        courseTitle: { type: string }
+        scorePercent: { type: integer }
+        issuedAt: { type: string, format: date-time }
+        hash: { type: string }
+
+    SecurityLogEntry:
+      type: object
+      required: [id, timestamp, severity, eventSource, actor, action, ipAddress, status, hash]
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        severity: { type: string, enum: [CRIT, WARN, INFO] }
+        eventSource: { type: string }
+        actor: { type: string }
+        action: { type: string }
+        ipAddress: { type: string }
+        status: { type: string, enum: [BLOCKED, ALLOWED, FLAGGED, RESOLVED] }
+        hash: { type: string }
+
+    SecurityConfig:
+      type: object
+      required: [fido2Required, autoMitigate, ipWhitelisting, rateLimitStrict]
+      properties:
+        fido2Required: { type: boolean }
+        autoMitigate: { type: boolean }
+        ipWhitelisting: { type: boolean }
+        rateLimitStrict: { type: boolean }
+
+    OperatorRecord:
+      type: object
+      required: [id, name, email, role, walletAddress, clearance, status, lastSync]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: "#/components/schemas/UserRole" }
+        walletAddress: { type: string }
+        clearance: { $ref: "#/components/schemas/SecurityClearance" }
+        status: { type: string, enum: [ACTIVE, SUSPENDED, ISOLATED] }
+        lastSync: { type: string }
+
+    ProtocolRecord:
+      type: object
+      required: [id, name, category, contractAddress, status, gasThresholdGwei, riskScore, lastSync]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        category: { type: string }
+        contractAddress: { type: string }
+        status: { type: string, enum: [MONITORING, ISOLATED, RESTORED, BLACKLISTED] }
+        gasThresholdGwei: { type: number }
+        riskScore: { type: integer }
+        lastSync: { type: string }
+
+    ApiKeyRecord:
+      type: object
+      required: [id, name, prefix, scopes, rateLimit, status, createdAt, lastUsed]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        prefix: { type: string }
+        secret: { type: string, description: "Returned only on creation" }
+        scopes: { type: string }
+        rateLimit: { type: integer }
+        status: { type: string, enum: [ACTIVE, REVOKED] }
+        createdAt: { type: string, format: date }
+        lastUsed: { type: string }
+
+    AlertChannel:
+      type: string
+      enum: [WEBHOOK, EMAIL, TELEGRAM, PAGER]
+
+    AlertRouteInput:
+      type: object
+      required: [name, eventSource, minSeverity, channel, target, enabled, threshold]
+      properties:
+        name: { type: string }
+        eventSource: { type: string }
+        minSeverity: { type: string, enum: [INFO, WARN, CRIT] }
+        channel: { $ref: "#/components/schemas/AlertChannel" }
+        target: { type: string }
+        enabled: { type: boolean }
+        threshold: { type: integer, minimum: 1 }
+
+    AlertRoute:
+      allOf:
+        - { $ref: "#/components/schemas/AlertRouteInput" }
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string }
+
+    TokenReportOverrideInput:
+      type: object
+      required: [contractAddress, tokenName, ticker, chain, isHoneypot, hasMintFunction, hasBlacklist, hasProxy, liquidityLockedPercent, top10HoldersPercent]
+      properties:
+        contractAddress: { type: string }
+        tokenName: { type: string }
+        ticker: { type: string }
+        chain: { type: string }
+        notes: { type: string }
+        isHoneypot: { type: boolean }
+        hasMintFunction: { type: boolean }
+        hasBlacklist: { type: boolean }
+        hasProxy: { type: boolean }
+        liquidityLockedPercent: { type: number, minimum: 0, maximum: 100 }
+        top10HoldersPercent: { type: number, minimum: 0, maximum: 100 }
+
+    TokenReportOverride:
+      allOf:
+        - { $ref: "#/components/schemas/TokenReportOverrideInput" }
+        - type: object
+          required: [id, updatedAt]
+          properties:
+            id: { type: string }
+            updatedAt: { type: string, format: date }
+
+    ProjectCategory:
+      type: string
+      enum: [DEX, LENDING, LAYER2, STAKING, MEME, BRIDGE, NFT, INFRASTRUCTURE]
+    ProjectStage:
+      type: string
+      enum: [PRE_LAUNCH, LIVE, INCIDENT, DISCONTINUED]
+    SecurityTier:
+      type: string
+      enum: [AAA, AA, A, BBB, BB, B, C, D]
+
+    ScoreDimension:
+      type: object
+      required: [key, label, value, weight, description]
+      properties:
+        key:
+          type: string
+          enum: [codeSecurity, fundamentalHealth, operationalResilience, governanceStrength, marketStability, communityTrust]
+        label: { type: string }
+        value: { type: number, minimum: 0, maximum: 100 }
+        weight: { type: number }
+        description: { type: string }
+
+    TokenRiskIndicators:
+      type: object
+      properties:
+        isHoneypot: { type: boolean }
+        isProxy: { type: boolean }
+        hasMintFunction: { type: boolean }
+        hasBlacklist: { type: boolean }
+        hasPauseFunction: { type: boolean }
+        ownerRenounced: { type: boolean }
+        liquidityLockedPercent: { type: number }
+        top10HoldersPercent: { type: number }
+        buyTaxPercent: { type: number }
+        sellTaxPercent: { type: number }
+        contractVerified: { type: boolean }
+
+    ScoredProject:
+      type: object
+      required: [id, name, symbol, category, chain, stage, contractAddress, dimensions, badges, auditHistory, monitors, tokenRisk, score, tier, rankPercentile, deductions]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        symbol: { type: string }
+        category: { $ref: "#/components/schemas/ProjectCategory" }
+        chain: { type: string }
+        stage: { $ref: "#/components/schemas/ProjectStage" }
+        logoSeed: { type: string }
+        description: { type: string }
+        contractAddress: { type: string }
+        website: { type: string }
+        socialSentiment: { type: integer }
+        marketCap: { type: string }
+        volume24h: { type: string }
+        tvl: { type: string }
+        launchedAt: { type: string, format: date }
+        dimensions:
+          type: array
+          items: { $ref: "#/components/schemas/ScoreDimension" }
+        badges:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string, enum: [AUDIT, KYC, BUG_BOUNTY, VERIFIED_CONTRACT, FORMAL_VERIFICATION] }
+              label: { type: string }
+              detail: { type: string }
+              verified: { type: boolean }
+        auditHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              auditor: { type: string }
+              date: { type: string, format: date }
+              scope: { type: string }
+              criticalFindings: { type: integer }
+              highFindings: { type: integer }
+              reportUrl: { type: string }
+              status: { type: string, enum: [PUBLISHED, DRAFT, PARTIAL] }
+        monitors:
+          type: array
+          items:
+            type: object
+            properties:
+              target: { type: string, enum: [WEBSITE, CODE_REPOSITORY, SMART_CONTRACT, SOCIAL_MEDIA] }
+              label: { type: string }
+              status: { type: string, enum: [ACTIVE, INACTIVE, ALERT] }
+              lastChecked: { type: string }
+              detail: { type: string }
+        tokenRisk: { $ref: "#/components/schemas/TokenRiskIndicators" }
+        score: { type: number, minimum: 0, maximum: 100 }
+        tier: { $ref: "#/components/schemas/SecurityTier" }
+        rankPercentile: { type: number }
+        deductions:
+          type: array
+          items:
+            type: object
+            properties:
+              label: { type: string }
+              points: { type: integer }
+
+    IncidentSeverity:
+      type: string
+      enum: [CRITICAL, HIGH, MEDIUM, LOW]
+    IncidentStatus:
+      type: string
+      enum: [ONGOING, CONTAINED, UNDER_INVESTIGATION, RESOLVED]
+
+    SecurityIncident:
+      type: object
+      required: [id, timestamp, type, severity, projectName, chain, fundsLostUsd, summary, status]
+      properties:
+        id: { type: string }
+        timestamp: { type: string, format: date-time }
+        type:
+          type: string
+          enum: [EXPLOIT, RUGPULL, PHISHING, BRIDGE_HACK, ORACLE_MANIPULATION, FLASH_LOAN, PRIVATE_KEY_COMPROMISE]
+        severity: { $ref: "#/components/schemas/IncidentSeverity" }
+        projectName: { type: string }
+        chain: { type: string }
+        fundsLostUsd: { type: integer }
+        summary: { type: string }
+        txHash: { type: string }
+        status: { $ref: "#/components/schemas/IncidentStatus" }
+
+    FlagType:
+      type: string
+      enum: [WHALE_ACCUMULATION, LIQUIDITY_DRAIN, BRIDGE_OUTFLOW, SUSPICIOUS_MINT]
+
+    WhaleAlert:
+      type: object
+      required: [id, timestamp, txHash, fromAddress, toAddress, tokenSymbol, tokenAmount, usdValue, chain, riskScore, flagType]
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        txHash: { type: string }
+        fromAddress: { type: string }
+        toAddress: { type: string }
+        tokenSymbol: { type: string }
+        tokenAmount: { type: string }
+        usdValue: { type: integer }
+        chain: { type: string, enum: [ETH, SOL, BSC, AVAX, ARB] }
+        riskScore: { type: integer }
+        flagType: { $ref: "#/components/schemas/FlagType" }
+
+    TokenScanResult:
+      type: object
+      required: [contractAddress, tokenName, ticker, chain, risk, flaggedCount, checks]
+      properties:
+        contractAddress: { type: string }
+        tokenName: { type: string }
+        ticker: { type: string }
+        chain: { type: string }
+        risk: { $ref: "#/components/schemas/TokenRiskIndicators" }
+        flaggedCount: { type: integer }
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              label: { type: string }
+              status: { type: string, enum: [pass, warn, fail] }
+              value: { type: string }
+
+    NodeRow:
+      type: object
+      required: [id, name, region, latency, load, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        region: { type: string }
+        latency: { type: integer }
+        load: { type: integer, minimum: 0, maximum: 100 }
+        status: { type: string, enum: [HEALTHY, DEGRADED, HOT] }
+
+    EcosystemRow:
+      type: object
+      required: [rank, name, zScore, tvp, auditedCount, threatsBlocked]
+      properties:
+        rank: { type: integer }
+        name: { type: string }
+        zScore: { type: number }
+        tvp: { type: string }
+        auditedCount: { type: integer }
+        threatsBlocked: { type: integer }
+
+    SkynetOverview:
+      type: object
+      properties:
+        kpis:
+          type: object
+          additionalProperties: true
+        prelaunchWatchlist:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              symbol: { type: string }
+              score: { type: number }
+              rating: { $ref: "#/components/schemas/SecurityTier" }
+              sentiment: { type: string }
+              coverage: { type: string }
+              date: { type: string }
+              stage: { type: string }
+        liveMonitoring:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              score: { type: number }
+              rating: { $ref: "#/components/schemas/SecurityTier" }
+              marketCap: { type: string }
+              volume: { type: string }
+              price: { type: string }
+              change24h: { type: string }
+
+    ServiceStatus:
+      type: object
+      required: [name, status, latency]
+      properties:
+        name: { type: string }
+        status: { type: string }
+        latency: { type: string }
+
+    KnowledgeArticle:
+      type: object
+      required: [id, category, title, body, tags]
+      properties:
+        id: { type: string }
+        category: { type: string }
+        title: { type: string }
+        body: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+
+    SupportTicket:
+      type: object
+      required: [id, name, email, subject, body, severity, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        subject: { type: string }
+        body: { type: string }
+        severity: { type: string, enum: [LOW, HIGH, CRITICAL] }
+        createdAt: { type: string, format: date-time }
+
+    SkillNode:
+      type: object
+      required: [id, name, level, status, xp]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        level: { type: string }
+        status: { type: string, enum: [UNLOCKED, IN_PROGRESS, LOCKED] }
+        xp: { type: string }
+
+    Proficiency:
+      type: object
+      properties:
+        radar:
+          type: array
+          items:
+            type: object
+            properties:
+              axis: { type: string }
+              value: { type: integer, minimum: 0, maximum: 100 }
+        summary:
+          type: object
+          properties:
+            score: { type: integer }
+            status: { type: string }
+            title: { type: string }
+            description: { type: string }
+            globalRank: { type: string }
+            xpEarned: { type: string }
+            streaks: { type: string }
+
+    AuditorRow:
+      type: object
+      required: [rank, name, handle, xp, verifiedBugs, bountiesEarned, badge]
+      properties:
+        rank: { type: integer }
+        name: { type: string }
+        handle: { type: string }
+        xp: { type: integer }
+        verifiedBugs: { type: integer }
+        bountiesEarned: { type: string }
+        badge: { type: string }
+
+    PagedActivity:
+      allOf:
+        - { $ref: "#/components/schemas/PageMeta" }
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  action: { type: string }
+                  target: { type: string }
+                  time: { type: string }
+                  xp: { type: string }
+
+    PageMeta:
+      type: object
+      properties:
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+        totalPages: { type: integer }
