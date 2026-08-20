@@ -1,5 +1,6 @@
 import {
   UserProfile,
+  UserRole,
   AuditRequest,
   AuditFinding,
   WhaleAlert,
@@ -20,6 +21,64 @@ export const mockCurrentUser: UserProfile = {
   certificationsCount: 8,
   securityClearance: 'ALPHA',
 };
+
+export const DEMO_USERS: Record<UserRole, UserProfile> = {
+  CLIENT: {
+    id: 'usr-4410-cl',
+    name: 'Jordan Vale',
+    email: 'client@zamoron.io',
+    role: 'CLIENT',
+    walletAddress: '0x71C2A4b8e4d90c1F8aB3e6D4C9f0123456789abc',
+    rank: 'Protocol Client',
+    xp: 2400,
+    certificationsCount: 1,
+    securityClearance: 'BETA',
+  },
+  AUDITOR: {
+    ...mockCurrentUser,
+    role: 'AUDITOR',
+  },
+  ADMIN: {
+    id: 'usr-0001-op',
+    name: 'Kyrios Hale',
+    email: 'admin@zamoron.io',
+    role: 'ADMIN',
+    walletAddress: '0x48f9A12b982C5aE7d8904D9bA0499A10372892a1',
+    rank: 'Super Admin',
+    xp: 22000,
+    certificationsCount: 12,
+    securityClearance: 'OPERATOR',
+  },
+  STUDENT: {
+    id: 'usr-7721-st',
+    name: 'Riley Okonkwo',
+    email: 'student@zamoron.io',
+    role: 'STUDENT',
+    walletAddress: '0x91AaB12c334d8904D9bA0499A10372892ffff1',
+    rank: 'Academy Initiate',
+    xp: 850,
+    certificationsCount: 0,
+    securityClearance: 'GAMMA',
+  },
+};
+
+export const DEMO_USER_BY_EMAIL: Record<string, UserProfile> = {
+  'client@zamoron.io': DEMO_USERS.CLIENT,
+  'auditor@zamoron.io': DEMO_USERS.AUDITOR,
+  'alex.chen@zamoron.io': DEMO_USERS.AUDITOR,
+  'admin@zamoron.io': DEMO_USERS.ADMIN,
+  'student@zamoron.io': DEMO_USERS.STUDENT,
+};
+
+export function buildClientFromInduction(input: { name: string; email: string }): UserProfile {
+  return {
+    ...DEMO_USERS.CLIENT,
+    id: `usr-${Date.now().toString(36)}`,
+    name: input.name,
+    email: input.email,
+    role: 'CLIENT',
+  };
+}
 
 export const mockAuditRequests: AuditRequest[] = [
   {

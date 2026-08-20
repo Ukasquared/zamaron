@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LiveLogStream } from '@/components/shared/LiveLogStream';
-import { mockLogs } from '@/mock/data';
+import { useAuth } from '@/context/AuthContext';
+import { getSecurityLogs } from '@/services/adminService';
 
 export const SecurityLogsPage: React.FC = () => {
+  const { user } = useAuth();
+  const mockLogs = useMemo(() => {
+    try {
+      return getSecurityLogs(user);
+    } catch {
+      return [];
+    }
+  }, [user]);
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-container/70 border border-outline/70 p-6 rounded-md">

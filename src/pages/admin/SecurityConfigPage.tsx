@@ -1,14 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Switch } from '@/components/ui/Switch';
+import { useAuth } from '@/context/AuthContext';
+import { getSecurityConfig, updateSecurityConfig } from '@/services/adminService';
 
 export const SecurityConfigPage: React.FC = () => {
+  const { user } = useAuth();
   const [fido2Required, setFido2Required] = useState(true);
   const [autoMitigate, setAutoMitigate] = useState(true);
   const [ipWhitelisting, setIpWhitelisting] = useState(true);
   const [rateLimitStrict, setRateLimitStrict] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const config = getSecurityConfig(user);
+      setFido2Required(config.fido2Required);
+      setAutoMitigate(config.autoMitigate);
+      setIpWhitelisting(config.ipWhitelisting);
+      setRateLimitStrict(config.rateLimitStrict);
+    } catch {
+      setSaveError('Administrative read denied.');
+    }
+  }, [user]);
+
+  const handleSave = () => {
+    setSaveError(null);
+    try {
+      updateSecurityConfig(
+        { fido2Required, autoMitigate, ipWhitelisting, rateLimitStrict },
+        user
+      );
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Administrative write denied.');
+    }
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -23,9 +51,12 @@ export const SecurityConfigPage: React.FC = () => {
           </h1>
         </div>
 
-        <Button size="md" icon="save">
-          Save Hardening Matrix
-        </Button>
+        <div className="flex flex-col items-end gap-2">
+          <Button size="md" icon="save" onClick={handleSave}>
+            Save Hardening Matrix
+          </Button>
+          {saveError && <span className="text-[11px] font-mono text-error">{saveError}</span>}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

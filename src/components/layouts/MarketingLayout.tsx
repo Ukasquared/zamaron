@@ -3,10 +3,14 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
+import { useAuth } from '@/context/AuthContext';
+import { getDefaultRouteForRole } from '@/auth/rbac';
 
 export const MarketingLayout: React.FC = () => {
   const [catalogOpen, setCatalogOpen] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, role, logout } = useAuth();
+  const consolePath = isAuthenticated ? getDefaultRouteForRole(role) : '/auth/login';
 
   const navLinks = [
     { label: 'Solutions', href: '/solutions/auditing' },
@@ -82,17 +86,35 @@ export const MarketingLayout: React.FC = () => {
               <span>47 Screens</span>
             </button>
 
-            <Link to="/auth/login">
-              <Button variant="outline" size="sm" icon="terminal">
-                Terminal Access
-              </Button>
-            </Link>
-
-            <Link to="/client/dashboard">
-              <Button variant="primary" size="sm" icon="dashboard">
-                Launch Console
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="text-xs font-mono text-slate-400 hover:text-white hidden sm:inline"
+                >
+                  End Session
+                </button>
+                <Link to={consolePath}>
+                  <Button variant="primary" size="sm" icon="dashboard">
+                    Open {role} Console
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/auth/login">
+                  <Button variant="outline" size="sm" icon="terminal">
+                    Terminal Access
+                  </Button>
+                </Link>
+                <Link to="/auth/login">
+                  <Button variant="primary" size="sm" icon="dashboard">
+                    Launch Console
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -154,16 +176,25 @@ export const MarketingLayout: React.FC = () => {
               </ul>
             </div>
 
-            {/* Links 3: Admin & Security */}
+            {/* Links 3: Console — only surface routes the current principal may open */}
             <div className="space-y-3">
               <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                Console & Admin
+                Console
               </h4>
               <ul className="space-y-2 text-xs">
-                <li><Link to="/client/dashboard" className="hover:text-primary">Client Console</Link></li>
-                <li><Link to="/auditor/queue" className="hover:text-primary">Auditor Ticket Queue</Link></li>
-                <li><Link to="/admin/logs" className="hover:text-primary">Security Audit Trail</Link></li>
-                <li><Link to="/admin/security-config" className="hover:text-primary">Security Matrix</Link></li>
+                <li><Link to={consolePath} className="hover:text-primary">Operator Console</Link></li>
+                {(!isAuthenticated || role === 'CLIENT' || role === 'ADMIN') && (
+                  <li><Link to="/client/dashboard" className="hover:text-primary">Client Console</Link></li>
+                )}
+                {isAuthenticated && (role === 'AUDITOR' || role === 'ADMIN') && (
+                  <li><Link to="/auditor/queue" className="hover:text-primary">Auditor Ticket Queue</Link></li>
+                )}
+                {isAuthenticated && role === 'ADMIN' && (
+                  <>
+                    <li><Link to="/admin/logs" className="hover:text-primary">Security Audit Trail</Link></li>
+                    <li><Link to="/admin/security-config" className="hover:text-primary">Security Matrix</Link></li>
+                  </>
+                )}
                 <li><Link to="/support" className="hover:text-primary">Command Support</Link></li>
               </ul>
             </div>
