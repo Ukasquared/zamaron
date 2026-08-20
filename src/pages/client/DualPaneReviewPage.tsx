@@ -5,10 +5,14 @@ import { Button } from '@/components/ui/Button';
 import { Badge, SeverityBadge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { CodeViewer } from '@/components/shared/CodeViewer';
+import { useAuth } from '@/context/AuthContext';
+import { getAuditFindings, updateFinding } from '@/services/auditService';
 
 export const DualPaneReviewPage: React.FC = () => {
   const { id = 'ZM-8492-NX' } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [selectedLine, setSelectedLine] = useState<number>(146);
+  const [remediationNote, setRemediationNote] = useState<string | null>(null);
 
   const sampleSolidityCode = `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
@@ -163,12 +167,30 @@ contract VaultManager {
             </div>
 
             <div className="pt-2 flex items-center justify-between">
-              <span className="text-[11px] font-mono text-slate-400">Status: <strong className="text-error">Awaiting Fix</strong></span>
-              <Link to={`/client/audits/${id}/triage`}>
-                <Button size="sm" icon="check_circle">
-                  Mark as Remediated
-                </Button>
-              </Link>
+              <span className="text-[11px] font-mono text-slate-400">
+                Status:{' '}
+                <strong className={remediationNote ? 'text-emerald-400' : 'text-error'}>
+                  {remediationNote || 'Awaiting Fix'}
+                </strong>
+              </span>
+              <Button
+                size="sm"
+                icon="check_circle"
+                onClick={() => {
+                  try {
+                    const rows = getAuditFindings(user, id);
+                    const first = rows[0];
+                    if (first) {
+                      updateFinding(id, first.id, { status: 'RESOLVED', notes: 'Marked remediated from dual-pane review.' }, user);
+                    }
+                    setRemediationNote('Finding marked remediated and saved to the triage ledger.');
+                  } catch (err) {
+                    setRemediationNote(err instanceof Error ? err.message : 'Unable to update finding.');
+                  }
+                }}
+              >
+                Mark as Remediated
+              </Button>
             </div>
           </Card>
         </div>

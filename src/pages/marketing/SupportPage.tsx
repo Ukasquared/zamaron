@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
+import { Modal } from '@/components/ui/Modal';
+import { searchArticles, submitTicket } from '@/services/supportService';
 
 export const SupportPage: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticketName, setTicketName] = useState('');
+  const [ticketEmail, setTicketEmail] = useState('');
+  const [ticketSubject, setTicketSubject] = useState('');
+  const [ticketBody, setTicketBody] = useState('');
+  const [ticketNote, setTicketNote] = useState<string | null>(null);
+  const articles = useMemo(() => searchArticles(search), [search]);
 
   const statusItems = [
     { name: 'Core Audit Ledger', status: 'OPERATIONAL', latency: '14ms', icon: 'gavel' },
@@ -77,6 +86,18 @@ export const SupportPage: React.FC = () => {
       {/* Support Categories */}
       <div className="space-y-6">
         <h2 className="font-display font-bold text-2xl text-white">Browse Knowledge Hub</h2>
+        {search && (
+          <Card variant="glass" className="p-5 space-y-3">
+            <h3 className="font-display font-bold text-white">Knowledge hits ({articles.length})</h3>
+            {articles.map((article) => (
+              <div key={article.id} className="border-b border-outline/40 pb-3">
+                <div className="text-sm font-bold text-white">{article.title}</div>
+                <p className="text-xs text-slate-400">{article.body}</p>
+              </div>
+            ))}
+            {articles.length === 0 && <p className="text-xs text-slate-500">No articles matched that query.</p>}
+          </Card>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {categories.map((c) => (
             <Card key={c.title} variant="glass" hoverEffect className="p-6 space-y-3 cursor-pointer">
@@ -101,10 +122,45 @@ export const SupportPage: React.FC = () => {
             Directly interface with the Zamaron lead cryptographic triage team. Guaranteed 15-minute response for active critical exploits.
           </p>
         </div>
-        <Button size="lg" icon="support_agent">
+        <Button size="lg" icon="support_agent" onClick={() => setTicketOpen(true)}>
           Dispatch Emergency Ticket
         </Button>
       </Card>
+
+      <Modal isOpen={ticketOpen} onClose={() => setTicketOpen(false)} title="Dispatch Incident Ticket" subtitle="15-minute critical response window">
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const ticket = submitTicket({
+              name: ticketName,
+              email: ticketEmail,
+              subject: ticketSubject,
+              body: ticketBody,
+              severity: 'CRITICAL',
+            });
+            setTicketNote(`Ticket ${ticket.id} queued.`);
+            setTicketSubject('');
+            setTicketBody('');
+          }}
+        >
+          <Input label="Name" value={ticketName} onChange={(e) => setTicketName(e.target.value)} required />
+          <Input label="Email" type="email" value={ticketEmail} onChange={(e) => setTicketEmail(e.target.value)} required />
+          <Input label="Subject" value={ticketSubject} onChange={(e) => setTicketSubject(e.target.value)} required />
+          <textarea
+            required
+            rows={4}
+            value={ticketBody}
+            onChange={(e) => setTicketBody(e.target.value)}
+            className="w-full bg-[#060e20] border border-outline/70 rounded p-3 text-xs font-mono text-slate-200"
+            placeholder="Describe the incident..."
+          />
+          {ticketNote && <p className="text-xs font-mono text-emerald-400">{ticketNote}</p>}
+          <Button type="submit" className="w-full" icon="send">
+            Submit Ticket
+          </Button>
+        </form>
+      </Modal>
     </div>
   );
 };

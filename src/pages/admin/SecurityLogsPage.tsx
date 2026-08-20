@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LiveLogStream } from '@/components/shared/LiveLogStream';
 import { useAuth } from '@/context/AuthContext';
-import { getSecurityLogs } from '@/services/adminService';
+import { downloadTextFile } from '@/lib/download';
+import { exportLogsCsv, getSecurityLogs } from '@/services/adminService';
 
 export const SecurityLogsPage: React.FC = () => {
   const { user } = useAuth();
@@ -27,7 +28,17 @@ export const SecurityLogsPage: React.FC = () => {
           </h1>
         </div>
 
-        <Button size="md" icon="download">
+        <Button
+          size="md"
+          icon="download"
+          onClick={() => {
+            try {
+              downloadTextFile('zamaron-security-logs.csv', exportLogsCsv(user), 'text/csv;charset=utf-8');
+            } catch {
+              /* permission already enforced by route */
+            }
+          }}
+        >
           Export Forensic CSV
         </Button>
       </div>

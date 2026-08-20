@@ -57,9 +57,19 @@ import { CertificatePage } from '@/pages/academy/CertificatePage';
 
 // Admin Suite Pages
 import { SecurityLogsPage } from '@/pages/admin/SecurityLogsPage';
+import { SecurityLogsTacticalPage } from '@/pages/admin/SecurityLogsTacticalPage';
 import { SecurityConfigPage } from '@/pages/admin/SecurityConfigPage';
 import { BillingHistoryPage } from '@/pages/admin/BillingHistoryPage';
 import { InvoiceTemplatePage } from '@/pages/admin/InvoiceTemplatePage';
+import { ContentAdministrationPage } from '@/pages/admin/ContentAdministrationPage';
+import { CourseBuilderPage } from '@/pages/admin/CourseBuilderPage';
+import { TokenRiskEditorPage } from '@/pages/admin/TokenRiskEditorPage';
+import { UsersProtocolsPage } from '@/pages/admin/UsersProtocolsPage';
+import { AlertConfigPage } from '@/pages/admin/AlertConfigPage';
+import { DevelopersApiPage } from '@/pages/admin/DevelopersApiPage';
+import { PaymentGatewaysPage } from '@/pages/admin/PaymentGatewaysPage';
+import { RefundsPage } from '@/pages/admin/RefundsPage';
+import { EcosystemHealthPage } from '@/pages/threat-hub/EcosystemHealthPage';
 
 // Master Matrix Catalog
 import { MasterCatalogPage } from '@/pages/catalog/MasterCatalogPage';
@@ -117,7 +127,7 @@ export const App: React.FC = () => {
 
               {/* Intelligence & Threat Hub */}
               <Route path="/threat-hub/skynet" element={<SkynetDashboardPage />} />
-              <Route path="/threat-hub/ecosystem" element={<SkynetDashboardPage />} />
+              <Route path="/threat-hub/ecosystem" element={<EcosystemHealthPage />} />
               <Route path="/threat-hub/whales" element={<WhaleAlertsPage />} />
               <Route path="/threat-hub/token-analyzer" element={<TokenAnalyzerPage />} />
               <Route path="/threat-hub/leaderboard" element={<SecurityLeaderboardPage />} />
@@ -138,19 +148,19 @@ export const App: React.FC = () => {
 
               {/* Admin Operations */}
               <Route path="/admin/logs" element={<SecurityLogsPage />} />
-              <Route path="/admin/logs-tactical" element={<SecurityLogsPage />} />
+              <Route path="/admin/logs-tactical" element={<SecurityLogsTacticalPage />} />
               <Route path="/admin/security-config" element={<SecurityConfigPage />} />
-              <Route path="/admin/alerts" element={<SecurityConfigPage />} />
-              <Route path="/admin/content" element={<CoursePlayerPage />} />
-              <Route path="/admin/course-builder" element={<CoursePlayerPage />} />
-              <Route path="/admin/course-builder-enhanced" element={<CoursePlayerPage />} />
-              <Route path="/admin/token-reports" element={<TokenAnalyzerPage />} />
-              <Route path="/admin/users-protocols" element={<SecurityConfigPage />} />
-              <Route path="/admin/developers-api" element={<SecurityConfigPage />} />
-              <Route path="/admin/gateways" element={<BillingHistoryPage />} />
+              <Route path="/admin/alerts" element={<AlertConfigPage />} />
+              <Route path="/admin/content" element={<ContentAdministrationPage />} />
+              <Route path="/admin/course-builder" element={<CourseBuilderPage />} />
+              <Route path="/admin/course-builder-enhanced" element={<CourseBuilderPage enhanced />} />
+              <Route path="/admin/token-reports" element={<TokenRiskEditorPage />} />
+              <Route path="/admin/users-protocols" element={<UsersProtocolsPage />} />
+              <Route path="/admin/developers-api" element={<DevelopersApiPage />} />
+              <Route path="/admin/gateways" element={<PaymentGatewaysPage />} />
               <Route path="/admin/billing" element={<BillingHistoryPage />} />
               <Route path="/admin/invoices/:id" element={<InvoiceTemplatePage />} />
-              <Route path="/admin/refunds" element={<BillingHistoryPage />} />
+              <Route path="/admin/refunds" element={<RefundsPage />} />
             </Route>
           </Route>
 

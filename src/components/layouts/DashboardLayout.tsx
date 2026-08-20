@@ -106,7 +106,7 @@ export const DashboardLayout: React.FC = () => {
 
           {/* User Profile Pill */}
           <Link
-            to="/profile/alex-chen"
+            to={`/profile/${user?.id || 'operator'}`}
             className="flex items-center gap-2 pl-2 border-l border-outline/50 hover:opacity-80 transition-opacity"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary p-0.5">
