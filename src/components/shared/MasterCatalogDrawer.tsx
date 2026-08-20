@@ -4,6 +4,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
+import { useAuth } from '@/context/AuthContext';
+import { canAccessPath, isPublicPath, LOGIN_PATH, UNAUTHORIZED_PATH } from '@/auth/rbac';
 
 export interface PageEntry {
   title: string;
@@ -396,6 +398,7 @@ export const MasterCatalogDrawer: React.FC<{ isOpen: boolean; onClose: () => voi
   const [search, setSearch] = useState('');
   const [selectedDomain, setSelectedDomain] = useState<string>('ALL');
   const navigate = useNavigate();
+  const { isAuthenticated, role } = useAuth();
 
   const domains = [
     'ALL',
@@ -419,7 +422,17 @@ export const MasterCatalogDrawer: React.FC<{ isOpen: boolean; onClose: () => voi
     return matchesDomain && matchesSearch;
   });
 
+  const canOpen = (route: string) =>
+    isPublicPath(route) || (isAuthenticated && canAccessPath(role, route));
+
   const handleNavigate = (route: string) => {
+    if (!canOpen(route)) {
+      navigate(isAuthenticated ? UNAUTHORIZED_PATH : LOGIN_PATH, {
+        state: { from: route },
+      });
+      onClose();
+      return;
+    }
     navigate(route);
     onClose();
   };
@@ -479,9 +492,16 @@ export const MasterCatalogDrawer: React.FC<{ isOpen: boolean; onClose: () => voi
                   <span className="font-display font-semibold text-sm text-white group-hover:text-primary transition-colors">
                     {page.title}
                   </span>
-                  <Badge variant="primary" size="sm">
-                    {page.domain}
-                  </Badge>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {!canOpen(page.route) && (
+                      <Badge variant="critical" size="sm">
+                        LOCKED
+                      </Badge>
+                    )}
+                    <Badge variant="primary" size="sm">
+                      {page.domain}
+                    </Badge>
+                  </div>
                 </div>
                 <p className="text-xs text-slate-400 font-sans line-clamp-2">{page.description}</p>
               </div>

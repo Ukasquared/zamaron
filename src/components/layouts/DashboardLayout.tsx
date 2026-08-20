@@ -1,87 +1,27 @@
-import React, { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { AddressBadge } from '@/components/shared/AddressBadge';
 import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
 import { Icon } from '@/components/ui/Icon';
-import { UserRole } from '@/types';
+import { getNavSectionsForRole } from '@/auth/navigation';
+import { getDefaultRouteForRole } from '@/auth/rbac';
 
 export const DashboardLayout: React.FC = () => {
-  const { user, role, setRole, walletConnected, connectWallet } = useAuth();
+  const { user, role, logout, walletConnected, connectWallet } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Navigation sections categorized by domain
-  const navSections = [
-    {
-      title: 'Client Console',
-      items: [
-        { label: 'Dashboard', href: '/client/dashboard', icon: 'dashboard' },
-        { label: 'New Audit Request', href: '/client/audits/new', icon: 'add_task', badge: 'NEW' },
-        { label: 'Live Audit Tracker', href: '/client/audits/ZM-8492-NX/status', icon: 'timelapse' },
-        { label: 'Dual-Pane Code Review', href: '/client/audits/ZM-8492-NX/review', icon: 'code' },
-        { label: 'Vulnerability Triage', href: '/client/audits/ZM-8492-NX/triage', icon: 'bug_report' },
-        { label: 'Final Report Generation', href: '/client/audits/ZM-8492-NX/report', icon: 'description' },
-        { label: 'Document Vault', href: '/client/vault', icon: 'lock' },
-        { label: 'Checkout & Settlement', href: '/client/checkout', icon: 'credit_card' },
-      ],
-    },
-    {
-      title: 'Auditor Terminal',
-      items: [
-        { label: 'Auditor Queue', href: '/auditor/queue', icon: 'assignment_late', badge: '4' },
-        { label: 'AI Neural Assistant', href: '/auditor/ai-terminal', icon: 'smart_toy' },
-        { label: 'Forensic Bytecode', href: '/auditor/forensics', icon: 'terminal' },
-        { label: 'Auditor Leaderboard', href: '/leaderboard/auditors', icon: 'military_tech' },
-        { label: 'Security Leaderboard', href: '/leaderboard/security', icon: 'shield_locked' },
-      ],
-    },
-    {
-      title: 'Threat Intelligence & Vaults',
-      items: [
-        { label: 'Skynet Threat Radar', href: '/threat-hub/skynet', icon: 'radar', badge: 'LIVE' },
-        { label: 'Ecosystem Vitality', href: '/threat-hub/ecosystem', icon: 'public' },
-        { label: 'Security Leaderboard', href: '/threat-hub/leaderboard', icon: 'leaderboard' },
-        { label: 'Project Profiles', href: '/threat-hub/projects/nexus-defi', icon: 'verified_user' },
-        { label: 'Incident Monitor', href: '/threat-hub/incidents', icon: 'crisis_alert', badge: 'LIVE' },
-        { label: 'Whale Alerts Terminal', href: '/threat-hub/whales', icon: 'tsunami', badge: 'HOT' },
-        { label: 'Token Risk Analyzer', href: '/threat-hub/token-analyzer', icon: 'query_stats' },
-        { label: 'Security Vaults', href: '/threat-hub/vaults', icon: 'account_balance' },
-      ],
-    },
-    {
-      title: 'Governance & Academy',
-      items: [
-        { label: 'Protocol Governance', href: '/governance', icon: 'gavel' },
-        { label: 'Neural Sandbox (ZAM-842)', href: '/governance/proposals/ZAM-842', icon: 'how_to_vote' },
-        { label: 'Operator Skill Tree', href: '/profile/alex-chen', icon: 'psychology' },
-        { label: 'Academy Course Player', href: '/academy/learn/crypto-security-101', icon: 'school' },
-        { label: 'Assessment Quiz', href: '/academy/assessment/crs-101', icon: 'fact_check' },
-        { label: 'Completion Certificate', href: '/academy/certificate/CERT-9981', icon: 'workspace_premium' },
-      ],
-    },
-    {
-      title: 'Admin Suite & Config',
-      items: [
-        { label: 'Content Administration', href: '/admin/content', icon: 'view_list' },
-        { label: 'Course Builder', href: '/admin/course-builder', icon: 'edit_note' },
-        { label: 'Course Builder (Video+)', href: '/admin/course-builder-enhanced', icon: 'video_library' },
-        { label: 'Token Risk Editor', href: '/admin/token-reports', icon: 'edit_document' },
-        { label: 'Users & Protocols', href: '/admin/users-protocols', icon: 'manage_accounts' },
-        { label: 'Security Configuration', href: '/admin/security-config', icon: 'admin_panel_settings' },
-        { label: 'Alert Routing Matrix', href: '/admin/alerts', icon: 'cell_tower' },
-        { label: 'Security Logs & Trail', href: '/admin/logs', icon: 'history' },
-        { label: 'Tactical Log Filters', href: '/admin/logs-tactical', icon: 'filter_alt' },
-        { label: 'Developer API Keys', href: '/admin/developers-api', icon: 'vpn_key' },
-        { label: 'Payment Gateways', href: '/admin/gateways', icon: 'payments' },
-        { label: 'Billing History Ledger', href: '/admin/billing', icon: 'receipt_long' },
-        { label: 'Invoice Template', href: '/admin/invoices/ZM-8994-VX', icon: 'receipt' },
-        { label: 'Refund Terminal', href: '/admin/refunds', icon: 'sync' },
-      ],
-    },
-  ];
+  const navSections = useMemo(() => getNavSectionsForRole(role), [role]);
+  const homePath = getDefaultRouteForRole(role);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/auth/login', { replace: true });
+  };
 
   return (
     <div className="min-h-screen bg-[#060e20] text-slate-100 flex flex-col font-sans selection:bg-primary/30 selection:text-primary">
@@ -104,7 +44,7 @@ export const DashboardLayout: React.FC = () => {
             <Icon name="menu" size={20} />
           </button>
 
-          <Link to="/client/dashboard" className="flex items-center gap-2">
+          <Link to={homePath} className="flex items-center gap-2">
             <div className="w-8 h-8 rounded bg-[#0b1326] border border-primary/40 flex items-center justify-center text-primary shadow-[0_0_10px_rgba(0,218,243,0.3)]">
               <Icon name="shield" size={18} />
             </div>
@@ -134,21 +74,10 @@ export const DashboardLayout: React.FC = () => {
             <span className="hidden sm:inline">47 Screens Matrix</span>
           </button>
 
-          {/* Role Switcher */}
-          <div className="hidden md:flex items-center gap-1 bg-[#0b1326] p-0.5 rounded border border-outline/60 text-[11px] font-mono">
-            {(['CLIENT', 'AUDITOR', 'ADMIN'] as UserRole[]).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRole(r)}
-                className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
-                  role === r
-                    ? 'bg-primary text-[#00363d] font-bold'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                {r}
-              </button>
-            ))}
+          {/* Active role badge — not a switcher. Role is bound to the session. */}
+          <div className="hidden md:flex items-center gap-1 bg-[#0b1326] px-2 py-0.5 rounded border border-outline/60 text-[11px] font-mono">
+            <span className="text-slate-500">ROLE</span>
+            <span className="px-1.5 py-0.5 rounded bg-primary text-[#00363d] font-bold">{role}</span>
           </div>
 
           {/* Wallet Address Chip */}
@@ -165,6 +94,16 @@ export const DashboardLayout: React.FC = () => {
             </button>
           )}
 
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white hover:bg-surface-variant border border-transparent hover:border-outline/60 cursor-pointer"
+            title="End session"
+          >
+            <Icon name="logout" size={14} />
+            Logout
+          </button>
+
           {/* User Profile Pill */}
           <Link
             to="/profile/alex-chen"
@@ -172,7 +111,12 @@ export const DashboardLayout: React.FC = () => {
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary p-0.5">
               <div className="w-full h-full rounded-full bg-[#060e20] flex items-center justify-center text-xs font-bold font-mono text-primary">
-                AC
+                {(user?.name || 'OP')
+                  .split(' ')
+                  .map((part) => part[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()}
               </div>
             </div>
             <div className="hidden xl:block text-left">
@@ -254,6 +198,14 @@ export const DashboardLayout: React.FC = () => {
               <Icon name="support_agent" size={16} />
               {!sidebarCollapsed && <span>Command Support</span>}
             </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-2 py-1.5 rounded text-xs font-mono text-slate-400 hover:text-white hover:bg-surface-variant transition-colors cursor-pointer w-full text-left"
+            >
+              <Icon name="logout" size={16} />
+              {!sidebarCollapsed && <span>End Session</span>}
+            </button>
           </div>
         </aside>
 
@@ -273,6 +225,10 @@ export const DashboardLayout: React.FC = () => {
                 >
                   <Icon name="close" size={20} />
                 </button>
+              </div>
+
+              <div className="mb-4 px-2 py-2 rounded bg-[#060e20] border border-outline/50 text-[11px] font-mono text-slate-400">
+                Active clearance: <span className="text-primary font-bold">{role}</span>
               </div>
 
               <div className="space-y-6">
@@ -306,6 +262,18 @@ export const DashboardLayout: React.FC = () => {
                   </div>
                 ))}
               </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="mt-6 flex items-center gap-2 px-3 py-2 rounded text-xs font-mono text-slate-300 hover:bg-surface-variant cursor-pointer"
+              >
+                <Icon name="logout" size={16} />
+                End Session
+              </button>
             </div>
           </div>
         )}

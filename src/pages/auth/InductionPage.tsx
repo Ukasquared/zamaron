@@ -5,12 +5,17 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
+import { useAuth } from '@/context/AuthContext';
+import { getDefaultRouteForRole } from '@/auth/rbac';
 
 export const InductionPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   // Password score computation
   const getPasswordScore = () => {
@@ -24,9 +29,18 @@ export const InductionPage: React.FC = () => {
 
   const score = getPasswordScore();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/client/dashboard');
+    setLoading(true);
+    setError(null);
+    try {
+      const user = await register({ name, email, password });
+      navigate(getDefaultRouteForRole(user.role), { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Induction failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -120,7 +134,13 @@ export const InductionPage: React.FC = () => {
           </span>
         </div>
 
-        <Button type="submit" size="lg" className="w-full" icon="fingerprint">
+        {error && (
+          <div className="text-xs font-mono text-error bg-error/10 border border-error/40 rounded px-3 py-2">
+            {error}
+          </div>
+        )}
+
+        <Button type="submit" size="lg" className="w-full" loading={loading} icon="fingerprint">
           Complete Induction
         </Button>
       </form>

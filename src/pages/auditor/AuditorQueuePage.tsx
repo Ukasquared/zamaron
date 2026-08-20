@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { mockAuditRequests } from '@/mock/data';
+import { useAuth } from '@/context/AuthContext';
+import { listAuditorQueue } from '@/services/auditService';
 
 export const AuditorQueuePage: React.FC = () => {
+  const { user } = useAuth();
+  const mockAuditRequests = useMemo(() => {
+    try {
+      return listAuditorQueue(user);
+    } catch {
+      return [];
+    }
+  }, [user]);
   const [filter, setFilter] = useState<'ALL' | 'QUEUED' | 'IN_REVIEW' | 'SCANNING'>('ALL');
 
   const filtered = mockAuditRequests.filter((item) => {

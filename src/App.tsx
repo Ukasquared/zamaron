@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
+import { ProtectedRoute } from '@/auth/ProtectedRoute';
+import { GuestRoute } from '@/auth/GuestRoute';
 
 // Layouts
 import { MarketingLayout } from '@/components/layouts/MarketingLayout';
@@ -17,6 +19,7 @@ import { SupportPage } from '@/pages/marketing/SupportPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { SecureGatePage } from '@/pages/auth/SecureGatePage';
 import { InductionPage } from '@/pages/auth/InductionPage';
+import { UnauthorizedPage } from '@/pages/auth/UnauthorizedPage';
 
 // Client Portal Pages
 import { ClientDashboardPage } from '@/pages/client/ClientDashboardPage';
@@ -77,67 +80,78 @@ export const App: React.FC = () => {
 
           {/* Authentication Routes */}
           <Route element={<AuthLayout />}>
-            <Route path="/auth/login" element={<LoginPage />} />
+            <Route element={<GuestRoute />}>
+              <Route path="/auth/login" element={<LoginPage />} />
+              <Route path="/auth/induction" element={<InductionPage />} />
+              <Route path="/auth/induction-signup" element={<InductionPage />} />
+            </Route>
+            {/* Secondary factor — requires an existing session, cannot mint a role. */}
             <Route path="/auth/secure-gate" element={<SecureGatePage />} />
-            <Route path="/auth/induction" element={<InductionPage />} />
-            <Route path="/auth/induction-signup" element={<InductionPage />} />
           </Route>
 
-          {/* Core Operations Dashboard Routes */}
-          <Route element={<DashboardLayout />}>
-            {/* Client Portal */}
-            <Route path="/client/dashboard" element={<ClientDashboardPage />} />
-            <Route path="/client/audits/new" element={<NewAuditRequestPage />} />
-            <Route path="/client/audits/:id/status" element={<LiveAuditTrackerPage />} />
-            <Route path="/client/audits/:id/review" element={<DualPaneReviewPage />} />
-            <Route path="/client/audits/:id/triage" element={<VulnerabilityTriagePage />} />
-            <Route path="/client/audits/:id/report" element={<FinalReportPage />} />
-            <Route path="/client/vault" element={<DocumentVaultPage />} />
-            <Route path="/client/checkout" element={<CheckoutPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-            {/* Auditor Workspace */}
-            <Route path="/auditor/queue" element={<AuditorQueuePage />} />
-            <Route path="/auditor/ai-terminal" element={<AiTerminalPage />} />
-            <Route path="/auditor/forensics" element={<ForensicsPage />} />
-            <Route path="/leaderboard/auditors" element={<AuditorLeaderboardPage />} />
-            <Route path="/leaderboard/security" element={<SkynetDashboardPage />} />
+          {/*
+            All dashboard surfaces require a restored, authenticated session.
+            Role checks are centralized in rbac.ts (canAccessPath) — hiding
+            nav links is never the security boundary.
+          */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<DashboardLayout />}>
+              {/* Client Portal */}
+              <Route path="/client/dashboard" element={<ClientDashboardPage />} />
+              <Route path="/client/audits/new" element={<NewAuditRequestPage />} />
+              <Route path="/client/audits/:id/status" element={<LiveAuditTrackerPage />} />
+              <Route path="/client/audits/:id/review" element={<DualPaneReviewPage />} />
+              <Route path="/client/audits/:id/triage" element={<VulnerabilityTriagePage />} />
+              <Route path="/client/audits/:id/report" element={<FinalReportPage />} />
+              <Route path="/client/vault" element={<DocumentVaultPage />} />
+              <Route path="/client/checkout" element={<CheckoutPage />} />
 
-            {/* Intelligence & Threat Hub */}
-            <Route path="/threat-hub/skynet" element={<SkynetDashboardPage />} />
-            <Route path="/threat-hub/ecosystem" element={<SkynetDashboardPage />} />
-            <Route path="/threat-hub/whales" element={<WhaleAlertsPage />} />
-            <Route path="/threat-hub/token-analyzer" element={<TokenAnalyzerPage />} />
-            <Route path="/threat-hub/leaderboard" element={<SecurityLeaderboardPage />} />
-            <Route path="/threat-hub/projects/:id" element={<ProjectProfilePage />} />
-            <Route path="/threat-hub/incidents" element={<SecurityIncidentsPage />} />
-            <Route path="/threat-hub/protocols/:id" element={<TokenAnalyzerPage />} />
-            <Route path="/threat-hub/vaults" element={<DocumentVaultPage />} />
+              {/* Auditor Workspace */}
+              <Route path="/auditor/queue" element={<AuditorQueuePage />} />
+              <Route path="/auditor/ai-terminal" element={<AiTerminalPage />} />
+              <Route path="/auditor/forensics" element={<ForensicsPage />} />
+              <Route path="/leaderboard/auditors" element={<AuditorLeaderboardPage />} />
+              <Route path="/leaderboard/security" element={<SkynetDashboardPage />} />
 
-            {/* Governance & Profile */}
-            <Route path="/governance" element={<GovernancePage />} />
-            <Route path="/governance/proposals/:id" element={<ProposalDetailPage />} />
-            <Route path="/profile/:id" element={<UserProfilePage />} />
+              {/* Intelligence & Threat Hub */}
+              <Route path="/threat-hub/skynet" element={<SkynetDashboardPage />} />
+              <Route path="/threat-hub/ecosystem" element={<SkynetDashboardPage />} />
+              <Route path="/threat-hub/whales" element={<WhaleAlertsPage />} />
+              <Route path="/threat-hub/token-analyzer" element={<TokenAnalyzerPage />} />
+              <Route path="/threat-hub/leaderboard" element={<SecurityLeaderboardPage />} />
+              <Route path="/threat-hub/projects/:id" element={<ProjectProfilePage />} />
+              <Route path="/threat-hub/incidents" element={<SecurityIncidentsPage />} />
+              <Route path="/threat-hub/protocols/:id" element={<TokenAnalyzerPage />} />
+              <Route path="/threat-hub/vaults" element={<DocumentVaultPage />} />
 
-            {/* Academy & LMS */}
-            <Route path="/academy/learn/:courseId" element={<CoursePlayerPage />} />
-            <Route path="/academy/assessment/:id" element={<AssessmentQuizPage />} />
-            <Route path="/academy/certificate/:id" element={<CertificatePage />} />
+              {/* Governance & Profile */}
+              <Route path="/governance" element={<GovernancePage />} />
+              <Route path="/governance/proposals/:id" element={<ProposalDetailPage />} />
+              <Route path="/profile/:id" element={<UserProfilePage />} />
 
-            {/* Admin Operations */}
-            <Route path="/admin/logs" element={<SecurityLogsPage />} />
-            <Route path="/admin/logs-tactical" element={<SecurityLogsPage />} />
-            <Route path="/admin/security-config" element={<SecurityConfigPage />} />
-            <Route path="/admin/alerts" element={<SecurityConfigPage />} />
-            <Route path="/admin/content" element={<CoursePlayerPage />} />
-            <Route path="/admin/course-builder" element={<CoursePlayerPage />} />
-            <Route path="/admin/course-builder-enhanced" element={<CoursePlayerPage />} />
-            <Route path="/admin/token-reports" element={<TokenAnalyzerPage />} />
-            <Route path="/admin/users-protocols" element={<SecurityConfigPage />} />
-            <Route path="/admin/developers-api" element={<SecurityConfigPage />} />
-            <Route path="/admin/gateways" element={<BillingHistoryPage />} />
-            <Route path="/admin/billing" element={<BillingHistoryPage />} />
-            <Route path="/admin/invoices/:id" element={<InvoiceTemplatePage />} />
-            <Route path="/admin/refunds" element={<BillingHistoryPage />} />
+              {/* Academy & LMS */}
+              <Route path="/academy/learn/:courseId" element={<CoursePlayerPage />} />
+              <Route path="/academy/assessment/:id" element={<AssessmentQuizPage />} />
+              <Route path="/academy/certificate/:id" element={<CertificatePage />} />
+
+              {/* Admin Operations */}
+              <Route path="/admin/logs" element={<SecurityLogsPage />} />
+              <Route path="/admin/logs-tactical" element={<SecurityLogsPage />} />
+              <Route path="/admin/security-config" element={<SecurityConfigPage />} />
+              <Route path="/admin/alerts" element={<SecurityConfigPage />} />
+              <Route path="/admin/content" element={<CoursePlayerPage />} />
+              <Route path="/admin/course-builder" element={<CoursePlayerPage />} />
+              <Route path="/admin/course-builder-enhanced" element={<CoursePlayerPage />} />
+              <Route path="/admin/token-reports" element={<TokenAnalyzerPage />} />
+              <Route path="/admin/users-protocols" element={<SecurityConfigPage />} />
+              <Route path="/admin/developers-api" element={<SecurityConfigPage />} />
+              <Route path="/admin/gateways" element={<BillingHistoryPage />} />
+              <Route path="/admin/billing" element={<BillingHistoryPage />} />
+              <Route path="/admin/invoices/:id" element={<InvoiceTemplatePage />} />
+              <Route path="/admin/refunds" element={<BillingHistoryPage />} />
+            </Route>
           </Route>
 
           {/* Fallback */}

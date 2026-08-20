@@ -1,20 +1,32 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
+import { useAuth } from '@/context/AuthContext';
+import { getDefaultRouteForRole, LOGIN_PATH } from '@/auth/rbac';
+import { AuthLoadingScreen } from '@/auth/AuthLoadingScreen';
 
 export const SecureGatePage: React.FC = () => {
   const [pin, setPin] = useState(['', '', '', '', '', '']);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading, role } = useAuth();
+
+  if (isLoading) {
+    return <AuthLoadingScreen message="Checking enclave session…" />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to={LOGIN_PATH} replace state={{ from: '/auth/secure-gate' }} />;
+  }
 
   const handleDigit = (digit: string, index: number) => {
     const updated = [...pin];
     updated[index] = digit;
     setPin(updated);
 
-    // Auto focus next input
     if (digit && index < 5) {
       const nextInput = document.getElementById(`pin-${index + 1}`);
       nextInput?.focus();
@@ -23,7 +35,11 @@ export const SecureGatePage: React.FC = () => {
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/client/dashboard');
+    if (pin.some((d) => !d)) {
+      setError('Complete the 6-digit hardware challenge.');
+      return;
+    }
+    navigate(getDefaultRouteForRole(role), { replace: true });
   };
 
   return (
@@ -39,12 +55,12 @@ export const SecureGatePage: React.FC = () => {
       <div className="space-y-1">
         <h2 className="font-display font-bold text-2xl text-white">Secondary Security Gate</h2>
         <p className="text-xs text-slate-400 font-sans">
-          Enter your 6-digit cryptographic TOTP passkey or hardware authenticator code.
+          Enter your 6-digit cryptographic TOTP passkey or hardware authenticator code. This step
+          cannot elevate your existing {role} clearance.
         </p>
       </div>
 
       <form onSubmit={handleVerify} className="space-y-6">
-        {/* PIN Inputs */}
         <div className="flex items-center justify-center gap-2">
           {pin.map((digit, idx) => (
             <input
@@ -58,6 +74,12 @@ export const SecureGatePage: React.FC = () => {
             />
           ))}
         </div>
+
+        {error && (
+          <div className="text-xs font-mono text-error bg-error/10 border border-error/40 rounded px-3 py-2">
+            {error}
+          </div>
+        )}
 
         <Button type="submit" size="lg" className="w-full" icon="verified_user">
           Unlock Enclave

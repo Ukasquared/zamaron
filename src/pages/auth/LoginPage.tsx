@@ -1,34 +1,54 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { useAuth } from '@/context/AuthContext';
+import { getPostLoginPath, PRIMARY_ROLES } from '@/auth/rbac';
+import { DEMO_USERS } from '@/mock/data';
+import type { UserRole } from '@/types';
+
+interface LoginLocationState {
+  from?: string;
+}
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('alex.chen@zamoron.io');
-  const [password, setPassword] = useState('••••••••••••••••');
+  const [email, setEmail] = useState(DEMO_USERS.CLIENT.email);
+  const [password, setPassword] = useState('nexus-operator');
   const [showPassword, setShowPassword] = useState(false);
   const [authMethod, setAuthMethod] = useState<'PASSWORD' | 'PASSKEY' | 'WALLET'>('PASSWORD');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('CLIENT');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as LoginLocationState | null)?.from;
 
-  const handleLogin = (e: React.FormEvent) => {
+  const applyDemoRole = (role: UserRole) => {
+    setSelectedRole(role);
+    setEmail(DEMO_USERS[role].email);
+    setError(null);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      login(email);
+    setError(null);
+    try {
+      const user = await login(email, password);
+      navigate(getPostLoginPath(user.role, from), { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed.');
+    } finally {
       setLoading(false);
-      navigate('/client/dashboard');
-    }, 600);
+    }
   };
 
   return (
     <Card variant="fresnel" className="w-full max-w-md p-8 space-y-6 shadow-2xl relative">
-      {/* Top Badge */}
       <div className="flex items-center justify-between">
         <Badge variant="primary" size="sm" dot pulse>
           TERMINAL ACCESS
@@ -43,7 +63,31 @@ export const LoginPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Auth Method Selector */}
+      <div className="space-y-2">
+        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+          Demo clearance (binds session role)
+        </div>
+        <div className="grid grid-cols-3 gap-1 p-1 bg-[#060e20] rounded border border-outline/70">
+          {PRIMARY_ROLES.map((role) => (
+            <button
+              key={role}
+              type="button"
+              onClick={() => applyDemoRole(role)}
+              className={`py-1.5 text-[11px] font-mono rounded font-semibold transition-colors cursor-pointer ${
+                selectedRole === role
+                  ? 'bg-primary text-[#00363d] font-bold'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {role}
+            </button>
+          ))}
+        </div>
+        <p className="text-[10px] font-mono text-slate-500">
+          {DEMO_USERS[selectedRole].email} • role is issued by the auth service, not the client.
+        </p>
+      </div>
+
       <div className="grid grid-cols-3 gap-1 p-1 bg-[#060e20] rounded border border-outline/70">
         <button
           type="button"
@@ -74,7 +118,6 @@ export const LoginPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleLogin} className="space-y-4">
         {authMethod === 'PASSWORD' && (
           <>
@@ -132,12 +175,17 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
+        {error && (
+          <div className="text-xs font-mono text-error bg-error/10 border border-error/40 rounded px-3 py-2">
+            {error}
+          </div>
+        )}
+
         <Button type="submit" size="lg" className="w-full" loading={loading} icon="bolt">
           Authenticate Terminal
         </Button>
       </form>
 
-      {/* Alternative Onboarding Link */}
       <div className="pt-4 border-t border-outline/50 flex items-center justify-between text-xs font-mono text-slate-400">
         <Link to="/auth/induction" className="hover:text-primary transition-colors">
           New Operator? <span className="text-primary font-bold">Begin Induction</span>

@@ -1,13 +1,29 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge, SeverityBadge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { StatCard } from '@/components/shared/StatCard';
-import { mockAuditRequests, mockFindings } from '@/mock/data';
+import { useAuth } from '@/context/AuthContext';
+import { getAuditFindings, listClientAudits } from '@/services/auditService';
 
 export const ClientDashboardPage: React.FC = () => {
+  const { user } = useAuth();
+  const mockAuditRequests = useMemo(() => {
+    try {
+      return listClientAudits(user);
+    } catch {
+      return [];
+    }
+  }, [user]);
+  const mockFindings = useMemo(() => {
+    try {
+      return getAuditFindings(user);
+    } catch {
+      return [];
+    }
+  }, [user]);
   return (
     <div className="space-y-8">
       {/* Top Banner with Quick Actions */}

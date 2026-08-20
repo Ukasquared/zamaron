@@ -1,16 +1,21 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { StatCard } from '@/components/shared/StatCard';
+import { useAuth } from '@/context/AuthContext';
+import { getBillingHistory } from '@/services/adminService';
 
 export const BillingHistoryPage: React.FC = () => {
-  const transactions = [
-    { id: 'INV-8994-VX', client: 'Nexus DeFi Protocol', tier: 'Enterprise Audit', amount: '$50,000', status: 'SETTLED', date: '2026-08-16', rail: 'USDC' },
-    { id: 'INV-8993-ST', client: 'Aegis Staking Derivative', tier: 'Professional Audit', amount: '$25,000', status: 'SETTLED', date: '2026-08-14', rail: 'ETH' },
-    { id: 'INV-8991-OP', client: 'Hyperion Flash Lending', tier: 'Standard Retainer', amount: '$12,500', status: 'SETTLED', date: '2026-08-10', rail: 'WIRE' },
-  ];
+  const { user } = useAuth();
+  const transactions = useMemo(() => {
+    try {
+      return getBillingHistory(user);
+    } catch {
+      return [];
+    }
+  }, [user]);
 
   return (
     <div className="space-y-6 pb-12">
