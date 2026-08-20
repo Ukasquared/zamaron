@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
+import { setPendingCheckout } from '@/services/auditService';
 
 export const NewAuditRequestPage: React.FC = () => {
   const [projectName, setProjectName] = useState('');
@@ -16,6 +17,14 @@ export const NewAuditRequestPage: React.FC = () => {
   const [dragOver, setDragOver] = useState(false);
   const [files, setFiles] = useState<string[]>([]);
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+
+  useEffect(() => {
+    const tier = params.get('tier');
+    if (tier === 'STANDARD' || tier === 'PROFESSIONAL' || tier === 'ENTERPRISE') {
+      setSelectedTier(tier);
+    }
+  }, [params]);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -28,6 +37,14 @@ export const NewAuditRequestPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setPendingCheckout({
+      projectName,
+      protocolType,
+      targetRepo: repoUrl,
+      commitHash,
+      tier: selectedTier,
+      attachments: files,
+    });
     navigate('/client/checkout');
   };
 
@@ -124,6 +141,15 @@ export const NewAuditRequestPage: React.FC = () => {
                 Drag and drop your <span className="text-primary font-bold">.zip</span> or <span className="text-primary font-bold">.sol</span> files here
               </p>
               <p className="text-[10px] text-slate-500 mt-1">Maximum file size: 50MB</p>
+              <input
+                type="file"
+                multiple
+                className="mt-3 text-[11px] font-mono text-slate-400"
+                onChange={(e) => {
+                  const names = Array.from(e.target.files ?? []).map((file) => file.name);
+                  setFiles((prev) => [...prev, ...names]);
+                }}
+              />
             </div>
 
             {files.length > 0 && (

@@ -4,9 +4,28 @@ import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { RadarChart } from '@/components/shared/RadarChart';
 import { AddressBadge } from '@/components/shared/AddressBadge';
-import { mockCurrentUser } from '@/mock/data';
+import { useAuth } from '@/context/AuthContext';
+import { listCertificates } from '@/services/academyService';
+import { useParams } from 'react-router-dom';
 
 export const UserProfilePage: React.FC = () => {
+  const { user } = useAuth();
+  const { id } = useParams<{ id: string }>();
+  const profile = user;
+  const initials = (profile?.name || 'OP')
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+  const certs = React.useMemo(() => {
+    try {
+      return profile ? listCertificates(profile.id, profile) : [];
+    } catch {
+      return [];
+    }
+  }, [profile]);
+  const viewingId = id || profile?.id || 'operator';
   const [activeTab, setActiveTab] = useState<'CREDENTIALS' | 'SKILL_TREE' | 'ACTIVITY'>('CREDENTIALS');
 
   const radarData = [
@@ -42,7 +61,7 @@ export const UserProfilePage: React.FC = () => {
           <div className="relative">
             <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-primary via-cyan-300 to-secondary p-0.5 shadow-[0_0_25px_rgba(0,218,243,0.5)]">
               <div className="w-full h-full rounded-full bg-[#060e20] flex items-center justify-center font-display font-black text-3xl text-primary">
-                AC
+                {initials}
               </div>
             </div>
             <div className="absolute -bottom-1 -right-1 bg-emerald-400 text-[#00363d] rounded-full p-1 border-2 border-[#060e20]" title="Node Online">
@@ -53,16 +72,17 @@ export const UserProfilePage: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
               <h1 className="font-display font-black text-2xl sm:text-3xl text-white">
-                {mockCurrentUser.name}
+                {profile?.name || 'Operator'}
               </h1>
               <Badge variant="primary" size="sm">
-                PLATINUM OPERATOR
+                {profile?.rank || profile?.role || 'OPERATOR'}
               </Badge>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-400">
-              <span>{mockCurrentUser.email}</span>
+              <span>{profile?.email}</span>
               <span>•</span>
-              <AddressBadge address={mockCurrentUser.walletAddress} />
+              <AddressBadge address={profile?.walletAddress || ''} />
+              <span className="text-slate-600">#{viewingId}</span>
             </div>
           </div>
         </div>
@@ -70,11 +90,13 @@ export const UserProfilePage: React.FC = () => {
         <div className="flex items-center gap-4 font-mono text-center shrink-0">
           <div className="px-5 py-3 bg-[#060e20] border border-outline rounded shadow-inner">
             <div className="text-[10px] text-slate-400">EXPERIENCE</div>
-            <div className="text-2xl font-black text-primary font-display mt-0.5">{mockCurrentUser.xp?.toLocaleString()} XP</div>
+            <div className="text-2xl font-black text-primary font-display mt-0.5">{profile?.xp?.toLocaleString() ?? 0} XP</div>
           </div>
           <div className="px-5 py-3 bg-[#060e20] border border-outline rounded shadow-inner">
             <div className="text-[10px] text-slate-400">CREDENTIALS</div>
-            <div className="text-2xl font-black text-emerald-400 font-display mt-0.5">{mockCurrentUser.certificationsCount}</div>
+            <div className="text-2xl font-black text-emerald-400 font-display mt-0.5">
+              {Math.max(profile?.certificationsCount ?? 0, certs.length)}
+            </div>
           </div>
         </div>
       </div>
@@ -122,6 +144,15 @@ export const UserProfilePage: React.FC = () => {
               </CardHeader>
 
               <div className="space-y-3">
+                {certs.map((cert) => (
+                  <div key={cert.id} className="p-4 bg-[#060e20] border border-outline/70 rounded space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-display font-bold text-sm text-white">{cert.courseTitle}</span>
+                      <Badge variant="primary" size="sm">{cert.scorePercent}%</Badge>
+                    </div>
+                    <div className="text-[10px] font-mono text-slate-500">ID: {cert.id}</div>
+                  </div>
+                ))}
                 {[
                   {
                     title: 'Protocol Master (ZCLA)',

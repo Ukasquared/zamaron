@@ -128,7 +128,15 @@ export const PricingPage: React.FC = () => {
               </div>
 
               <div className="pt-4 border-t border-outline/50">
-                <div className="font-display font-black text-3xl sm:text-4xl text-white">{t.price}</div>
+                <div className="font-display font-black text-3xl sm:text-4xl text-white">
+                  {t.price === 'Custom Scope'
+                    ? t.price
+                    : billingCycle === 'annual'
+                      ? t.price.replace(/[0-9,]+/, (m) =>
+                          Math.round(Number(m.replace(/,/g, '')) * 0.8).toLocaleString()
+                        )
+                      : t.price}
+                </div>
                 <div className="text-xs font-mono text-slate-400 mt-1">{t.period}</div>
               </div>
 
@@ -149,7 +157,7 @@ export const PricingPage: React.FC = () => {
             </div>
 
             <div className="pt-8">
-              <Link to="/client/audits/new">
+              <Link to={`/client/audits/new?tier=${t.name.includes('Standard') ? 'STANDARD' : t.name.includes('Professional') ? 'PROFESSIONAL' : 'ENTERPRISE'}`}>
                 <Button
                   variant={t.highlight ? 'primary' : 'outline'}
                   className="w-full"

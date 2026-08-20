@@ -1,6 +1,7 @@
 import { DEMO_USERS } from '@/mock/data';
 import { getAuditFindings, listAuditorQueue, listClientAudits } from '@/services/auditService';
 import { getBillingHistory, getSecurityLogs, updateSecurityConfig } from '@/services/adminService';
+import { listManagedCourses, listPublishedCourses } from '@/services/courseService';
 import { AuthorizationError } from '@/services/authorization';
 
 function expectDenied(label: string, fn: () => void, failed: string[]) {
@@ -47,6 +48,11 @@ export function runServiceAuthzChecks(): { passed: boolean; failed: string[] } {
   expectAllowed('admin reads auditor queue', () => listAuditorQueue(DEMO_USERS.ADMIN), failed);
   expectDenied('unauthenticated reads audits', () => listClientAudits(null), failed);
   expectDenied('unauthenticated reads logs', () => getSecurityLogs(null), failed);
+
+  expectAllowed('student reads published courses', () => listPublishedCourses(DEMO_USERS.STUDENT), failed);
+  expectDenied('student manages courses', () => listManagedCourses(DEMO_USERS.STUDENT), failed);
+  expectAllowed('admin manages courses', () => listManagedCourses(DEMO_USERS.ADMIN), failed);
+  expectDenied('client manages courses', () => listManagedCourses(DEMO_USERS.CLIENT), failed);
 
   return { passed: failed.length === 0, failed };
 }

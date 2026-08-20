@@ -92,6 +92,7 @@ export interface CourseData {
 }
 
 export type UserRole = 'CLIENT' | 'AUDITOR' | 'ADMIN' | 'STUDENT';
+export type SecurityClearance = 'ALPHA' | 'BETA' | 'GAMMA' | 'OPERATOR';
 
 export interface UserProfile {
   id: string;
@@ -103,7 +104,7 @@ export interface UserProfile {
   rank?: string;
   xp?: number;
   certificationsCount?: number;
-  securityClearance: 'ALPHA' | 'BETA' | 'GAMMA' | 'OPERATOR';
+  securityClearance: SecurityClearance;
 }
 
 export type SeverityLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL';
@@ -128,6 +129,9 @@ export interface AuditRequest {
   };
   tier: 'STANDARD' | 'PROFESSIONAL' | 'ENTERPRISE';
   tvlProtected?: string;
+  ownerId?: string;
+  ownerName?: string;
+  attachments?: string[];
 }
 
 export interface AuditFinding {
@@ -142,6 +146,7 @@ export interface AuditFinding {
   remediation: string;
   status: 'OPEN' | 'CONFIRMED' | 'RESOLVED' | 'FALSE_POSITIVE';
   codeSnippet?: string;
+  notes?: string;
 }
 
 export interface WhaleAlert {

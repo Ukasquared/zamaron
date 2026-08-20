@@ -1,5 +1,6 @@
 import type { TokenRiskIndicators } from '@/types';
 import { summarizeTokenRisk } from './securityScoreService';
+import { peekTokenOverride } from './adminService';
 
 /**
  * Token scan service.
@@ -50,7 +51,7 @@ export function scanToken(contractAddress: string): TokenScanResult {
   const token = pick(SAMPLE_TOKEN_NAMES, 1);
   const chain = pick(CHAINS, 2);
 
-  const risk: TokenRiskIndicators = {
+  let risk: TokenRiskIndicators = {
     isHoneypot: seed % 13 === 0,
     isProxy: seed % 3 === 0,
     hasMintFunction: seed % 4 === 0,
@@ -64,13 +65,26 @@ export function scanToken(contractAddress: string): TokenScanResult {
     contractVerified: seed % 6 !== 0,
   };
 
+  const override = peekTokenOverride(contractAddress);
+  if (override) {
+    risk = {
+      ...risk,
+      isHoneypot: override.isHoneypot,
+      hasMintFunction: override.hasMintFunction,
+      hasBlacklist: override.hasBlacklist,
+      isProxy: override.hasProxy,
+      liquidityLockedPercent: override.liquidityLockedPercent,
+      top10HoldersPercent: override.top10HoldersPercent,
+    };
+  }
+
   const { flaggedCount, checks } = summarizeTokenRisk(risk);
 
   return {
     contractAddress: contractAddress.trim(),
-    tokenName: token.name,
-    ticker: token.ticker,
-    chain,
+    tokenName: override?.tokenName ?? token.name,
+    ticker: override?.ticker ?? token.ticker,
+    chain: override?.chain ?? chain,
     risk,
     flaggedCount,
     checks,

@@ -60,8 +60,8 @@ export const ClientDashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Active Audit Engagements"
-          value="2 In Progress"
-          delta="1 Queued"
+          value={`${mockAuditRequests.filter((a) => a.status !== 'COMPLETED' && a.status !== 'VERIFIED').length} In Progress`}
+          delta={`${mockAuditRequests.filter((a) => a.status === 'QUEUED').length} Queued`}
           icon="timelapse"
           iconColor="text-primary"
           variant="fresnel"

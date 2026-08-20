@@ -1,46 +1,68 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { LiveLogStream } from '@/components/shared/LiveLogStream';
+import { useAuth } from '@/context/AuthContext';
+import { getAudit, getAuditFindings, statusToPhase } from '@/services/auditService';
 
 export const LiveAuditTrackerPage: React.FC = () => {
   const { id = 'ZM-8492-NX' } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const audit = useMemo(() => {
+    try {
+      return getAudit(id, user);
+    } catch {
+      return null;
+    }
+  }, [id, user]);
+  const findings = useMemo(() => {
+    try {
+      return getAuditFindings(user, id);
+    } catch {
+      return [];
+    }
+  }, [id, user]);
+  const projectName = audit?.projectName ?? 'Engagement';
+  const currentPhase = audit ? statusToPhase(audit.status) : 3;
+
+  const phaseStatus = (num: number) =>
+    currentPhase > num ? 'COMPLETED' : currentPhase === num ? 'IN_PROGRESS' : 'PENDING';
 
   const phases = [
     {
       num: 1,
       title: 'Automated Bytecode & Invariant Scan',
-      status: 'COMPLETED',
-      timestamp: 'Aug 16, 14:45 UTC',
+      status: phaseStatus(1),
+      timestamp: audit?.submittedAt?.slice(0, 16).replace('T', ' ') || 'Queued',
       inspector: 'Neural Static Analyzer v4.2',
-      findings: '14 Invariants Tested • 0 Fatal Bytecode Traps',
+      findings: 'Invariant corpus executed against the pinned commit',
     },
     {
       num: 2,
       title: 'AI Neural Summarize & Control Flow Graphing',
-      status: 'COMPLETED',
-      timestamp: 'Aug 17, 09:20 UTC',
+      status: phaseStatus(2),
+      timestamp: 'Control-flow pass',
       inspector: 'AI Forensic Agent (ZAM-Core)',
-      findings: '3 Reentrancy Loops Isolated in VaultManager.sol',
+      findings: `${findings.length} candidate finding${findings.length === 1 ? '' : 's'} isolated`,
     },
     {
       num: 3,
       title: 'Manual Lead Auditor Verification & Exploitation',
-      status: 'IN_PROGRESS',
-      timestamp: 'Active Now (Est. Completion: 4 hrs)',
-      inspector: 'Alex Chen (Lead) & Sarah Thorne (Peer)',
-      findings: '1 Critical Reentrancy Confirmed (SWC-107)',
+      status: phaseStatus(3),
+      timestamp: 'Active review',
+      inspector: audit?.leadAuditor || 'Unassigned',
+      findings: `${findings.filter((f) => f.severity === 'CRITICAL').length} critical / ${findings.length} total`,
     },
     {
       num: 4,
       title: 'Remediation Review & Cryptographic Report Anchor',
-      status: 'PENDING',
-      timestamp: 'Pending Phase 3 Sign-off',
+      status: phaseStatus(4),
+      timestamp: 'Pending sign-off',
       inspector: 'ZAMARON Cryptographic Notary',
-      findings: 'Awaiting client patch commits',
+      findings: 'Awaiting verified patches',
     },
   ];
 
@@ -56,7 +78,7 @@ export const LiveAuditTrackerPage: React.FC = () => {
             <span className="text-xs font-mono text-slate-400">Ref: {id}</span>
           </div>
           <h1 className="font-display font-black text-2xl sm:text-3xl text-white mt-1">
-            Nexus DeFi Protocol (Core v3)
+            {projectName}
           </h1>
         </div>
 
@@ -78,19 +100,19 @@ export const LiveAuditTrackerPage: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-[#081024] border border-outline/70 rounded font-mono text-xs">
         <div>
           <span className="text-slate-500 block text-[10px]">REPOSITORY</span>
-          <span className="text-white font-bold truncate block">github.com/nexus-defi/core-v3</span>
+          <span className="text-white font-bold truncate block">{audit?.targetRepo || 'github.com/nexus-defi/core-v3'}</span>
         </div>
         <div>
           <span className="text-slate-500 block text-[10px]">TARGET COMMIT SHA</span>
-          <span className="text-primary font-bold">8f0a1c9e2b4</span>
+          <span className="text-primary font-bold">{audit?.commitHash || '8f0a1c9e2b4'}</span>
         </div>
         <div>
           <span className="text-slate-500 block text-[10px]">LEAD AUDITOR</span>
-          <span className="text-slate-200">Alex Chen (Lead)</span>
+          <span className="text-slate-200">{audit?.leadAuditor || 'Unassigned'}</span>
         </div>
         <div>
           <span className="text-slate-500 block text-[10px]">CURRENT PHASE</span>
-          <span className="text-emerald-400 font-bold">Phase 3: Manual Verification</span>
+          <span className="text-emerald-400 font-bold">Phase {currentPhase} • {audit?.status || 'IN_REVIEW'}</span>
         </div>
       </div>
 

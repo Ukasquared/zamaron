@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { StatCard } from '@/components/shared/StatCard';
 import { useAuth } from '@/context/AuthContext';
-import { getBillingHistory } from '@/services/adminService';
+import { downloadTextFile } from '@/lib/download';
+import { generateStatementCsv, getBillingHistory } from '@/services/adminService';
 
 export const BillingHistoryPage: React.FC = () => {
   const { user } = useAuth();
@@ -30,7 +31,17 @@ export const BillingHistoryPage: React.FC = () => {
           </h1>
         </div>
 
-        <Button size="md" icon="receipt_long">
+        <Button
+          size="md"
+          icon="receipt_long"
+          onClick={() => {
+            try {
+              downloadTextFile('zamaron-billing-statement.csv', generateStatementCsv(user), 'text/csv;charset=utf-8');
+            } catch {
+              /* route-gated */
+            }
+          }}
+        >
           Generate Statement
         </Button>
       </div>
@@ -57,7 +68,7 @@ export const BillingHistoryPage: React.FC = () => {
             <tbody className="divide-y divide-outline/40">
               {transactions.map((tx) => (
                 <tr key={tx.id} className="hover:bg-white/5">
-                  <td className="py-3.5 pr-3 text-primary font-bold">{tx.id}</td>
+                  <td className="py-3.5 pr-3 text-primary font-bold">{tx.invoiceNumber || tx.id}</td>
                   <td className="py-3.5 px-3 font-semibold text-white">{tx.client}</td>
                   <td className="py-3.5 px-3 text-slate-300">{tx.tier}</td>
                   <td className="py-3.5 px-3 text-slate-400">{tx.rail} • {tx.date}</td>

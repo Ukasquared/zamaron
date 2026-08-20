@@ -1,6 +1,7 @@
 import type { UserProfile, UserRole } from '@/types';
 import { isUserRole } from '@/auth/rbac';
 import { DEMO_USERS, DEMO_USER_BY_EMAIL, buildClientFromInduction } from '@/mock/data';
+import { recordOperator } from '@/services/adminService';
 
 export const SESSION_STORAGE_KEY = 'zamaron_session';
 export const LEGACY_ROLE_STORAGE_KEY = 'zamoron_role';
@@ -94,6 +95,7 @@ export async function authenticate(input: AuthenticateInput): Promise<AuthSessio
     issuedAt: Date.now(),
   };
   persistSession(session);
+  recordOperator(user);
   return session;
 }
 

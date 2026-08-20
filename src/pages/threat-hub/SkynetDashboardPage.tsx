@@ -8,6 +8,8 @@ import { LiveLogStream } from '@/components/shared/LiveLogStream';
 import { mockSecurityLeaderboard } from '@/mock/data';
 
 export const SkynetDashboardPage: React.FC = () => {
+  const [refreshedAt, setRefreshedAt] = React.useState(() => new Date().toLocaleTimeString());
+  const [exportNote, setExportNote] = React.useState<string | null>(null);
   
   const prelaunchProjects = [
     { name: 'NebulaNectar', symbol: 'NBN', score: '76.90', rating: 'BBB', sentiment: 'High', coverage: 'Med', date: '12/24/26', stage: 'Stage 0' },
@@ -41,14 +43,39 @@ export const SkynetDashboardPage: React.FC = () => {
           </h1>
           <p className="text-xs text-slate-400 font-sans mt-0.5">
             Continuous on-chain monitoring, automated Z-Score evaluations, and pre-launch risk telemetry.
+            {exportNote ? ` ${exportNote}` : ` Snapshot ${refreshedAt}`}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" icon="refresh">
+          <Button
+            variant="outline"
+            size="sm"
+            icon="refresh"
+            onClick={() => {
+              setRefreshedAt(new Date().toLocaleTimeString());
+              setExportNote(null);
+            }}
+          >
             Refresh Telemetry
           </Button>
-          <Button size="sm" icon="download">
+          <Button
+            size="sm"
+            icon="download"
+            onClick={() => {
+              const body = mockSecurityLeaderboard
+                .map((row) => `${row.name},${row.zScore},${row.tvp},${row.auditedCount},${row.threatsBlocked}`)
+                .join('\n');
+              const blob = new Blob([`network,zScore,tvp,audits,blocked\n${body}`], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'skynet-intel-brief.csv';
+              a.click();
+              URL.revokeObjectURL(url);
+              setExportNote(`Brief exported • ${refreshedAt}`);
+            }}
+          >
             Export Intel Brief
           </Button>
         </div>

@@ -4,9 +4,18 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { QuorumProgress } from '@/components/shared/QuorumProgress';
-import { mockProposals } from '@/mock/data';
+import { useAuth } from '@/context/AuthContext';
+import { listProposals } from '@/services/governanceService';
 
 export const GovernancePage: React.FC = () => {
+  const { user } = useAuth();
+  const mockProposals = React.useMemo(() => {
+    try {
+      return listProposals(user);
+    } catch {
+      return [];
+    }
+  }, [user]);
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-container/70 border border-outline/70 p-6 rounded-md">

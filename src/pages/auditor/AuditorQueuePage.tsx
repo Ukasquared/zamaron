@@ -1,21 +1,24 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
-import { listAuditorQueue } from '@/services/auditService';
+import { claimAudit, listAuditorQueue } from '@/services/auditService';
 
 export const AuditorQueuePage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [filter, setFilter] = useState<'ALL' | 'QUEUED' | 'IN_REVIEW' | 'SCANNING'>('ALL');
+  const [tick, setTick] = useState(0);
+  const [claimError, setClaimError] = useState<string | null>(null);
   const mockAuditRequests = useMemo(() => {
     try {
       return listAuditorQueue(user);
     } catch {
       return [];
     }
-  }, [user]);
-  const [filter, setFilter] = useState<'ALL' | 'QUEUED' | 'IN_REVIEW' | 'SCANNING'>('ALL');
+  }, [user, tick]);
 
   const filtered = mockAuditRequests.filter((item) => {
     if (filter === 'ALL') return true;
@@ -48,6 +51,10 @@ export const AuditorQueuePage: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {claimError && (
+        <div className="text-xs font-mono text-error bg-error/10 border border-error/40 rounded px-3 py-2">{claimError}</div>
+      )}
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2">
@@ -108,11 +115,22 @@ export const AuditorQueuePage: React.FC = () => {
                   Review Code
                 </Button>
               </Link>
-              <Link to={`/client/audits/${ticket.id}/triage`}>
-                <Button size="sm" icon="assignment_turned_in">
-                  Claim & Triage
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                icon="assignment_turned_in"
+                onClick={() => {
+                  try {
+                    claimAudit(ticket.id, user);
+                    setTick((n) => n + 1);
+                    setClaimError(null);
+                    navigate(`/client/audits/${ticket.id}/triage`);
+                  } catch (err) {
+                    setClaimError(err instanceof Error ? err.message : 'Claim denied.');
+                  }
+                }}
+              >
+                Claim & Triage
+              </Button>
             </div>
           </Card>
         ))}

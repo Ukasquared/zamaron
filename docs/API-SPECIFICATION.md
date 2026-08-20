@@ -1,0 +1,1147 @@
+# Zamaron — Backend API Specification
+
+> **Status:** Draft for backend-implementation approval.
+> **Repository scanned:** `Ukasquared/zamaron` @ `arena/01a01d53-zamaron` (commit `a368f48`).
+> **App stack:** Vite + React 18 + TypeScript + Tailwind v4, client-side React Router SPA.
+
+---
+
+## 0. Executive summary
+
+Zamaron is a **frontend-only** web application. The repository contains **no backend, no HTTP
+client, and no API layer**. Every "service" under `src/services/*` is an **in-memory /
+`localStorage`-persisted mock** that simulates a backend (see §2). There is a single commented-out
+`fetch('/api/security/projects')` in `src/services/projectService.ts` — the only trace of a planned
+network boundary.
+
+The frontend already encodes the **complete intended data model, business rules, permissions, and
+screen-by-screen data requirements**. This document translates that into an API contract that a
+backend team can implement directly.
+
+Because **no backend endpoints exist yet**, **every endpoint in this document is marked:**
+
+> **REQUIRED BACKEND ENDPOINT — NOT CURRENTLY IMPLEMENTED**
+
+Nothing below is invented documentation for an existing API; it is a *specification* derived from
+the frontend's requirements, to be built.
+
+### Deliverables
+
+| File | Purpose |
+|---|---|
+| `docs/API-SPECIFICATION.md` | Full endpoint catalog, grouped by feature (this file) |
+| `docs/openapi.yaml` | Machine-readable OpenAPI 3.1 spec (same contract) |
+
+---
+
+## 1. Scan summary (what the frontend does today)
+
+### 1.1 Pages (all 47 routed screens)
+
+| Domain | Routes | Data + actions required |
+|---|---|---|
+| Marketing | `/`, `/solutions/auditing`, `/pricing`, `/support`, `/catalog` | Static content, pricing tiers, knowledge-base search, ticket submission, live node status |
+| Auth | `/auth/login`, `/auth/induction`, `/auth/induction-signup`, `/auth/secure-gate`, `/unauthorized` | Login (password / WebAuthn / wallet), register, session restore, 2FA gate |
+| Client Portal | `/client/dashboard`, `/client/audits/new`, `/client/audits/:id/status`, `/client/audits/:id/review`, `/client/audits/:id/triage`, `/client/audits/:id/report`, `/client/vault`, `/client/checkout` | Own audits list, findings, triage updates, report, document vault, escrow checkout |
+| Auditor | `/auditor/queue`, `/auditor/ai-terminal`, `/auditor/forensics`, `/leaderboard/auditors` | Audit queue, claim, AI chat, bytecode disassembly, auditor leaderboard |
+| Threat Hub | `/threat-hub/skynet`, `/threat-hub/ecosystem`, `/threat-hub/whales`, `/threat-hub/token-analyzer`, `/threat-hub/leaderboard`, `/threat-hub/projects/:id`, `/threat-hub/incidents` | Security scores, project profiles, incidents, whale alerts, token scan, node telemetry |
+| Governance | `/governance`, `/governance/proposals/:id`, `/profile/:id` | Proposals list, vote casting, user profile + certificates + activity + skill tree |
+| Academy | `/academy/learn/:courseId`, `/academy/assessment/:id`, `/academy/certificate/:id` | Course/lesson content, progress, assessment, certificate |
+| Admin | `/admin/logs`, `/admin/logs-tactical`, `/admin/security-config`, `/admin/alerts`, `/admin/content`, `/admin/course-builder`, `/admin/token-reports`, `/admin/users-protocols`, `/admin/developers-api`, `/admin/gateways`, `/admin/billing`, `/admin/invoices/:id`, `/admin/refunds` | Logs, config, alerts, course CRUD + builder, token overrides, operators/protocols, API keys, gateways, billing, refunds |
+
+> Note: `src/components/{analytics, assessment, certificate, content, courses, ecosystem,
+> risk-report, scam-detector, scanner, security/AdminStats|MasterRegistry|ActivityStream|RiskHeatmap}`
+> contain legacy/orphaned UI that is **not routed** in `src/App.tsx`. They are noted in §9 but do
+> not drive new endpoints.
+
+### 1.2 Where the "backend" logic currently lives
+
+| Concern | Current home (frontend) |
+|---|---|
+| Session & auth | `src/services/authService.ts` (localStorage `zamaron_session`) |
+| Roles / permissions | `src/auth/rbac.ts`, `src/services/authorization.ts` |
+| Audit lifecycle | `src/services/auditService.ts` |
+| Courses (LMS + builder) | `src/services/courseService.ts`, `src/services/academyService.ts`, `src/data/lmsSeed.ts` |
+| Admin ops | `src/services/adminService.ts` (logs, billing, operators, protocols, API keys, alerts, gateways, refunds, token overrides, security config) |
+| Governance | `src/services/governanceService.ts` |
+| Vault | `src/services/vaultService.ts` |
+| Support | `src/services/supportService.ts` |
+| Token scan | `src/services/tokenScanService.ts` (deterministic **fake** analysis) |
+| Security scores / incidents / projects | `src/services/securityScoreService.ts`, `src/services/projectService.ts`, `src/services/incidentService.ts`, `src/data/securityData.ts` |
+| Bytecode disassembly | `src/lib/evm.ts` (pure client-side — likely stays client-side) |
+
+---
+
+## 2. Conventions
+
+### 2.1 Base URL & versioning
+
+- Base path: `/api/v1` (adjustable; the only existing hint in code is `/api/security/projects`).
+- All bodies are `application/json` unless noted (`multipart/form-data` for uploads, `text/csv` for exports).
+
+### 2.2 Authentication
+
+The app currently stores a mock session in `localStorage` (`zamaron_session`). The production
+backend **must not** trust the client for identity. Recommended:
+
+- **Session cookie** (`HttpOnly; Secure; SameSite=Lax`) issued on login — primary mechanism.
+- **Bearer token** (`Authorization: Bearer <JWT>`) accepted as an alternative for API-key callers.
+- **API keys** (`zm_live_…`) for machine integrations (minted in the Admin → Developers page).
+
+Endpoints are annotated with one of:
+
+| Level | Meaning |
+|---|---|
+| `Public` | No credentials (marketing, knowledge base, login/register). |
+| `Authenticated` | Any valid session (CLIENT, AUDITOR, ADMIN, STUDENT). |
+| `Role: <ROLE(S)>` | Specific role(s), enforced **server-side**. |
+
+Role/permission checks currently enforced client-side in
+`src/auth/rbac.ts` + `src/services/authorization.ts` **must be re-implemented server-side** —
+they are the source of truth for the contract in §3.
+
+### 2.3 Roles & permissions (authoritative, from `src/auth/rbac.ts`)
+
+| Role | Permissions |
+|---|---|
+| `CLIENT` | `client:read`, `client:write`, `academy:read`, `threat-hub:read`, `governance:read` |
+| `AUDITOR` | `auditor:read`, `auditor:write`, `client:read`, `academy:read`, `threat-hub:read`, `governance:read` |
+| `ADMIN` | all of the above + `admin:read`, `admin:write` |
+| `STUDENT` | `academy:read`, `threat-hub:read`, `governance:read` |
+
+Route ownership rules to preserve server-side (from `ROUTE_ACCESS_RULES`):
+
+- `/client/*` → `CLIENT` + `ADMIN` (audit detail/status/review/triage/report and vault also allow `AUDITOR`).
+- `/auditor/*`, `/leaderboard/auditors` → `AUDITOR` + `ADMIN`.
+- `/admin/*` → `ADMIN` only.
+- `/threat-hub`, `/governance`, `/academy`, `/profile`, `/leaderboard/security` → any authenticated role.
+
+### 2.4 Error envelope
+
+All non-2xx responses use a single shape (mirrors `AuthorizationError` in `src/services/authorization.ts`):
+
+```json
+{
+  "error": {
+    "code": "FORBIDDEN | UNAUTHENTICATED | VALIDATION_ERROR | NOT_FOUND | CONFLICT | RATE_LIMITED | INTERNAL",
+    "message": "Human-readable reason",
+    "details": { "field": ["..."] }   // optional, for VALIDATION_ERROR
+  }
+}
+```
+
+Standard status codes:
+
+| Code | Meaning |
+|---|---|
+| `401` | `UNAUTHENTICATED` — missing/invalid/expired session |
+| `403` | `FORBIDDEN` — authenticated but lacking role/permission, or cross-tenant access |
+| `404` | `NOT_FOUND` — resource does not exist |
+| `409` | `CONFLICT` — e.g. voting closed, last-admin demotion, duplicate slug |
+| `422` | `VALIDATION_ERROR` — body/params failed validation |
+| `429` | `RATE_LIMITED` — API-key or per-IP throttling |
+
+### 2.5 Pagination, filtering, sorting
+
+Adopted uniformly on list endpoints:
+
+```
+GET /api/v1/<collection>?page=1&pageSize=25&sort=<field>&dir=asc|desc&q=<search>&<facet>=<value>
+```
+
+| Param | Type | Notes |
+|---|---|---|
+| `page` | int ≥ 1 | default 1 |
+| `pageSize` | int 1..100 | default 25 |
+| `sort` | string | whitelisted field per endpoint |
+| `dir` | `asc` \| `desc` | default per endpoint |
+| `q` | string | free-text search over documented fields |
+| faceted params | — | endpoint-specific (e.g. `status`, `category`, `chain`, `severity`) |
+
+Response shape:
+
+```json
+{
+  "items": [],
+  "total": 128,
+  "page": 1,
+  "pageSize": 25,
+  "totalPages": 6
+}
+```
+
+Endpoints whose current UI is *not* paginated are marked "full list today — add pagination before
+launch".
+
+### 2.6 Idempotency & currency
+
+- Write endpoints accept optional `Idempotency-Key` header (esp. checkout/settlement, refunds, votes).
+- Monetary values: store integer **minor units** (`amountMinor`) server-side; the UI formats `$50,000`.
+  `amountValue` (number) in the current billing model is a display convenience — replace with
+  `amountMinor` + `currency` (`USDC`, `ETH`, `WIRE`, `SOL`).
+
+---
+
+## 3. Data models (entity dictionary)
+
+Derived from `src/types/*.ts`, `src/types/ops.ts`, `src/types/lms.ts`, `src/types/security.ts`.
+
+### UserProfile
+`id, name, email, role (CLIENT|AUDITOR|ADMIN|STUDENT), walletAddress, avatarUrl?, rank?, xp?, certificationsCount?, securityClearance (ALPHA|BETA|GAMMA|OPERATOR)`
+
+### AuthSession
+`user: UserProfile, walletConnected: boolean, issuedAt: ISO8601`
+
+### AuditRequest
+`id (e.g. ZM-8492-NX), projectName, protocolType, targetRepo, commitHash, submittedAt, status (QUEUED|SCANNING|IN_REVIEW|VERIFIED|COMPLETED), leadAuditor?, progressPercent, findingsCount {critical,high,medium,low,info}, tier (STANDARD|PROFESSIONAL|ENTERPRISE), tvlProtected?, ownerId, ownerName, attachments[]`
+
+### AuditFinding
+`id, title, severity (CRITICAL|HIGH|MEDIUM|LOW|INFORMATIONAL), category, swcCode?, location, lineRange, description, remediation, status (OPEN|CONFIRMED|RESOLVED|FALSE_POSITIVE), codeSnippet?, notes?`
+
+### AuditDraft (checkout staging)
+`projectName, protocolType, targetRepo, commitHash, tier, attachments[]`
+
+### GovernanceProposal
+`id, proposalNumber, title, author, createdDate, endDate, status (ACTIVE|PASSED|REJECTED|EXECUTING), summary, forVotes, againstVotes, abstainVotes, quorumPercent, quorumTarget, userVote?`
+
+### ManagedCourse
+`id, slug, title, description, category (SMART_CONTRACT|DEFI_SECURITY|FORENSICS|OPCODES), difficulty (BEGINNER|INTERMEDIATE|ADVANCED|ELITE), instructor, thumbnail, xpReward, status (DRAFT|PUBLISHED|ARCHIVED), createdAt, updatedAt, publishedAt?, modules[]`
+
+### CourseModule
+`id, title, subtitle?, order, lessons[]`
+
+### CourseLesson
+`id, title, durationMinutes, content (markdown), videoUrl?, instructor?, takeaways?, timestamps[] {id,time,label}`
+
+### LearnerProgress
+`userId, courseId, completedLessonIds[], lastLessonId?, progressPercent, startedAt, completedAt?`
+
+### AssessmentQuestion
+`id, courseId, prompt, codeSnippet?, options[] {id,text}, correctOptionId, explanation`  *(correctOptionId/explanation server-only — never returned to learners)*
+
+### AssessmentAttempt
+`id, userId, userName, courseId, answers {questionId: optionId}, scorePercent, passed, completedAt`
+
+### CertificateRecord
+`id, userId, userName, courseId, courseTitle, scorePercent, issuedAt, hash`
+
+### SecurityProject (score entity)
+`id, name, symbol, category (DEX|LENDING|LAYER2|STAKING|MEME|BRIDGE|NFT|INFRASTRUCTURE), chain, stage (PRE_LAUNCH|LIVE|INCIDENT|DISCONTINUED), logoSeed, description, contractAddress, website, socialSentiment, marketCap, volume24h, tvl?, launchedAt, dimensions[] {key,label,value,weight,description}, badges[] {type,label,detail?,verified}, auditHistory[] {id,auditor,date,scope,criticalFindings,highFindings,reportUrl?,status}, monitors[] {target,label,status,lastChecked,detail?}, tokenRisk: TokenRiskIndicators`
++ computed: `score (0-100), tier (AAA..D), rankPercentile, deductions[] {label,points}`
+
+### TokenRiskIndicators
+`isHoneypot, isProxy, hasMintFunction, hasBlacklist, hasPauseFunction, ownerRenounced, liquidityLockedPercent, top10HoldersPercent, buyTaxPercent, sellTaxPercent, contractVerified`
+
+### TokenScanResult
+`contractAddress, tokenName, ticker, chain, risk: TokenRiskIndicators, flaggedCount, checks[] {label,status (pass|warn|fail),value}, isDemo` *(isDemo → drop in production)*
+
+### SecurityIncident
+`id, timestamp, type (EXPLOIT|RUGPULL|PHISHING|BRIDGE_HACK|ORACLE_MANIPULATION|FLASH_LOAN|PRIVATE_KEY_COMPROMISE), severity (CRITICAL|HIGH|MEDIUM|LOW), projectName, chain, fundsLostUsd, summary, txHash?, status (ONGOING|CONTAINED|UNDER_INVESTIGATION|RESOLVED)`
+
+### WhaleAlert
+`id, timestamp, txHash, fromAddress, toAddress, tokenSymbol, tokenAmount, usdValue, chain (ETH|SOL|BSC|AVAX|ARB), riskScore, flagType (WHALE_ACCUMULATION|LIQUIDITY_DRAIN|BRIDGE_OUTFLOW|SUSPICIOUS_MINT)`
+
+### SecurityLogEntry
+`id, timestamp, severity (CRIT|WARN|INFO), eventSource, actor, action, ipAddress, status (BLOCKED|ALLOWED|FLAGGED|RESOLVED), hash`
+
+### BillingTransaction
+`id, invoiceNumber, client, clientWallet, tier, amountMinor, currency, status, date, rail (USDC|ETH|WIRE|SOL), description, txHash`
+
+### RefundRequest
+`id, invoiceId, client, amount, reason, status (PENDING|APPROVED|DENIED), requestedAt, decidedAt?, decidedBy?`
+
+### PaymentGateway
+`id, name, rail (USDC|ETH|WIRE|SOL), address, enabled, settlementDelay`
+
+### AlertRoute
+`id, name, eventSource, minSeverity (INFO|WARN|CRIT), channel (WEBHOOK|EMAIL|TELEGRAM|PAGER), target, enabled, threshold`
+
+### ApiKeyRecord
+`id, name, prefix, secret (returned once on creation), scopes, rateLimit, status (ACTIVE|REVOKED), createdAt, lastUsed`
+
+### OperatorRecord
+`id, name, email, role, walletAddress, clearance, status (ACTIVE|SUSPENDED|ISOLATED), lastSync`
+
+### ProtocolRecord
+`id, name, category, contractAddress, status (MONITORING|ISOLATED|RESTORED|BLACKLISTED), gasThresholdGwei, riskScore, lastSync`
+
+### TokenReportOverride
+`id, contractAddress, tokenName, ticker, chain, notes, isHoneypot, hasMintFunction, hasBlacklist, hasProxy, liquidityLockedPercent, top10HoldersPercent, updatedAt`
+
+### VaultDocument
+`id, title, category (REPORTS|CERTIFICATES|SPECS), fileSize, updatedAt, hash, type (PDF|ZIP|TXT), body, ownerId?` (+ upload metadata in production)
+
+### SupportTicket / KnowledgeArticle
+`SupportTicket: id, name, email, subject, body, severity (LOW|HIGH|CRITICAL), createdAt`
+`KnowledgeArticle: id, category, title, body, tags[]`
+
+### SecurityConfig
+`fido2Required, autoMitigate, ipWhitelisting, rateLimitStrict` (booleans)
+
+---
+
+## 4. Endpoint catalog
+
+> **Legend:** every endpoint below is **REQUIRED BACKEND ENDPOINT — NOT CURRENTLY IMPLEMENTED**.
+> `Auth` column uses the levels from §2.2.
+
+---
+
+### 4.1 Authentication & Sessions
+
+#### `POST /api/v1/auth/login` — password login
+- **Method:** POST
+- **Purpose:** Authenticate an operator with email + password and start a session.
+- **Auth:** Public
+- **Required role:** none
+- **Request body:**
+```json
+{ "email": "client@zamoron.io", "password": "nexus-operator" }
+```
+- **Response 200:** `AuthSession` (sets `HttpOnly` session cookie + optional `accessToken`).
+```json
+{ "user": { "id": "usr-4410-cl", "name": "Jordan Vale", "email": "client@zamoron.io", "role": "CLIENT", "walletAddress": "0x…", "securityClearance": "BETA", "rank": "Protocol Client", "xp": 2400, "certificationsCount": 1 }, "walletConnected": false, "issuedAt": "2026-08-20T…Z" }
+```
+- **Success:** `200`
+- **Errors:** `401 UNAUTHENTICATED` (bad credentials), `422` (invalid email), `429` (brute-force throttle)
+- **Validation:** valid email; password required; server must **never** mint a role from client input (today `resolveDemoUser` picks a role from a hardcoded email table — remove in favor of real credential lookup).
+- **Notes:** Replace `src/services/authService.authenticate` / `resolveDemoUser`.
+
+#### `POST /api/v1/auth/login/webauthn` — WebAuthn/passkey login
+- **Purpose:** FIDO2/WebAuthn assertion login (UI tab "WEBAUTHN").
+- **Auth:** Public
+- **Body:** `{ "email": "…", "assertion": {…} }` (challenge response)
+- **Response 200:** `AuthSession` · **Errors:** `401`, `422`
+- **Notes:** Requires a prior `POST /auth/webauthn/register` + `GET /auth/webauthn/challenge` pair; UI currently renders this as a static panel.
+
+#### `POST /api/v1/auth/login/wallet` — SIWE login
+- **Purpose:** Sign-In with Ethereum (EIP-4361) via wallet (UI tab "WEB3 WALLET").
+- **Auth:** Public
+- **Body:** `{ "message": "…", "signature": "0x…", "address": "0x…" }`
+- **Response 200:** `AuthSession` · **Errors:** `401` (bad signature), `422`
+- **Notes:** UI currently static; requires `GET /auth/siwe/nonce` first.
+
+#### `POST /api/v1/auth/register` — operator induction
+- **Purpose:** Create a new operator account (role `CLIENT` by default; role elevation is an admin action).
+- **Auth:** Public
+- **Body:** `{ "name": "…", "email": "…", "password": "…" }`
+- **Response 201:** `AuthSession` (`walletConnected: false`)
+- **Success:** `201`
+- **Errors:** `409 CONFLICT` (email already exists), `422` (weak password / invalid email)
+- **Validation:** password strength (UI shows an entropy meter: ≥8 chars, upper, digit, symbol), name + email required.
+- **Notes:** Replace `registerOperator`.
+
+#### `POST /api/v1/auth/logout`
+- **Purpose:** Invalidate the current session.
+- **Auth:** Authenticated · **Body:** none · **Response:** `204` · **Errors:** `401`
+
+#### `GET /api/v1/auth/session`
+- **Purpose:** Restore / introspect the current session (used by `AuthProvider` on boot).
+- **Auth:** Authenticated
+- **Response 200:** `AuthSession | null` (204/200-with-null when no session)
+- **Notes:** Replace `restoreSession`.
+
+#### `POST /api/v1/auth/secure-gate` — second factor
+- **Purpose:** Verify a 6-digit TOTP / hardware-enclave challenge (the `/auth/secure-gate` step).
+- **Auth:** Authenticated (existing session required; cannot elevate role)
+- **Body:** `{ "code": "123456" }`
+- **Response 200:** `{ "verified": true }` · **Errors:** `401` (session), `403` (invalid code)
+- **Notes:** UI enforces that this **never** changes role/clearance — preserve that invariant server-side.
+
+#### `POST /api/v1/auth/wallet/connect` / `POST /api/v1/auth/wallet/disconnect`
+- **Purpose:** Attach/detach a wallet address to the profile (UI toggles `walletConnected`).
+- **Auth:** Authenticated · **Body:** `{ "address": "0x…" }` / none
+- **Response 200:** `AuthSession` or `UserProfile`
+
+---
+
+### 4.2 Users & Profiles
+
+#### `GET /api/v1/users/me`
+- **Purpose:** Current operator profile (top nav, profile page).
+- **Auth:** Authenticated
+- **Response 200:** `UserProfile`
+
+#### `GET /api/v1/users/{id}`
+- **Purpose:** View a profile by id (route `/profile/:id`).
+- **Auth:** Authenticated
+- **Response 200:** `UserProfile` · **Errors:** `404`
+- **Notes:** UI currently renders the *caller's* profile regardless of `:id` — backend should resolve the real user and honor visibility rules (see gap G-1 in §9).
+
+#### `PATCH /api/v1/users/{id}`
+- **Purpose:** Update own profile (name, avatar, wallet).
+- **Auth:** Role: self, or `ADMIN`
+- **Body:** `{ "name"?, "avatarUrl"?, "walletAddress"? }`
+- **Response 200:** `UserProfile` · **Errors:** `403` (cross-user), `422`
+
+#### `GET /api/v1/users/{id}/certificates`
+- **Purpose:** Credential vault on the profile page.
+- **Auth:** Role: self or `ADMIN`
+- **Response 200:** `CertificateRecord[]`
+
+#### `GET /api/v1/users/{id}/activity`
+- **Purpose:** "Recent Activity Ledger" tab (action, target, time, +XP).
+- **Auth:** Role: self or `ADMIN`
+- **Response 200:** `{ "items": [ { "id", "action", "target", "time", "xp" } ] }` (paginated)
+
+#### `GET /api/v1/users/{id}/skills`
+- **Purpose:** "Protocol Progression Tree" (skill nodes: id, name, level, status UNLOCKED|IN_PROGRESS|LOCKED, xp).
+- **Auth:** Role: self or `ADMIN`
+- **Response 200:** `{ "items": [ { "id", "name", "level", "status", "xp" } ] }`
+
+#### `GET /api/v1/users/{id}/proficiency`
+- **Purpose:** Mastery radar (6 axes: EVM Forensics, DeFi Security, Formal Verification, ZK, Reentrancy, Bridges) + summary stats.
+- **Auth:** Role: self or `ADMIN`
+- **Response 200:** `{ "radar": [ { "axis", "value" } ], "summary": {…} }`
+
+#### `GET /api/v1/leaderboard/auditors`
+- **Purpose:** Auditor Hall of Fame (`/leaderboard/auditors`).
+- **Auth:** Role: `AUDITOR`, `ADMIN`
+- **Response 200:** paginated `{ rank, name, handle, xp, verifiedBugs, bountiesEarned, badge }`
+- **Filter/sort:** `q`, `sort=xp|verifiedBugs|bountiesEarned`, `dir`
+- **Notes:** Today sourced from `mockAuditorLeaderboard`; replace with aggregated stats from audits.
+
+---
+
+### 4.3 Audits (Client & Auditor)
+
+#### `GET /api/v1/audits`
+- **Purpose:** List audits. `CLIENT` → own engagements; `AUDITOR`/`ADMIN` → full queue.
+- **Auth:** Role: `CLIENT`, `AUDITOR`, `ADMIN`
+- **Query:** `status`, `q` (projectName/id), `sort=submittedAt|progressPercent`, `dir`, pagination
+- **Response 200:** paginated `AuditRequest[]`
+- **Tenancy:** server MUST filter by `ownerId` for `CLIENT` (today `listClientAudits` does this).
+- **Notes:** Used by `/client/dashboard` and `/auditor/queue`.
+
+#### `POST /api/v1/audits`
+- **Purpose:** Create an audit request (from checkout confirmation; also the "new request" wizard draft).
+- **Auth:** Role: `CLIENT`, `ADMIN` (permission `client:write`)
+- **Body:**
+```json
+{
+  "projectName": "Nexus DeFi Protocol",
+  "protocolType": "DEX",
+  "targetRepo": "https://github.com/nexus-defi/core-v3",
+  "commitHash": "8f0a1c9e2b4",
+  "tier": "ENTERPRISE",
+  "attachments": ["core-v3.zip"]
+}
+```
+- **Response 201:** `AuditRequest` (`status: QUEUED`, `progressPercent: 8`, `findingsCount` zeroed, `ownerId`/`ownerName` from session)
+- **Success:** `201`
+- **Errors:** `403`, `422` (missing repo/commit/tier; tier not in enum)
+- **Validation:** `projectName`, `targetRepo`, `commitHash` required; `tier` ∈ enum; attachments ≤ 50 MB total (UI enforces 50 MB/file); validate commit-hash format (hex/SHA).
+- **Notes:** Replaces `createAuditRequest`; audit ID format today is `ZM-<epochLast4>-<2char>` — backend decides its own scheme.
+
+#### `GET /api/v1/audits/{id}`
+- **Purpose:** Fetch one engagement (status tracker, report, review pages).
+- **Auth:** Role: `CLIENT`(owner), `AUDITOR`, `ADMIN`
+- **Response 200:** `AuditRequest` · **Errors:** `404`, `403` (cross-tenant for CLIENT)
+
+#### `PATCH /api/v1/audits/{id}`
+- **Purpose:** Advance status / assign lead / progress (auditor/admin).
+- **Auth:** Role: `AUDITOR`, `ADMIN` (`auditor:write`)
+- **Body:** `{ "status"?, "leadAuditor"?, "progressPercent"? }`
+- **Response 200:** `AuditRequest` · **Errors:** `404`, `403`, `422` (invalid status transition)
+- **Validation:** enforce a valid state machine `QUEUED → SCANNING → IN_REVIEW → VERIFIED → COMPLETED`.
+
+#### `POST /api/v1/audits/{id}/claim`
+- **Purpose:** Auditor claims an engagement (sets lead + `IN_REVIEW`, floor progress 40%).
+- **Auth:** Role: `AUDITOR`, `ADMIN`
+- **Response 200:** `AuditRequest` · **Errors:** `404`, `409 CONFLICT` (already claimed)
+- **Notes:** Replaces `claimAudit`.
+
+#### `GET /api/v1/audits/{id}/findings`
+- **Purpose:** List findings for an engagement (triage, dual-pane review, dashboard feed, report).
+- **Auth:** Role: `CLIENT`(owner), `AUDITOR`, `ADMIN`
+- **Query:** `severity`, `status`, pagination
+- **Response 200:** paginated `AuditFinding[]`
+
+#### `PATCH /api/v1/audits/{id}/findings/{findingId}`
+- **Purpose:** Triage a finding (status + notes). Students are blocked (today `updateFinding` throws for `STUDENT`).
+- **Auth:** Role: `CLIENT`(owner), `AUDITOR`, `ADMIN`
+- **Body:** `{ "status": "RESOLVED|CONFIRMED|OPEN|FALSE_POSITIVE", "notes": "…" }`
+- **Response 200:** `AuditFinding` (server re-computes the audit's `findingsCount` by severity)
+- **Errors:** `403` (STUDENT/cross-tenant), `404`, `422`
+- **Notes:** Replaces `updateFinding` + `recountFindings`.
+
+#### `GET /api/v1/audits/{id}/timeline`
+- **Purpose:** 4-phase progress timeline (Phase 1–4 with per-phase inspector/findings) shown on the tracker.
+- **Auth:** Role: `CLIENT`(owner), `AUDITOR`, `ADMIN`
+- **Response 200:** `{ "currentPhase": 1..4, "phases": [ { "num", "title", "status", "timestamp", "inspector", "findings" } ] }`
+- **Notes:** Today derived in `LiveAuditTrackerPage` from `statusToPhase`.
+
+#### `GET /api/v1/audits/{id}/report`
+- **Purpose:** Final report data (executive summary, scorecard, findings ledger, anchor hash).
+- **Auth:** Role: `CLIENT`(owner), `AUDITOR`, `ADMIN`
+- **Response 200:** `{ "reportId", "issueDate", "finalScore", "criticalOpen", "totalRemediated", "totalFindings", "findings": [], "anchor": { "hash", "auditor", "keyId", "block" } }`
+- **Notes:** The UI's anchor hash is `fingerprint("<id>:<commitHash>")`; backend should own a real SHA-256 over the signed report payload and record the anchor block.
+- **PDF export:** `GET /api/v1/audits/{id}/report.pdf` (binary) — the UI currently uses `window.print()`.
+
+#### `POST /api/v1/audits/{id}/report/sign`
+- **Purpose:** Lead auditor cryptographically signs/commits the report (log event "Signed and committed audit report" in the seed data).
+- **Auth:** Role: `AUDITOR`, `ADMIN`
+- **Body:** `{ "signature": "0x…" }` · **Response 200:** report with anchor · **Errors:** `403`, `409`
+
+---
+
+### 4.4 Checkout, Billing & Payments
+
+#### `GET /api/v1/pricing/tiers`
+- **Purpose:** Audit pricing tiers (used by `/pricing`, the wizard, and checkout).
+- **Auth:** Public
+- **Response 200:** `{ "tiers": [ { "id": "STANDARD", "name", "priceMinor": 1250000, "currency": "USD", "turnaround", "features": [] }, … ] }`
+- **Notes:** Values today hardcoded in three places (`NewAuditRequestPage`, `CheckoutPage`, `PricingPage`) — must be centralized: STANDARD $12,500 / 5-day, PROFESSIONAL $25,000 / 3-day, ENTERPRISE $50,000+ / 24-7.
+
+#### `GET /api/v1/gateways?rail=USDC&enabled=true`
+- **Purpose:** Resolve the escrow address for a payment rail (checkout page).
+- **Auth:** Public (addresses only; management is admin-only)
+- **Response 200:** `PaymentGateway` · **Errors:** `404` (rail disabled)
+- **Notes:** Replaces `getEnabledGateway`.
+
+#### `POST /api/v1/checkout/settlement`
+- **Purpose:** Confirm escrow deposit and launch the audit atomically (creates audit + billing record).
+- **Auth:** Role: `CLIENT`, `ADMIN` (`client:write`)
+- **Body:**
+```json
+{
+  "audit": { "projectName", "protocolType", "targetRepo", "commitHash", "tier", "attachments" },
+  "rail": "USDC",
+  "txHash": "0x…",
+  "amountMinor": 2500000
+}
+```
+- **Response 201:** `{ "audit": AuditRequest, "billing": BillingTransaction }`
+- **Success:** `201`
+- **Errors:** `422` (rail disabled, amount mismatch vs tier), `409` (already settled), `429`
+- **Notes:** Replaces the coupled `createAuditRequest` + `recordSettlement` in `CheckoutPage`; must be idempotent. Client ledger write must **not** fail client settlement (today it swallows the admin-write error — preserve UX).
+
+#### `GET /api/v1/billing`
+- **Purpose:** Billing history / transaction log (admin).
+- **Auth:** Role: `ADMIN`
+- **Query:** `q`, `status`, `rail`, `from`, `to`, pagination
+- **Response 200:** paginated `BillingTransaction[]`
+
+#### `GET /api/v1/billing/{id}`
+- **Purpose:** Single invoice (route `/admin/invoices/:id`).
+- **Auth:** Role: `ADMIN`
+- **Response 200:** `BillingTransaction` · **Errors:** `404`
+
+#### `GET /api/v1/billing/export.csv`
+- **Purpose:** CSV statement (button "Generate Statement").
+- **Auth:** Role: `ADMIN`
+- **Response 200:** `text/csv` · **Errors:** `403`
+- **Notes:** Replaces `generateStatementCsv` / `downloadTextFile`.
+
+#### `GET /api/v1/refunds`
+- **Purpose:** List refund requests (admin).
+- **Auth:** Role: `ADMIN`
+- **Response 200:** paginated `RefundRequest[]`
+
+#### `POST /api/v1/refunds`
+- **Purpose:** Queue a refund for multi-sig review.
+- **Auth:** Role: `ADMIN`
+- **Body:** `{ "invoiceId", "client"?, "amount", "reason" }`
+- **Response 201:** `RefundRequest` (`status: PENDING`) · **Errors:** `422` (reason required; invoice not found)
+
+#### `POST /api/v1/refunds/{id}/decision`
+- **Purpose:** Approve/deny a refund (multi-sig).
+- **Auth:** Role: `ADMIN`
+- **Body:** `{ "decision": "APPROVED|DENIED" }`
+- **Response 200:** `RefundRequest` (with `decidedAt`, `decidedBy`) · **Errors:** `409` (already decided), `404`
+
+#### `GET /api/v1/gateways` / `PATCH /api/v1/gateways/{id}`
+- **Purpose:** List / update settlement rails (admin gateway config page).
+- **Auth:** Role: `ADMIN`
+- **PATCH body:** `{ "enabled"?, "address"?, "settlementDelay"? }`
+- **Response 200:** `PaymentGateway[]` / `PaymentGateway`
+
+---
+
+### 4.5 Document Vault
+
+#### `GET /api/v1/vault/documents`
+- **Purpose:** List vault documents with category filter + search.
+- **Auth:** Role: `CLIENT`, `AUDITOR`, `ADMIN` (`client:read`)
+- **Query:** `category=REPORTS|CERTIFICATES|SPECS|ALL`, `q` (title or hash), pagination
+- **Response 200:** paginated `VaultDocument[]` (without `body` in list; include `body`/URL on detail)
+
+#### `POST /api/v1/vault/documents`
+- **Purpose:** Upload a document (multipart).
+- **Auth:** Role: `CLIENT`, `AUDITOR`, `ADMIN` (`client:write`)
+- **Body:** `multipart/form-data`: `file`, `title`, `category`, `type`
+- **Response 201:** `VaultDocument` (server computes `hash`, `fileSize`, `updatedAt`, `ownerId`)
+- **Errors:** `422` (file type/size), `413`
+- **Notes:** Replaces `addDocument` (today stores only file name + fabricated body). Production must store the file (object storage) and a content hash.
+
+#### `GET /api/v1/vault/documents/{id}/download`
+- **Purpose:** Download the stored document (UI generates a `.txt` download today).
+- **Auth:** Role: `CLIENT`(owner), `AUDITOR`, `ADMIN`
+- **Response 200:** binary stream (Content-Disposition attachment) · **Errors:** `403`, `404`
+
+---
+
+### 4.6 Governance
+
+#### `GET /api/v1/governance/proposals`
+- **Purpose:** List DAO proposals.
+- **Auth:** Authenticated (`governance:read`)
+- **Query:** `status`, `q`, pagination
+- **Response 200:** paginated `GovernanceProposal[]` (include `userVote` for the caller)
+
+#### `GET /api/v1/governance/proposals/{id}`
+- **Purpose:** Proposal detail (id or `proposalNumber` e.g. `ZAM-842`).
+- **Auth:** Authenticated
+- **Response 200:** `GovernanceProposal` · **Errors:** `404`
+
+#### `POST /api/v1/governance/proposals/{id}/votes`
+- **Purpose:** Cast / change a weighted vote.
+- **Auth:** Authenticated
+- **Body:** `{ "vote": "FOR|AGAINST|ABSTAIN" }`
+- **Response 200:** updated `GovernanceProposal` (recomputed tallies + quorum)
+- **Errors:** `403`/`409` (proposal not `ACTIVE`), `404`
+- **Validation/rules (server must own, today in `castVote`):**
+  - weight = user's `xp` (fallback 1000) — replace with a real voting-power model (e.g. staked ZAM).
+  - changing a vote must first remove the prior vote's weight.
+  - `quorumPercent = round((total / 5600000) * 1000) / 10` — replace the magic constant with a real quorum denominator.
+
+---
+
+### 4.7 Academy / LMS (learner-facing)
+
+#### `GET /api/v1/academy/courses`
+- **Purpose:** Published course catalog (learner).
+- **Auth:** Role: any authenticated (`academy:read`) — STUDENT included
+- **Query:** `q`, `category`, `difficulty`, pagination
+- **Response 200:** paginated `AcademyCourse[]` (id, slug, title, description, category, difficulty, durationMinutes, modulesCount, xpReward, progressPercent, thumbnail, instructor)
+- **Notes:** Replaces `listPublishedCourses`.
+
+#### `GET /api/v1/academy/courses/{idOrSlug}`
+- **Purpose:** Full course incl. modules + lessons (player).
+- **Auth:** Role: any authenticated (`academy:read`); non-`PUBLISHED` requires `ADMIN`.
+- **Response 200:** `ManagedCourse` · **Errors:** `404`, `403`
+
+#### `GET /api/v1/academy/courses/{id}/progress`
+- **Purpose:** Current user's learner progress.
+- **Auth:** Role: self (or `ADMIN` for any user via `?userId=`)
+- **Response 200:** `LearnerProgress | null`
+
+#### `POST /api/v1/academy/courses/{id}/lessons/{lessonId}/complete`
+- **Purpose:** Mark a lesson complete; recompute progress & completion timestamp.
+- **Auth:** Role: self (or `ADMIN`)
+- **Response 200:** `LearnerProgress`
+- **Errors:** `403` (cross-user), `404`
+- **Notes:** Replaces `markLessonComplete` (progress = completed/total × 100, capped 100; sets `completedAt` at 100%).
+
+#### `GET /api/v1/academy/courses/{id}/assessment`
+- **Purpose:** Fetch assessment questions **without** answers.
+- **Auth:** Role: any authenticated (`academy:read`)
+- **Response 200:** `{ "questions": [ { "id", "prompt", "codeSnippet?", "options": [ {id,text} ] } ], "passThreshold": 80 }`
+- **Security:** never return `correctOptionId`/`explanation` (the mock keeps them in one object — backend must separate).
+
+#### `POST /api/v1/academy/courses/{id}/assessment/submit`
+- **Purpose:** Grade an attempt; issue a certificate at/above threshold.
+- **Auth:** Role: self (or `ADMIN`)
+- **Body:** `{ "answers": { "<questionId>": "<optionId>" } }`
+- **Response 200:** `{ "attempt": AssessmentAttempt, "certificate": CertificateRecord|null }`
+- **Rules:** `scorePercent = correct/total × 100`; `passed = scorePercent >= 80` (`PASS_THRESHOLD`); certificate hash = deterministic fingerprint of `(userId, courseId, attemptId)` — server should use a real signature/hash.
+- **Errors:** `403`, `404`, `422` (missing answers / no questions configured)
+
+#### `GET /api/v1/academy/certificates/{id}`
+- **Purpose:** Fetch a certificate (route `/academy/certificate/:id`).
+- **Auth:** Role: owner or `ADMIN`
+- **Response 200:** `CertificateRecord` · **Errors:** `403` (belongs to another operator), `404`
+
+#### `GET /api/v1/academy/certificates`
+- **Purpose:** List my certificates (`?userId=` for ADMIN).
+- **Auth:** Role: owner or `ADMIN`
+- **Response 200:** `CertificateRecord[]`
+
+#### `GET /api/v1/academy/courses/{id}/assessment/latest`
+- **Purpose:** Most recent attempt (resume/retry UX).
+- **Auth:** Role: self or `ADMIN`
+- **Response 200:** `AssessmentAttempt | null`
+
+---
+
+### 4.8 Course Builder & Content Administration (admin)
+
+#### `GET /api/v1/admin/courses`
+- **Purpose:** Full course catalog incl. DRAFT/ARCHIVED (content admin).
+- **Auth:** Role: `ADMIN`
+- **Query:** `status`, `q` (title/slug/instructor/category), pagination
+- **Response 200:** paginated `ManagedCourse[]`
+
+#### `POST /api/v1/admin/courses`
+- **Purpose:** Create a draft course (builder).
+- **Auth:** Role: `ADMIN`
+- **Body:** `CourseDraftInput` = `{ title, slug?, description, category, difficulty, instructor, thumbnail?, xpReward? }`
+- **Response 201:** `ManagedCourse` (`status: DRAFT`, one default module+lesson)
+- **Validation:** title required; unique slug (server slugifies + dedupes `-2`, `-3`…).
+
+#### `GET /api/v1/admin/courses/{id}`
+- **Purpose:** Open a course in the builder (id or slug).
+- **Auth:** Role: `ADMIN`
+- **Response 200:** `ManagedCourse`
+
+#### `PATCH /api/v1/admin/courses/{id}`
+- **Purpose:** Save metadata + full curriculum (modules/lessons array).
+- **Auth:** Role: `ADMIN`
+- **Body:** partial `ManagedCourse` (title, slug, description, category, difficulty, instructor, thumbnail, xpReward, modules)
+- **Response 200:** `ManagedCourse` (server normalizes module `order`, re-assigns ids for new items, bumps `updatedAt`)
+- **Errors:** `403`, `404`, `409` (slug collision), `422`
+- **Notes:** The builder currently persists the *entire* course object — an atomic "save whole curriculum" contract is acceptable, but the backend should also expose granular module/lesson endpoints below for larger courses.
+
+#### `POST /api/v1/admin/courses/{id}/modules`
+- **Purpose:** Append a new module (builder "+ Module").
+- **Auth:** Role: `ADMIN` · **Response 201:** `CourseModule`
+
+#### `POST /api/v1/admin/courses/{id}/modules/{moduleId}/lessons`
+- **Purpose:** Append a new lesson to a module ("+ Lesson").
+- **Auth:** Role: `ADMIN` · **Response 201:** `CourseLesson`
+
+#### `POST /api/v1/admin/courses/{id}/status`
+- **Purpose:** Publish / archive a course.
+- **Auth:** Role: `ADMIN`
+- **Body:** `{ "status": "PUBLISHED|ARCHIVED" }`
+- **Response 200:** `ManagedCourse` (sets `publishedAt` on first publish)
+- **Errors:** `409` (invalid transition), `404`
+
+#### `DELETE /api/v1/admin/courses/{id}`
+- **Purpose:** Delete a course (builder + content admin; UI confirms first).
+- **Auth:** Role: `ADMIN`
+- **Response:** `204` · **Errors:** `403`, `404`
+
+---
+
+### 4.9 Admin — Security Logs
+
+#### `GET /api/v1/admin/logs`
+- **Purpose:** Security log / audit trail feed (both `/admin/logs` and faceted `/admin/logs-tactical`).
+- **Auth:** Role: `ADMIN`
+- **Query (faceted):** `q` (actor/action/IP), `eventSource`, `status=BLOCKED|ALLOWED|FLAGGED|RESOLVED`, `from`, `to`, `severity`, pagination
+- **Response 200:** paginated `SecurityLogEntry[]` (+ facet values available via `GET /api/v1/admin/logs/facets` or inline metadata)
+- **Notes:** Replaces `getSecurityLogs`.
+
+#### `GET /api/v1/admin/logs/export.csv`
+- **Purpose:** Export (optionally filtered) logs as CSV.
+- **Auth:** Role: `ADMIN`
+- **Query:** same facets as above
+- **Response 200:** `text/csv`
+- **Notes:** Replaces `exportLogsCsv` + the tactical page's inline CSV builder.
+
+#### `POST /api/v1/admin/logs`
+- **Purpose:** Ingest an internal/security event (used today by `appendSecurityLog`).
+- **Auth:** Role: `ADMIN` **or** service/API-key (`logs:write` scope)
+- **Body:** `{ "severity", "eventSource", "actor", "action", "ipAddress", "status" }`
+- **Response 201:** `SecurityLogEntry` (server assigns id, timestamp, hash)
+
+---
+
+### 4.10 Admin — Security Configuration
+
+#### `GET /api/v1/admin/security-config`
+- **Auth:** Role: `ADMIN`
+- **Response 200:** `SecurityConfig` (`fido2Required`, `autoMitigate`, `ipWhitelisting`, `rateLimitStrict`)
+
+#### `PUT /api/v1/admin/security-config`
+- **Auth:** Role: `ADMIN`
+- **Body:** full `SecurityConfig`
+- **Response 200:** `SecurityConfig` · **Errors:** `403`, `422`
+- **Notes:** Replaces `updateSecurityConfig` (entire object, last-write-wins).
+
+---
+
+### 4.11 Admin — Operators & Protocols (Master Registry)
+
+#### `GET /api/v1/admin/operators`
+- **Auth:** Role: `ADMIN`
+- **Query:** `q` (name/email/role), `role`, `status`, pagination
+- **Response 200:** paginated `OperatorRecord[]`
+
+#### `PATCH /api/v1/admin/operators/{id}`
+- **Auth:** Role: `ADMIN`
+- **Body:** `{ "role"?, "status"?: "ACTIVE|SUSPENDED|ISOLATED", "clearance"? }`
+- **Response 200:** `OperatorRecord`
+- **Errors:** `409` (cannot demote/isolate the **last** `ADMIN` — enforced today in `updateOperator`), `403`, `404`
+
+#### `GET /api/v1/admin/protocols`
+- **Auth:** Role: `ADMIN`
+- **Query:** `q` (name/category/address), `status`, pagination
+- **Response 200:** paginated `ProtocolRecord[]`
+
+#### `PATCH /api/v1/admin/protocols/{id}`
+- **Auth:** Role: `ADMIN`
+- **Body:** `{ "status"?: "MONITORING|ISOLATED|RESTORED|BLACKLISTED", "gasThresholdGwei"? }`
+- **Response 200:** `ProtocolRecord` · **Errors:** `403`, `404`
+
+---
+
+### 4.12 Admin — API Keys (Developers)
+
+#### `GET /api/v1/admin/api-keys`
+- **Auth:** Role: `ADMIN`
+- **Response 200:** `ApiKeyRecord[]` (never returns the full secret)
+
+#### `POST /api/v1/admin/api-keys`
+- **Auth:** Role: `ADMIN`
+- **Body:** `{ "name", "scopes", "rateLimit" }`
+- **Response 201:** `ApiKeyRecord` **including the secret once** (`secret`) — UI shows it only at creation.
+- **Errors:** `422` (rateLimit ≥ 0; scopes non-empty)
+
+#### `POST /api/v1/admin/api-keys/{id}/revoke`
+- **Auth:** Role: `ADMIN`
+- **Response 200:** `ApiKeyRecord` (`status: REVOKED`) · **Errors:** `404`
+- **Notes:** Replaces `revokeApiKey`.
+
+---
+
+### 4.13 Admin — Alert Routing
+
+#### `GET /api/v1/admin/alerts`
+- **Auth:** Role: `ADMIN`
+- **Response 200:** `AlertRoute[]`
+
+#### `POST /api/v1/admin/alerts`
+- **Auth:** Role: `ADMIN`
+- **Body:** `{ "name", "eventSource", "minSeverity", "channel", "target", "enabled", "threshold" }`
+- **Response 201:** `AlertRoute`
+
+#### `PUT /api/v1/admin/alerts/{id}`
+- **Auth:** Role: `ADMIN`
+- **Body:** full `AlertRoute` (upsert — replaces `upsertAlertRoute`)
+- **Response 200:** `AlertRoute`
+- **Notes:** The UI saves on **every field change** (name, enabled, severity, channel, threshold, target). Backend should be tolerant of rapid partial saves (debounce client-side; validate `target` per channel: URL for WEBHOOK, email for EMAIL, chat id for TELEGRAM/PAGER).
+
+---
+
+### 4.14 Admin — Token Risk Overrides
+
+#### `GET /api/v1/admin/token-reports`
+- **Auth:** Role: `ADMIN`
+- **Response 200:** `TokenReportOverride[]`
+
+#### `POST /api/v1/admin/token-reports`
+- **Auth:** Role: `ADMIN`
+- **Body:** `TokenReportOverride` minus `id/updatedAt`
+- **Response 201:** `TokenReportOverride`
+- **Validation:** `contractAddress` required (0x-hex); numeric fields 0–100.
+
+#### `PUT /api/v1/admin/token-reports/{id}`
+- **Auth:** Role: `ADMIN`
+- **Body:** full override · **Response 200:** `TokenReportOverride`
+- **Notes:** Replaces `upsertTokenReport` (address-based dedupe today; keep that or unique-index on address).
+
+#### `DELETE /api/v1/admin/token-reports/{id}`
+- **Auth:** Role: `ADMIN` · **Response:** `204`
+
+#### `GET /api/v1/token/overrides/{address}`  *(server-side lookup used by scan engine)*
+- **Purpose:** Internal/scan-engine read of an override for a contract address (the mock `peekTokenOverride`). Not a user-facing endpoint; expose as service-to-service or admin scope.
+
+---
+
+### 4.15 Threat Hub — Security projects (Skynet leaderboard)
+
+#### `GET /api/v1/security/projects`
+- **Purpose:** Ranked, scored project list for the leaderboard + Skynet dashboard.
+- **Auth:** Role: any authenticated (`threat-hub:read`)
+- **Query:** `q` (name/symbol/address/category/chain), `category`, `chain`, `sort=score|marketCap|incidents|name`, `dir`, pagination
+- **Response 200:** paginated `ScoredProject[]` (`SecurityProject` + `score`, `tier`, `rankPercentile`, `deductions`)
+- **Notes:** Replaces `getAllScoredProjects`/`filterAndRankProjects` + the commented `fetch('/api/security/projects')`. Scoring engine (§4.16) must run server-side.
+
+#### `GET /api/v1/security/projects/{id}`
+- **Purpose:** Full profile (route `/threat-hub/projects/:id`).
+- **Auth:** Role: any authenticated (`threat-hub:read`)
+- **Response 200:** `ScoredProject` · **Errors:** `404`
+
+#### `GET /api/v1/security/projects/meta`
+- **Purpose:** Facet options (distinct chains + categories) for the filter controls.
+- **Auth:** Role: any authenticated (`threat-hub:read`)
+- **Response 200:** `{ "chains": ["Arbitrum", …], "categories": ["BRIDGE", …] }`
+
+#### `GET /api/v1/security/leaderboard/ecosystem`
+- **Purpose:** Chain/ecosystem Z-Score matrix (the `mockSecurityLeaderboard` in `/leaderboard/security` + Skynet KPI).
+- **Auth:** Role: any authenticated
+- **Response 200:** `{ "items": [ { "rank", "name", "zScore", "tvp", "auditedCount", "threatsBlocked" } ] }`
+
+#### `GET /api/v1/skynet/overview`
+- **Purpose:** Skynet dashboard aggregates (KPIs + pre-launch watchlist + live monitoring table).
+- **Auth:** Role: any authenticated
+- **Response 200:** `{ "kpis": {…}, "prelaunchWatchlist": [ {name,symbol,score,rating,sentiment,coverage,date,stage} ], "liveMonitoring": [ {name,score,rating,marketCap,volume,price,change24h} ] }`
+- **Notes:** Today hardcoded inline in `SkynetDashboardPage` — backend should produce real aggregates; CSV export can reuse this data.
+
+---
+
+### 4.16 Security scoring engine (server-side service)
+
+The scoring algorithm in `src/services/securityScoreService.ts` is **pure business logic** that must
+live server-side (it is the core product). Expose results through the endpoints above rather than as
+its own HTTP endpoint, but implement:
+
+- 6 weighted dimensions (`DIMENSION_WEIGHTS`): codeSecurity 0.30, operationalResilience 0.20, fundamentalHealth 0.15, governanceStrength 0.15, marketStability 0.10, communityTrust 0.10.
+- Tier bands: AAA≥95, AA≥90, A≥85, BBB≥75, BB≥65, B≥50, C≥35, D≥0.
+- Deductions (missing audit −12, no KYC −6, no bounty −3, honeypot −25, unrestricted mint −8, blacklist −4, unverified contract −5, low liquidity lock −6, high holder concentration −5, active incident −15).
+- `score = clamp(base − Σdeductions, 0, 100)`; percentile is relative to the full cohort.
+
+---
+
+### 4.17 Threat Hub — Incidents
+
+#### `GET /api/v1/security/incidents`
+- **Auth:** Role: any authenticated (`threat-hub:read`)
+- **Query:** `severity`, `q` (project/summary/chain/type), `status`, `from`, `to`, pagination, `sort=timestamp`, `dir=desc`
+- **Response 200:** paginated `SecurityIncident[]`
+
+#### `GET /api/v1/security/incidents/stats`
+- **Auth:** Role: any authenticated
+- **Response 200:** `{ "totalFundsLost", "critical", "ongoing", "last24h", "total" }`
+- **Notes:** Replaces `getIncidentStats`.
+
+---
+
+### 4.18 Threat Hub — Whale Alerts
+
+#### `GET /api/v1/whale-alerts`
+- **Auth:** Role: any authenticated (`threat-hub:read`)
+- **Query:** `chain=ETH|SOL|BSC|AVAX|ARB`, `flagType`, `minUsdValue`, pagination
+- **Response 200:** paginated `WhaleAlert[]`
+- **Notes:** Replaces `mockWhaleAlerts`; requires a real on-chain/indexer ingestion pipeline (websocket/streaming is the natural fit — see §9 gap G-4).
+
+---
+
+### 4.19 Threat Hub — Token Analyzer
+
+#### `POST /api/v1/token/scan`
+- **Purpose:** Analyze a contract address for risk indicators (honeypot, mint, blacklist, proxy, taxes, liquidity, holders).
+- **Auth:** Role: any authenticated (`threat-hub:read`)
+- **Body:** `{ "contractAddress": "0x7a58…" }`
+- **Response 200:** `TokenScanResult` (minus `isDemo`)
+- **Errors:** `422` (invalid address — UI validates `/^0x[a-fA-F0-9]{6,}$/`), `429` (rate limit), `502` (upstream RPC/analyzer failure)
+- **Validation:** `contractAddress` required, valid hex address (checksum-validate).
+- **Notes:** The current `scanToken` is **deterministically fake** (hashes the address). Replace with a real bytecode/on-chain analyzer that **applies admin `TokenReportOverride`s** server-side (see 4.14).
+
+---
+
+### 4.20 Threat Hub — Ecosystem health
+
+#### `GET /api/v1/ecosystem/nodes`
+- **Purpose:** Node latency/load telemetry (`/threat-hub/ecosystem`).
+- **Auth:** Role: any authenticated
+- **Query:** `status=HEALTHY|DEGRADED|HOT`
+- **Response 200:** `{ "nodes": [ { "id", "name", "region", "latency", "load", "status" } ], "avgLatency", "hot", "uptimeWindow" }`
+- **Notes:** Today fabricated from a hardcoded 5-node base + jitter. Real backend: internal infra metrics (Prometheus-style).
+
+#### `GET /api/v1/status/services`
+- **Purpose:** Support-page "Live Node Diagnostics" (service name, status, latency).
+- **Auth:** Public
+- **Response 200:** `{ "services": [ { "name", "status", "latency" } ] }`
+
+---
+
+### 4.21 Support
+
+#### `GET /api/v1/support/articles`
+- **Purpose:** Knowledge-base list.
+- **Auth:** Public
+- **Response 200:** `KnowledgeArticle[]` (paginated; no auth)
+
+#### `GET /api/v1/support/articles/search?q=`
+- **Purpose:** KB search (title/body/category/tags).
+- **Auth:** Public
+- **Response 200:** `KnowledgeArticle[]`
+- **Notes:** Replaces `searchArticles`.
+
+#### `POST /api/v1/support/tickets`
+- **Purpose:** Submit a support/incident ticket (emergency modal + any future form).
+- **Auth:** Public (email-gated)
+- **Body:** `{ "name", "email", "subject", "body", "severity": "LOW|HIGH|CRITICAL" }`
+- **Response 201:** `SupportTicket` (server assigns id + createdAt)
+- **Validation:** all fields required; email valid; severity ∈ enum.
+- **Notes:** Replaces `submitTicket` (today stores to localStorage only). Should also trigger the alert-routing pipeline (4.13) for `CRITICAL`.
+
+---
+
+### 4.22 Site content (marketing)
+
+- **Purpose:** Static marketing copy (hero metrics, features, methodology, pricing) is hardcoded in
+  page components. Optional endpoints (only if content must be CMS-managed):
+  - `GET /api/v1/site/content` → page copy
+  - `GET /api/v1/site/status` → public system metrics
+- **Priority:** LOW — not required for launch; the `/catalog` page is fully static.
+
+---
+
+## 5. Mock/hard-coded data → endpoint mapping
+
+| Today (frontend source) | Replace with |
+|---|---|
+| `authService.authenticate/resolveDemoUser/registerOperator` | `POST /auth/login`, `/auth/login/webauthn`, `/auth/login/wallet`, `/auth/register` |
+| `authService.restoreSession` | `GET /auth/session` |
+| `DEMO_USERS`, `buildClientFromInduction` | Real user store + `POST /auth/register` |
+| `mockAuditRequests`, `mockFindings` | `GET /audits`, `GET /audits/{id}`, `GET /audits/{id}/findings` |
+| `auditService.createAuditRequest/claimAudit/updateAuditStatus/updateFinding` | `POST /audits`, `POST /audits/{id}/claim`, `PATCH /audits/{id}`, `PATCH /audits/{id}/findings/{findingId}` |
+| `auditService.setPendingCheckout` (sessionStorage) | server-held checkout draft or resubmit payload to `POST /checkout/settlement` |
+| `adminService.getSecurityLogs/exportLogsCsv` (`mockLogs`) | `GET /admin/logs`, `GET /admin/logs/export.csv` |
+| `adminService.getBillingHistory/getInvoice/recordSettlement` | `GET /billing`, `GET /billing/{id}`, `POST /checkout/settlement` |
+| `adminService.getSecurityConfig/updateSecurityConfig` | `GET/PUT /admin/security-config` |
+| `adminService.listOperators/updateOperator`, `listProtocols/updateProtocol` | `GET/PATCH /admin/operators`, `/admin/protocols` |
+| `adminService.listApiKeys/createApiKey/revokeApiKey` | `GET/POST /admin/api-keys`, `POST /admin/api-keys/{id}/revoke` |
+| `adminService.listAlertRoutes/upsertAlertRoute` | `GET/POST/PUT /admin/alerts` |
+| `adminService.listGateways/updateGateway/getEnabledGateway` | `GET/PATCH /gateways`, `GET /gateways?rail=` |
+| `adminService.listRefunds/createRefund/decideRefund` | `GET/POST /refunds`, `POST /refunds/{id}/decision` |
+| `adminService.listTokenReports/upsertTokenReport/deleteTokenReport/peekTokenOverride` | `GET/POST/PUT/DELETE /admin/token-reports`, server-side override lookup |
+| `courseService.listManagedCourses/createCourse/updateCourse/…/deleteCourse` | `GET/POST/PATCH/DELETE /admin/courses…` |
+| `courseService.listPublishedCourses/getManagedCourse` | `GET /academy/courses`, `/academy/courses/{idOrSlug}` |
+| `SEED_COURSES`, `SEED_QUESTIONS` (`lmsSeed.ts`) | seeded DB fixtures |
+| `academyService.getProgress/markLessonComplete/submitAssessment/getCertificate/listCertificates/latestAttempt` | Academy endpoints §4.7 |
+| `governanceService.listProposals/getProposal/castVote` (`mockProposals`) | Governance endpoints §4.6 |
+| `vaultService.listDocuments/getDocument/addDocument` | Vault endpoints §4.5 |
+| `supportService.searchArticles/listArticles/submitTicket` | `GET /support/articles…`, `POST /support/tickets` |
+| `tokenScanService.scanToken` | `POST /token/scan` |
+| `projectService.*`, `DEMO_PROJECTS` (`securityData.ts`) | `GET /security/projects…` |
+| `incidentService.*`, `DEMO_INCIDENTS` | `GET /security/incidents`, `/stats` |
+| `mockWhaleAlerts` | `GET /whale-alerts` |
+| `mockSecurityLeaderboard`, `mockAuditorLeaderboard` | `/security/leaderboard/ecosystem`, `/leaderboard/auditors` |
+| `SkynetDashboardPage` inline arrays | `GET /skynet/overview` |
+| `EcosystemHealthPage.BASE_NODES` + jitter | `GET /ecosystem/nodes` |
+| `SupportPage.statusItems` | `GET /status/services` |
+| `PricingPage`/`NewAuditRequestPage`/`CheckoutPage` tier constants | `GET /pricing/tiers` |
+| `lib/evm.ts` disassembly | keep client-side (pure function) OR optional `POST /forensics/disassemble` |
+
+---
+
+## 6. Server-side business rules to own (currently baked into the frontend)
+
+These are the "gotchas" a backend must reproduce **exactly**, then own:
+
+1. **Role minting** — login must resolve the user's real role from the account store; never from client input. (Today a hardcoded `email → role` table exists in `mock/data.ts`.)
+2. **Tenancy** — `CLIENT` can only read their own audits/findings/certificates/documents; `AUDITOR`/`ADMIN` see all. Today in `auditService.getAudit/listClientAudits`, `academyService`, `vaultService`.
+3. **Last-ADMIN guard** — cannot demote/isolate the final `ADMIN` (`updateOperator`).
+4. **Student restriction** — `STUDENT` cannot triage findings (`updateFinding` throws).
+5. **Audit state machine** — `QUEUED→SCANNING→IN_REVIEW→VERIFIED→COMPLETED`; claim floors progress at 40% and sets lead auditor.
+6. **Findings recount** — changing a finding's severity/status recomputes the audit `findingsCount`.
+7. **Assessment grading** — 80% pass threshold; grading and correct-answer exposure happen server-side only.
+8. **Certificate issuance** — deterministic hash + issued-at + course title snapshot.
+9. **Vote weighting** — weight from voting power (today `user.xp ?? 1000`); changing votes removes the previous weight; quorum computed against a real denominator (today magic `5,600,000`).
+10. **Security scoring** — weights, tier bands, and deductions (full list in §4.16) must run server-side; percentiles are cohort-relative.
+11. **Token overrides** — admin-calibrated overrides must be applied by the scan engine (today `peekTokenOverride` in `scanToken`).
+12. **Checkout atomicity** — settlement creates the audit and the billing record atomically and idempotently.
+13. **Slug uniqueness** — course slugs auto-dedupe (`-2`, `-3`…).
+14. **Log hashing** — each security log entry is content-hashed (fingerprint of actor+action today; real content hash + optional Merkle anchor in production).
+15. **Secure-gate invariant** — the 2FA gate verifies but **never** elevates role/clearance.
+
+---
+
+## 7. Validation summary (endpoint → key rules)
+
+| Field | Rule |
+|---|---|
+| email | RFC-5322, lowercase, unique at registration |
+| password | ≥ 12 recommended (UI meter: ≥8, upper, digit, symbol) |
+| contractAddress | `0x` + 40 hex; EIP-55 checksum (token scan, protocols, overrides) |
+| commitHash | hex/SHA pattern (audit scoping) |
+| tier | `STANDARD|PROFESSIONAL|ENTERPRISE` |
+| rail | `USDC|ETH|WIRE|SOL` |
+| severity (log) | `CRIT|WARN|INFO`; (finding) `CRITICAL|HIGH|MEDIUM|LOW|INFORMATIONAL`; (incident) `CRITICAL|HIGH|MEDIUM|LOW` |
+| channel target | WEBHOOK→URL, EMAIL→email, TELEGRAM/PAGER→non-empty |
+| threshold | int ≥ 1 |
+| rateLimit | int ≥ 0 (req/min) |
+| progressPercent | 0–100 |
+| liquidityLockedPercent / top10HoldersPercent / taxes | 0–100 |
+| amountMinor | int ≥ 0 |
+| vote | `FOR|AGAINST|ABSTAIN`, proposal must be `ACTIVE` |
+| decision | `APPROVED|DENIED`, refund must be `PENDING` |
+| file upload | `.sol`/`.zip`/`.pdf`; ≤ 50 MB (audit) |
+
+---
+
+## 8. Success status code summary
+
+| Code | Used for |
+|---|---|
+| 200 | reads, updates, exports |
+| 201 | creation (audit, course, api-key, refund, alert, ticket, document) |
+| 204 | logout, deletes, no-content |
+| 401/403/404/409/422/429 | per §2.4 |
+
+---
+
+## 9. Inconsistencies & gaps (frontend vs. backend)
+
+Since there is **no backend**, the "inconsistencies" are places where the frontend's behavior
+imposes requirements a naive backend might get wrong, plus genuine product gaps.
+
+**G-1 — Profile routing ignores `:id`.** `UserProfilePage` always renders the logged-in user and
+never fetches `/users/{id}`. Backend should support real profile lookup and document whether other
+users' profiles are public/restricted.
+
+**G-2 — Correct answers live in the client.** `AssessmentQuestion` includes `correctOptionId` and
+`explanation` in the same object the quiz UI consumes. The backend **must** strip these from
+`GET /academy/courses/{id}/assessment`.
+
+**G-3 — Token scan is fake.** `tokenScanService.scanToken` derives results from a hash of the
+address. A production backend needs real static/bytecode + on-chain analysis; the UI already
+displays a "DEMO ENGINE" notice (`DemoDataNotice`).
+
+**G-4 — No realtime transport.** "Live" log streams, whale alerts, telemetry, and incident feeds are
+static arrays. The eventual backend should offer **SSE/WebSocket** (e.g. `GET /stream/logs`,
+`/stream/whale-alerts`) — not in the REST contract but flagged as required for the "live" UX.
+
+**G-5 — File uploads are name-only.** New-audit attachment drag/drop and vault "uploads" capture
+filenames only (no bytes). Backend needs real `multipart` upload + object storage + hashing.
+
+**G-6 — Pricing duplicated in 3 files.** Tier metadata (`$12,500 / $25,000 / $50,000`) is
+hardcoded in `PricingPage`, `NewAuditRequestPage`, and `CheckoutPage` and **disagrees in label**
+("Standard Tier"/"Standard Audit"; "Enterprise Matrix"/"Enterprise Audit"). Centralize via
+`GET /pricing/tiers`.
+
+**G-7 — Money is stringly-typed.** `BillingTransaction.amount` is a display string (`"$50,000"`)
+with a parallel numeric `amountValue`. Use `amountMinor` + `currency` (integer minor units).
+
+**G-8 — Two inconsistent course type families.** `src/types/courses.ts`/`content.ts`/`coursesContent.ts`
+define an older, orphaned course model (`CourseCard`, `CourseCategory`) that is **not routed**;
+the live LMS uses `src/types/lms.ts` (`ManagedCourse`). Backend should implement only the `lms`
+model and ignore the orphaned one.
+
+**G-9 — Orphaned components.** `AdminStats`, `MasterRegistry`, `ActivityStream`, `RiskHeatmap`,
+`analytics/*`, `risk-report/*`, `scam-detector/*`, `scanner/*`, `assessment/*`, `certificate/*`,
+`content/*`, `ecosystem/*`, `courses/*`, `sections/*` are unreferenced by any route. Do not build
+endpoints for them unless product resurrects those screens. (`RiskHeatmap`/`MasterRegistry` etc.
+are superseded by `UsersProtocolsPage`, `SecurityLogsPage`, `TokenRiskEditorPage`.)
+
+**G-10 — Governance quorum denominator is a magic number** (`5,600,000`). Replace with a real
+total-voting-power value from the governance contract.
+
+**G-11 — Demo user table is the auth store.** `DEMO_USER_BY_EMAIL` must be deleted in production;
+credential lookup + password hashing + (optionally) wallet/SIWE + WebAuthn credentials must be real.
+
+**G-12 — Client settlement swallows billing-write failures.** In `CheckoutPage`, the billing ledger
+write is wrapped in try/catch "Clients cannot write the admin ledger; the engagement still launches."
+The backend must decide the correct semantics (settlement succeeds even if a *decorative* ledger
+entry fails) and implement it atomically (§4.4).
+
+**G-13 — CSV/PDF exports are client-side.** `window.print()` (report/certificate/invoice PDF) and
+`downloadTextFile` (CSV) should become server-rendered exports for consistency and signing.
+
+**G-14 — Audit/incident/whale data has no source of truth.** All "security intelligence" is
+fabricated demo data with an explicit "do not rely on this" notice. The backend must define and
+pipeline real data sources (chain indexers, static analyzers, incident feeds).
+
+---
+
+## 10. Recommended implementation order (backend)
+
+1. **Auth + users + RBAC** (§4.1–4.2) — prerequisite for everything.
+2. **Audits + findings + checkout/billing** (§4.3–4.4) — core product loop.
+3. **Academy LMS + admin courses** (§4.7–4.8) — full CRUD + grading.
+4. **Security intelligence read APIs** (§4.15–4.19) — projects/incidents/whales/token scan/scoring.
+5. **Admin ops** (§4.9–4.14) — logs, config, operators/protocols, keys, alerts, token overrides.
+6. **Governance, vault, support** (§4.5–4.6, §4.21).
+7. **Realtime + exports** (G-4, G-13).
+
+---
+
+## 11. OpenAPI
+
+The machine-readable version of this contract is in **`docs/openapi.yaml`** (OpenAPI 3.1).
+It defines the same paths, request/response schemas, security schemes, and error envelope.

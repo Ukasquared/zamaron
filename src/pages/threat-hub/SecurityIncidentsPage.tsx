@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
@@ -20,6 +21,9 @@ const FILTERS: { id: IncidentFilter; label: string }[] = [
 
 export const SecurityIncidentsPage: React.FC = () => {
   const { filtered, stats, severity, setSeverity, query, setQuery } = useIncidents();
+  const [subscribed, setSubscribed] = useState(
+    typeof window !== 'undefined' && window.localStorage.getItem('zamaron_incident_alerts') === '1'
+  );
 
   return (
     <div className="space-y-6 pb-12">
@@ -42,8 +46,16 @@ export const SecurityIncidentsPage: React.FC = () => {
             supported chains.
           </p>
         </div>
-        <Button variant="outline" size="sm" icon="notifications_active">
-          Subscribe Alerts
+        <Button
+          variant="outline"
+          size="sm"
+          icon="notifications_active"
+          onClick={() => {
+            window.localStorage.setItem('zamaron_incident_alerts', '1');
+            setSubscribed(true);
+          }}
+        >
+          {subscribed ? 'Alerts Armed' : 'Subscribe Alerts'}
         </Button>
       </div>
 
@@ -141,9 +153,11 @@ export const SecurityIncidentsPage: React.FC = () => {
               Route critical incidents to your team via webhook, Telegram or email. Thresholds are
               configurable per project and severity.
             </p>
-            <Button variant="outline" size="sm" icon="cell_tower" className="w-full">
-              Configure Routing
-            </Button>
+            <Link to="/admin/alerts">
+              <Button variant="outline" size="sm" icon="cell_tower" className="w-full">
+                Configure Routing
+              </Button>
+            </Link>
           </Card>
 
           <Card variant="fresnel" className="p-5 space-y-3">
