@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Card } from '@/components/ui/Card';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -48,7 +48,11 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <Card variant="fresnel" className="w-full max-w-md p-8 space-y-6 shadow-2xl relative">
+    <GlassCard
+      variant="fresnel"
+      blur="xl"
+      className="w-full max-w-md p-8 space-y-6 shadow-[0_0_40px_rgba(0,218,243,0.15)] relative border-cyan-500/30"
+    >
       <div className="flex items-center justify-between">
         <Badge variant="primary" size="sm" dot pulse>
           TERMINAL ACCESS
@@ -57,25 +61,26 @@ export const LoginPage: React.FC = () => {
       </div>
 
       <div className="space-y-1">
-        <h2 className="font-display font-bold text-2xl text-white">Welcome back, Operator</h2>
-        <p className="text-xs text-slate-400 font-sans">
+        <h2 className="font-display font-black text-2xl text-white">Welcome back, Operator</h2>
+        <p className="text-xs text-slate-400 font-sans leading-relaxed">
           Authenticate your node credentials to access the encrypted console.
         </p>
       </div>
 
+      {/* Demo Role Selector */}
       <div className="space-y-2">
-        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+        <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
           Demo clearance (binds session role)
         </div>
-        <div className="grid grid-cols-3 gap-1 p-1 bg-[#060e20] rounded border border-outline/70">
+        <div className="grid grid-cols-3 gap-1 p-1 bg-[#060e20]/80 rounded-lg border border-white/10">
           {PRIMARY_ROLES.map((role) => (
             <button
               key={role}
               type="button"
               onClick={() => applyDemoRole(role)}
-              className={`py-1.5 text-[11px] font-mono rounded font-semibold transition-colors cursor-pointer ${
+              className={`py-1.5 text-[11px] font-mono rounded-md font-semibold transition-all cursor-pointer ${
                 selectedRole === role
-                  ? 'bg-primary text-[#00363d] font-bold'
+                  ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -84,16 +89,19 @@ export const LoginPage: React.FC = () => {
           ))}
         </div>
         <p className="text-[10px] font-mono text-slate-500">
-          {DEMO_USERS[selectedRole].email} • role is issued by the auth service, not the client.
+          {DEMO_USERS[selectedRole].email} • role issued by auth service
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-1 p-1 bg-[#060e20] rounded border border-outline/70">
+      {/* Auth Method Tabs */}
+      <div className="grid grid-cols-3 gap-1 p-1 bg-[#060e20]/80 rounded-lg border border-white/10">
         <button
           type="button"
           onClick={() => setAuthMethod('PASSWORD')}
-          className={`py-1.5 text-[11px] font-mono rounded font-semibold transition-colors cursor-pointer ${
-            authMethod === 'PASSWORD' ? 'bg-primary text-[#00363d] font-bold' : 'text-slate-400 hover:text-white'
+          className={`py-1.5 text-[11px] font-mono rounded-md font-semibold transition-all cursor-pointer ${
+            authMethod === 'PASSWORD'
+              ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           PASSKEY / PWD
@@ -101,8 +109,10 @@ export const LoginPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setAuthMethod('PASSKEY')}
-          className={`py-1.5 text-[11px] font-mono rounded font-semibold transition-colors cursor-pointer ${
-            authMethod === 'PASSKEY' ? 'bg-primary text-[#00363d] font-bold' : 'text-slate-400 hover:text-white'
+          className={`py-1.5 text-[11px] font-mono rounded-md font-semibold transition-all cursor-pointer ${
+            authMethod === 'PASSKEY'
+              ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           WEBAUTHN
@@ -110,8 +120,10 @@ export const LoginPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setAuthMethod('WALLET')}
-          className={`py-1.5 text-[11px] font-mono rounded font-semibold transition-colors cursor-pointer ${
-            authMethod === 'WALLET' ? 'bg-primary text-[#00363d] font-bold' : 'text-slate-400 hover:text-white'
+          className={`py-1.5 text-[11px] font-mono rounded-md font-semibold transition-all cursor-pointer ${
+            authMethod === 'WALLET'
+              ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           WEB3 WALLET
@@ -152,8 +164,8 @@ export const LoginPage: React.FC = () => {
         )}
 
         {authMethod === 'PASSKEY' && (
-          <div className="p-6 bg-[#060e20] border border-primary/30 rounded text-center space-y-4">
-            <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary">
+          <div className="p-6 bg-[#060e20]/80 border border-cyan-500/30 rounded-xl text-center space-y-4">
+            <div className="w-12 h-12 mx-auto rounded-full bg-cyan-500/10 border border-cyan-400 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,218,243,0.3)]">
               <Icon name="fingerprint" size={28} />
             </div>
             <div>
@@ -164,8 +176,8 @@ export const LoginPage: React.FC = () => {
         )}
 
         {authMethod === 'WALLET' && (
-          <div className="p-6 bg-[#060e20] border border-primary/30 rounded text-center space-y-4">
-            <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary">
+          <div className="p-6 bg-[#060e20]/80 border border-cyan-500/30 rounded-xl text-center space-y-4">
+            <div className="w-12 h-12 mx-auto rounded-full bg-cyan-500/10 border border-cyan-400 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,218,243,0.3)]">
               <Icon name="account_balance_wallet" size={28} />
             </div>
             <div>
@@ -176,7 +188,7 @@ export const LoginPage: React.FC = () => {
         )}
 
         {error && (
-          <div className="text-xs font-mono text-error bg-error/10 border border-error/40 rounded px-3 py-2">
+          <div className="text-xs font-mono text-red-400 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2">
             {error}
           </div>
         )}
@@ -186,14 +198,14 @@ export const LoginPage: React.FC = () => {
         </Button>
       </form>
 
-      <div className="pt-4 border-t border-outline/50 flex items-center justify-between text-xs font-mono text-slate-400">
-        <Link to="/auth/induction" className="hover:text-primary transition-colors">
-          New Operator? <span className="text-primary font-bold">Begin Induction</span>
+      <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
+        <Link to="/auth/induction" className="hover:text-cyan-300 transition-colors">
+          New Operator? <span className="text-cyan-400 font-bold">Begin Induction</span>
         </Link>
         <Link to="/auth/secure-gate" className="hover:text-slate-200">
           Hardware Enclave
         </Link>
       </div>
-    </Card>
+    </GlassCard>
   );
 };
