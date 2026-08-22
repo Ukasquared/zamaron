@@ -53,10 +53,10 @@
   --color-silver: #c0c0c0;
 
   /* Font families */
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Hanken Grotesk', 'Inter', sans-serif;
+  --font-display: 'Sora', 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', 'Hanken Grotesk', sans-serif;
   --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
-  --font-headline: 'Space Grotesk', sans-serif;
+  --font-headline: 'Sora', 'Space Grotesk', sans-serif;
   --font-sans: 'Inter', 'Hanken Grotesk', sans-serif;
 
   /* Border radius */
@@ -75,10 +75,10 @@
 
   /* Custom typography names for compatibility */
   --font-body-md: "Inter", "Manrope", sans-serif;
-  --font-display-xl: "Space Grotesk", sans-serif;
-  --font-label-sm: "Space Grotesk", sans-serif;
-  --font-headline-lg: "Space Grotesk", sans-serif;
-  --font-data-lg: "Space Grotesk", sans-serif;
+  --font-display-xl: "Sora", "Space Grotesk", sans-serif;
+  --font-label-sm: "Sora", "Space Grotesk", sans-serif;
+  --font-headline-lg: "Sora", "Space Grotesk", sans-serif;
+  --font-data-lg: "Sora", "Space Grotesk", sans-serif;
 
   --text-body-md: 16px;
   --text-body-md--line-height: 1.6;
@@ -141,6 +141,29 @@
     -webkit-backdrop-filter: blur(20px);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Scroll-reveal helpers */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Refined gradient text */
+  .text-gradient-cyan {
+    background: linear-gradient(100deg, #a5f3fc 0%, #22d3ee 45%, #c4b5fd 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
   .glass-card-hover {
@@ -369,6 +392,10 @@
 }
 
 /* Base Body Styles */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-on-background);
@@ -376,6 +403,8 @@ body {
   position: relative;
   overflow-x: hidden;
   font-family: var(--font-body-md);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* Selection */
