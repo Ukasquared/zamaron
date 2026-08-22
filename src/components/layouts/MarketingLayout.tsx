@@ -133,16 +133,6 @@ export const MarketingLayout: React.FC = () => {
                 {link.label}
               </Link>
             ))}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setCatalogOpen(true);
-              }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-900 border border-cyan-500/30 text-xs font-mono text-cyan-300 font-bold"
-            >
-              <Icon name="grid_view" size={16} />
-              Open 47 Screens Matrix
-            </button>
           </div>
         )}
       </header>
