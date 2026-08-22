@@ -305,12 +305,6 @@ export const DashboardLayout: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setCatalogOpen(true)}
-            className="text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer font-bold"
-          >
-            All 47 Screens Matrix <Icon name="open_in_new" size={12} />
-          </button>
         </div>
       </footer>
 
