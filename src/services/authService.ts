@@ -77,6 +77,11 @@ export interface AuthenticateInput {
   email: string;
   password?: string;
   name?: string;
+  /**
+   * Set only by a fixed login route, never by a role picker or user input.
+   * A real API receives this as route policy and validates it from its account directory.
+   */
+  requiredRole?: UserRole;
 }
 
 export async function authenticate(input: AuthenticateInput): Promise<AuthSession> {
@@ -85,7 +90,13 @@ export async function authenticate(input: AuthenticateInput): Promise<AuthSessio
   if (!email) {
     throw new Error('Terminal identity is required.');
   }
+
+  // Role is resolved from the authenticated account record; it is not accepted
+  // from the browser as a claim. Do this before persisting any session.
   const user = resolveDemoUser(email);
+  if (input.requiredRole && user.role !== input.requiredRole) {
+    throw new Error(`This account is not authorized for the ${input.requiredRole.toLowerCase()} sign-in route.`);
+  }
   if (input.name) {
     user.name = input.name;
   }

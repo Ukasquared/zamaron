@@ -45,13 +45,6 @@ export const AuthLayout: React.FC = () => {
         </Link>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setCatalogOpen(true)}
-            className="px-2.5 py-1 rounded bg-[#0b1326] border border-outline/70 hover:border-primary/50 text-xs font-mono text-slate-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
-          >
-            <Icon name="grid_view" size={14} className="text-primary" />
-            <span>47 Screens Catalog</span>
-          </button>
           <Link
             to="/"
             className="text-xs font-mono text-slate-400 hover:text-white flex items-center gap-1"

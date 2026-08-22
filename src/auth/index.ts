@@ -1,5 +1,7 @@
 export {
   ALL_AUTHENTICATED_ROLES,
+  ADMIN_LOGIN_PATH,
+  AUDITOR_LOGIN_PATH,
   LOGIN_PATH,
   PRIMARY_ROLES,
   ROLE_HOME,
@@ -9,6 +11,7 @@ export {
   USER_ROLES,
   canAccessPath,
   getDefaultRouteForRole,
+  getLoginPathForProtectedPath,
   getPostLoginPath,
   getRequiredRoles,
   hasPermission,

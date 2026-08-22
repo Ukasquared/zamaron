@@ -6,12 +6,15 @@ import {
   canAccessPath,
   getDefaultRouteForRole,
   getNavSectionsForRole,
+  getLoginPathForProtectedPath,
   getPostLoginPath,
   isPublicPath,
 } from '@/auth';
 import { runRbacContractTests } from '@/auth/rbac.selftest';
 import { runServiceAuthzChecks } from '@/services/authorization.contract';
 import { resolveDemoUser } from '@/services/authService';
+import { claimAudit } from '@/services/auditService';
+import { DEMO_USERS } from '@/mock/data';
 
 interface Scenario {
   name: string;
@@ -30,7 +33,11 @@ const scenarios: Scenario[] = [
         !canAccessPath(null, '/client/dashboard') &&
         !canAccessPath(null, '/auditor/queue') &&
         !canAccessPath(null, '/admin/logs');
-      const allowed = isPublicPath('/auth/login') && isPublicPath('/');
+      const allowed =
+        isPublicPath('/signin') &&
+        isPublicPath('/secure-admin-login') &&
+        isPublicPath('/secure-auditor-login') &&
+        isPublicPath('/');
       return denied && allowed;
     },
   },
@@ -83,6 +90,25 @@ const scenarios: Scenario[] = [
       !canAccessPath('CLIENT', '/auditor/ai-terminal') &&
       !canAccessPath('AUDITOR', '/admin/billing') &&
       canAccessPath('ADMIN', '/admin/refunds'),
+  },
+  {
+    name: 'Protected URLs select isolated privileged sign-in routes',
+    run: () =>
+      getLoginPathForProtectedPath('/client/dashboard') === '/signin' &&
+      getLoginPathForProtectedPath('/auditor/queue') === '/secure-auditor-login' &&
+      getLoginPathForProtectedPath('/admin/logs') === '/secure-admin-login',
+  },
+  {
+    name: 'An audit claim is compare-and-set guarded against a second claimant',
+    run: () => {
+      const first = claimAudit('ZM-8495-QX', DEMO_USERS.AUDITOR);
+      try {
+        claimAudit('ZM-8495-QX', DEMO_USERS.ADMIN);
+        return false;
+      } catch {
+        return first.leadAuditor === DEMO_USERS.AUDITOR.name && first.status === 'IN_REVIEW';
+      }
+    },
   },
   {
     name: 'Page refresh keeps the same role home (session-bound defaults)',

@@ -13,7 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   role: UserRole;
-  login: (email: string, password?: string) => Promise<UserProfile>;
+  login: (email: string, password?: string, requiredRole?: UserRole) => Promise<UserProfile>;
   register: (input: { name: string; email: string; password: string }) => Promise<UserProfile>;
   logout: () => void;
   walletConnected: boolean;
@@ -53,8 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (email: string, password?: string) => {
-    const session = await authenticate({ email, password });
+  const login = useCallback(async (email: string, password?: string, requiredRole?: UserRole) => {
+    const session = await authenticate({ email, password, requiredRole });
     setUser(session.user);
     setWalletConnected(session.walletConnected);
     return session.user;

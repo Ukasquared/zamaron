@@ -11,7 +11,7 @@ export const MarketingLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, role, logout } = useAuth();
-  const consolePath = isAuthenticated ? getDefaultRouteForRole(role) : '/auth/login';
+  const consolePath = isAuthenticated ? getDefaultRouteForRole(role) : '/signin';
 
   const navLinks = [
     { label: 'Solutions', href: '/solutions/auditing' },
@@ -92,12 +92,12 @@ export const MarketingLayout: React.FC = () => {
               </>
             ) : (
               <>
-                <Link to="/auth/login" className="hidden sm:block">
+                <Link to="/signin" className="hidden sm:block">
                   <Button variant="outline" size="sm" icon="terminal">
                     Terminal Access
                   </Button>
                 </Link>
-                <Link to="/auth/login">
+                <Link to="/signin">
                   <Button variant="primary" size="sm" icon="dashboard">
                     Launch Console
                   </Button>

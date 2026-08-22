@@ -68,6 +68,9 @@ export const ROUTE_ACCESS_RULES: readonly RouteAccessRule[] = [
   { path: '/pricing', exact: true, public: true },
   { path: '/support', exact: true, public: true },
   { path: '/catalog', exact: true, public: true },
+  { path: '/signin', exact: true, public: true },
+  { path: '/secure-admin-login', exact: true, public: true },
+  { path: '/secure-auditor-login', exact: true, public: true },
   { path: '/auth', public: true },
   { path: '/unauthorized', public: true },
 
@@ -101,8 +104,20 @@ export const ROLE_HOME: Record<UserRole, string> = {
   STUDENT: '/academy/learn/crypto-security-101',
 };
 
-export const LOGIN_PATH = '/auth/login';
+export const LOGIN_PATH = '/signin';
+export const ADMIN_LOGIN_PATH = '/secure-admin-login';
+export const AUDITOR_LOGIN_PATH = '/secure-auditor-login';
 export const UNAUTHORIZED_PATH = '/unauthorized';
+
+/** Chooses the isolated credential entry point for an unauthenticated protected request. */
+export function getLoginPathForProtectedPath(pathname: string): string {
+  const path = normalizePath(pathname);
+  if (path === '/admin' || path.startsWith('/admin/')) return ADMIN_LOGIN_PATH;
+  if (path === '/auditor' || path.startsWith('/auditor/') || path === '/leaderboard/auditors') {
+    return AUDITOR_LOGIN_PATH;
+  }
+  return LOGIN_PATH;
+}
 
 export function isUserRole(value: unknown): value is UserRole {
   return typeof value === 'string' && (USER_ROLES as readonly string[]).includes(value);

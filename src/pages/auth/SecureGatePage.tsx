@@ -91,7 +91,7 @@ export const SecureGatePage: React.FC = () => {
       </form>
 
       <div className="pt-4 border-t border-white/10 text-xs font-mono text-slate-400">
-        <Link to="/auth/login" className="hover:text-cyan-300 transition-colors">
+        <Link to="/signin" className="hover:text-cyan-300 transition-colors">
           Return to Primary Terminal Login
         </Link>
       </div>

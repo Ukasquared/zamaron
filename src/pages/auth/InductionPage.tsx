@@ -151,7 +151,7 @@ export const InductionPage: React.FC = () => {
 
       <div className="pt-4 border-t border-white/10 text-center text-xs font-mono text-slate-400">
         Already registered?{' '}
-        <Link to="/auth/login" className="text-cyan-400 font-bold hover:underline">
+        <Link to="/signin" className="text-cyan-400 font-bold hover:underline">
           Terminal Sign-In
         </Link>
       </div>

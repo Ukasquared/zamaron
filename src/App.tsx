@@ -91,7 +91,13 @@ export const App: React.FC = () => {
           {/* Authentication Routes */}
           <Route element={<AuthLayout />}>
             <Route element={<GuestRoute />}>
-              <Route path="/auth/login" element={<LoginPage />} />
+              {/* Public entry point: client accounts only. */}
+              <Route path="/signin" element={<LoginPage requiredRole="CLIENT" />} />
+              {/* Private, unlinked credential entry points for privileged staff. */}
+              <Route path="/secure-admin-login" element={<LoginPage requiredRole="ADMIN" />} />
+              <Route path="/secure-auditor-login" element={<LoginPage requiredRole="AUDITOR" />} />
+              {/* Legacy URL deliberately resolves to the client-only public sign-in. */}
+              <Route path="/auth/login" element={<Navigate to="/signin" replace />} />
               <Route path="/auth/induction" element={<InductionPage />} />
               <Route path="/auth/induction-signup" element={<InductionPage />} />
             </Route>

@@ -58,7 +58,7 @@ export const ALL_PAGE_CATALOG: PageEntry[] = [
   {
     title: 'Terminal Access Login',
     sourceFile: 'login-terminal.html',
-    route: '/auth/login',
+    route: '/signin',
     domain: 'Auth',
     description: 'Operator authentication with WebAuthn passkey and interactive parallax grid.',
   },

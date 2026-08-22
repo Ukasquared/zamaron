@@ -76,14 +76,33 @@ async function run() {
     throw new Error('Page refresh must restore the same CLIENT session');
   }
 
-  const auditorSession = await authenticate({ email: 'auditor@zamoron.io' });
+  let clientWasRejectedByAdminLogin = false;
+  try {
+    await authenticate({ email: 'client@zamoron.io', requiredRole: 'ADMIN' });
+  } catch {
+    clientWasRejectedByAdminLogin = true;
+  }
+  if (!clientWasRejectedByAdminLogin) {
+    throw new Error('A CLIENT account must not authenticate through the admin login route');
+  }
+
+  const auditorSession = await authenticate({ email: 'auditor@zamoron.io', requiredRole: 'AUDITOR' });
   if (auditorSession.user.role !== 'AUDITOR') {
     throw new Error('auditor@zamoron.io must authenticate as AUDITOR');
   }
 
-  const adminSession = await authenticate({ email: 'admin@zamoron.io' });
+  const refreshedAuditor = await restoreSession();
+  if (!refreshedAuditor || refreshedAuditor.user.role !== 'AUDITOR') {
+    throw new Error('Page refresh must restore the same AUDITOR session');
+  }
+
+  const adminSession = await authenticate({ email: 'admin@zamoron.io', requiredRole: 'ADMIN' });
   if (adminSession.user.role !== 'ADMIN') {
     throw new Error('admin@zamoron.io must authenticate as ADMIN');
+  }
+  const refreshedAdmin = await restoreSession();
+  if (!refreshedAdmin || refreshedAdmin.user.role !== 'ADMIN') {
+    throw new Error('Page refresh must restore the same ADMIN session');
   }
 
   persistSession(adminSession);
@@ -106,8 +125,9 @@ async function run() {
   }
 
   console.log('PASS  login persists a role-bound session');
-  console.log('PASS  refresh restores the same session');
+  console.log('PASS  refresh restores the same client, auditor, and admin sessions');
   console.log('PASS  client / auditor / admin emails map to the correct roles');
+  console.log('PASS  client accounts are rejected from the private admin login route');
   console.log('PASS  logout + refresh stays unauthenticated');
   console.log('PASS  induction cannot mint auditor or admin');
   console.log('PASS  restoreSession holds the loading gate before resolving');

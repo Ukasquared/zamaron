@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { canAccessPath, LOGIN_PATH, UNAUTHORIZED_PATH } from '@/auth/rbac';
+import { canAccessPath, getLoginPathForProtectedPath, UNAUTHORIZED_PATH } from '@/auth/rbac';
 import { AuthLoadingScreen } from '@/auth/AuthLoadingScreen';
 import type { UserRole } from '@/types';
 
@@ -24,7 +24,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ roles, children 
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={LOGIN_PATH} replace state={{ from: location.pathname }} />;
+    return (
+      <Navigate
+        to={getLoginPathForProtectedPath(location.pathname)}
+        replace
+        state={{ from: location.pathname }}
+      />
+    );
   }
 
   const allowedByPath = canAccessPath(role, location.pathname);

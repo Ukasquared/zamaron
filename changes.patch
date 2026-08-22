@@ -1,1804 +1,798 @@
-diff --git a/index.html b/index.html
-index 66cdafe..fae8a31 100644
---- a/index.html
-+++ b/index.html
-@@ -7,7 +7,7 @@
-     <link rel="preconnect" href="https://fonts.googleapis.com" />
-     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-     <link
--      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Manrope:wght@400&family=Space+Grotesk:wght@500;600;700&display=swap"
-+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-       rel="stylesheet"
-     />
-   </head>
-diff --git a/src/assets/web3-image.jpg:Zone.Identifier b/src/assets/web3-image.jpg:Zone.Identifier
-deleted file mode 100644
-index 8b4c4c4..0000000
---- a/src/assets/web3-image.jpg:Zone.Identifier
-+++ /dev/null
-@@ -1,4 +0,0 @@
--[ZoneTransfer]
--ZoneId=3
--ReferrerUrl=https://www.pexels.com/
--HostUrl=https://images.pexels.com/photos/14354109/pexels-photo-14354109.jpeg?cs=srgb&dl=pexels-jonathanborba-14354109.jpg&fm=jpg&_gl=1*l9bbjf*_ga*MjQ0NzIwNjc4LjE3ODczNjA0OTg.*_ga_8JE65Q40S6*czE3ODczNjA0OTckbzEkZzEkdDE3ODczNjA2OTEkajYwJGwwJGgw
-diff --git a/src/components/sections/BlockchainDiagram.tsx b/src/components/sections/BlockchainDiagram.tsx
-deleted file mode 100644
-index 82813fd..0000000
---- a/src/components/sections/BlockchainDiagram.tsx
-+++ /dev/null
-@@ -1,412 +0,0 @@
--import React, { useState } from 'react';
--import { GlassCard } from '@/components/ui/GlassCard';
--import { Badge } from '@/components/ui/Badge';
--import { Icon } from '@/components/ui/Icon';
--import { Button } from '@/components/ui/Button';
--
--interface BlockData {
--  index: number;
--  blockNumber: number;
--  timestamp: string;
--  previousHash: string;
--  hash: string;
--  transactionsCount: number;
--  transactionsPreview: string[];
--  nonce: number;
--  status: 'GENESIS' | 'FINALIZED' | 'VALIDATING';
--  gasUsed: string;
--}
--
--const INITIAL_BLOCKS: BlockData[] = [
--  {
--    index: 0,
--    blockNumber: 21894010,
--    timestamp: '36s ago',
--    previousHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
--    hash: '0x8f4c2e1a9b7c41d8e0f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4',
--    transactionsCount: 142,
--    transactionsPreview: ['Deploy Zamaron Registry', 'Mint Lead Auditor NFT', 'Init Liquidity Pool'],
--    nonce: 41829,
--    status: 'GENESIS',
--    gasUsed: '48.2%',
--  },
--  {
--    index: 1,
--    blockNumber: 21894011,
--    timestamp: '24s ago',
--    previousHash: '0x8f4c2e1a9b7c41d8e0f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4',
--    hash: '0x3a1b7e9f0d55a2c4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4b6c8d0e2f4a6b8c0d2',
--    transactionsCount: 318,
--    transactionsPreview: ['Sign Audit ZM-8492-NX', 'Verify Reentrancy Fix', 'Deposit 45.0 ETH'],
--    nonce: 89312,
--    status: 'FINALIZED',
--    gasUsed: '62.4%',
--  },
--  {
--    index: 2,
--    blockNumber: 21894012,
--    timestamp: '12s ago',
--    previousHash: '0x3a1b7e9f0d55a2c4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4b6c8d0e2f4a6b8c0d2',
--    hash: '0x6d8e2c4a1f9b33e5a7c9e1f3a5b7c9d1e3f5a7b9c1d3e5f7a9b1c3d5e7f9a1b3',
--    transactionsCount: 462,
--    transactionsPreview: ['Execute Flash Loan Guard', 'Triage Bug SWC-107', 'Transfer 25k USDC'],
--    nonce: 62145,
--    status: 'FINALIZED',
--    gasUsed: '88.1%',
--  },
--  {
--    index: 3,
--    blockNumber: 21894013,
--    timestamp: 'Just now',
--    previousHash: '0x6d8e2c4a1f9b33e5a7c9e1f3a5b7c9d1e3f5a7b9c1d3e5f7a9b1c3d5e7f9a1b3',
--    hash: '0x19f4a8b23ce718d0f2a4b6c8d0e2f4a6b8c0d2e4f6a8c0d2e4f6a8b0c2d4e6f8',
--    transactionsCount: 285,
--    transactionsPreview: ['Mempool Threat Neutralized', 'Seal Document Vault', 'Verify zk-STARK Proof'],
--    nonce: 10452,
--    status: 'VALIDATING',
--    gasUsed: '54.0%',
--  },
--];
--
--export const BlockchainDiagram: React.FC = () => {
--  const [blocks, setBlocks] = useState<BlockData[]>(INITIAL_BLOCKS);
--  const [hoveredBlockIndex, setHoveredBlockIndex] = useState<number | null>(null);
--  const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
--  const [isSimulating, setIsSimulating] = useState(false);
--
--  // Shorten hash for clean conceptual presentation
--  const truncateHash = (hash: string, start = 6, end = 4) => {
--    if (!hash || hash.length <= start + end) return hash;
--    return `${hash.slice(0, start)}...${hash.slice(-end)}`;
--  };
--
--  const handleSimulateNewBlock = () => {
--    if (isSimulating) return;
--    setIsSimulating(true);
--
--    const latest = blocks[blocks.length - 1];
--    const newBlockNumber = latest.blockNumber + 1;
--    const randomHash = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
--
--    const newBlock: BlockData = {
--      index: blocks.length,
--      blockNumber: newBlockNumber,
--      timestamp: 'Just now',
--      previousHash: latest.hash,
--      hash: randomHash,
--      transactionsCount: Math.floor(Math.random() * 300) + 150,
--      transactionsPreview: ['Anchor Audit Proof', 'State Transition Commit', 'Execute Threat Intercept'],
--      nonce: Math.floor(Math.random() * 90000) + 10000,
--      status: 'VALIDATING',
--      gasUsed: `${(Math.random() * 40 + 50).toFixed(1)}%`,
--    };
--
--    setTimeout(() => {
--      // Shift blocks so we maintain 4 visible blocks for clean UI
--      const updated = [...blocks.slice(1), newBlock].map((b, idx) => ({
--        ...b,
--        index: idx,
--        timestamp: idx === 3 ? 'Just now' : `${(3 - idx) * 12}s ago`,
--        status: (idx === 3 ? 'VALIDATING' : idx === 0 ? 'GENESIS' : 'FINALIZED') as BlockData['status'],
--      }));
--      setBlocks(updated);
--      setSelectedBlockIndex(3);
--      setIsSimulating(false);
--    }, 600);
--  };
--
--  return (
--    <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
--      {/* Visual Header */}
--      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
--        <div className="space-y-3 max-w-2xl">
--          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-semibold">
--            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
--            <span>CRYPTOGRAPHIC DATA ENGINE</span>
--          </div>
--          <h2 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
--            How the Blockchain Connects & Verifies Data
--          </h2>
--          <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
--            Every block groups verified transactions, seals them with a cryptographic hash, and links back to the previous block. This unbroken mathematical chain creates tamper-proof security.
--          </p>
--        </div>
--
--        {/* Action Controls */}
--        <div className="flex items-center gap-3 shrink-0">
--          <Button
--            variant="outline"
--            size="sm"
--            icon="add_circle"
--            loading={isSimulating}
--            onClick={handleSimulateNewBlock}
--            className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10"
--          >
--            Simulate Next Block
--          </Button>
--          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/60 border border-white/10 text-xs font-mono text-slate-400">
--            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
--            <span>Consensus: 100% Synced</span>
--          </div>
--        </div>
--      </div>
--
--      {/* Interactive Blockchain Visual Chain */}
--      <div className="relative">
--        {/* Ambient background glow behind diagram */}
--        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-32 bg-cyan-500/10 blur-3xl -z-10 pointer-events-none rounded-full" />
--
--        {/* Desktop Connected Diagram Grid (4 Blocks) */}
--        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-3 items-stretch relative">
--          {blocks.map((block, idx) => {
--            const isHovered = hoveredBlockIndex === idx;
--            const isParentHovered = hoveredBlockIndex === idx - 1;
--            const isChildHovered = hoveredBlockIndex === idx + 1;
--            const isSelected = selectedBlockIndex === idx;
--            const isHighlighted = isHovered || isSelected;
--
--            return (
--              <div key={block.blockNumber} className="flex flex-col relative group">
--                {/* Connecting Arrow for Desktop (between blocks) */}
--                {idx < blocks.length - 1 && (
--                  <div className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 z-20 items-center pointer-events-none">
--                    <div className="relative flex items-center justify-center">
--                      {/* Flowing animated pulse line */}
--                      <div className="w-6 h-[2px] bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 relative overflow-hidden">
--                        <div className="absolute inset-0 bg-white animate-pulse" />
--                      </div>
--                      <div className="w-2 h-2 rotate-45 border-t-2 border-r-2 border-cyan-300 -ml-1" />
--                    </div>
--                  </div>
--                )}
--
--                {/* Mobile Connecting Arrow (between stacked blocks) */}
--                {idx < blocks.length - 1 && (
--                  <div className="lg:hidden flex items-center justify-center my-2 text-cyan-400">
--                    <div className="flex flex-col items-center">
--                      <div className="w-0.5 h-4 bg-gradient-to-b from-cyan-400 to-purple-400" />
--                      <Icon name="arrow_downward" size={16} className="text-cyan-400 animate-bounce" />
--                    </div>
--                  </div>
--                )}
--
--                {/* Block Card */}
--                <GlassCard
--                  variant={isHighlighted ? 'fresnel' : 'elevated'}
--                  blur="xl"
--                  hoverEffect
--                  onMouseEnter={() => setHoveredBlockIndex(idx)}
--                  onMouseLeave={() => setHoveredBlockIndex(null)}
--                  onClick={() => setSelectedBlockIndex(selectedBlockIndex === idx ? null : idx)}
--                  className={`p-5 flex-1 flex flex-col justify-between cursor-pointer border transition-all duration-300 relative ${
--                    isHighlighted
--                      ? 'border-cyan-400 shadow-[0_0_30px_rgba(0,218,243,0.35)] -translate-y-1.5'
--                      : isParentHovered
--                      ? 'border-purple-400/60 shadow-[0_0_20px_rgba(221,183,255,0.2)]'
--                      : isChildHovered
--                      ? 'border-cyan-400/60 shadow-[0_0_20px_rgba(0,218,243,0.2)]'
--                      : 'border-white/10 hover:border-cyan-400/40'
--                  }`}
--                >
--                  {/* Top Block Banner */}
--                  <div>
--                    <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/10 mb-3">
--                      <div className="flex items-center gap-2">
--                        <div className="w-7 h-7 rounded bg-[#060e20] border border-cyan-500/30 flex items-center justify-center text-cyan-400">
--                          <Icon name="deployed_code" size={16} />
--                        </div>
--                        <div>
--                          <div className="font-display font-black text-sm text-white flex items-center gap-1.5">
--                            Block #{block.blockNumber.toLocaleString()}
--                          </div>
--                          <div className="text-[10px] font-mono text-slate-400">
--                            Index: {block.index}
--                          </div>
--                        </div>
--                      </div>
--
--                      <Badge
--                        variant={
--                          block.status === 'GENESIS'
--                            ? 'secondary'
--                            : block.status === 'VALIDATING'
--                            ? 'primary'
--                            : 'success'
--                        }
--                        size="sm"
--                        dot
--                        pulse={block.status === 'VALIDATING'}
--                      >
--                        {block.status}
--                      </Badge>
--                    </div>
--
--                    {/* Cryptographic Link Fields */}
--                    <div className="space-y-2.5 font-mono text-[11px]">
--                      {/* Previous Hash */}
--                      <div
--                        className={`p-2 rounded transition-colors ${
--                          isHighlighted || isChildHovered
--                            ? 'bg-cyan-500/15 border border-cyan-500/40'
--                            : 'bg-black/30 border border-white/5'
--                        }`}
--                      >
--                        <div className="flex items-center justify-between text-[9px] text-slate-400 uppercase tracking-wider mb-0.5">
--                          <span className="flex items-center gap-1">
--                            <Icon name="link" size={10} className="text-cyan-400" />
--                            Previous Hash
--                          </span>
--                          {idx > 0 && (
--                            <span className="text-cyan-300 text-[9px] font-bold">← Links to #{block.blockNumber - 1}</span>
--                          )}
--                        </div>
--                        <div
--                          className={`font-mono text-xs truncate ${
--                            idx === 0
--                              ? 'text-slate-500'
--                              : isHighlighted || isChildHovered
--                              ? 'text-cyan-300 font-bold'
--                              : 'text-slate-300'
--                          }`}
--                          title={block.previousHash}
--                        >
--                          {truncateHash(block.previousHash, 8, 6)}
--                        </div>
--                      </div>
--
--                      {/* Current Block Hash */}
--                      <div
--                        className={`p-2 rounded transition-colors ${
--                          isHighlighted || isParentHovered
--                            ? 'bg-purple-500/15 border border-purple-500/40'
--                            : 'bg-black/30 border border-white/5'
--                        }`}
--                      >
--                        <div className="flex items-center justify-between text-[9px] text-slate-400 uppercase tracking-wider mb-0.5">
--                          <span className="flex items-center gap-1">
--                            <Icon name="tag" size={10} className="text-purple-400" />
--                            Block Hash
--                          </span>
--                          <span className="text-emerald-400 text-[9px]">SHA-256</span>
--                        </div>
--                        <div
--                          className={`font-mono text-xs truncate ${
--                            isHighlighted || isParentHovered
--                              ? 'text-purple-200 font-bold'
--                              : 'text-slate-300'
--                          }`}
--                          title={block.hash}
--                        >
--                          {truncateHash(block.hash, 8, 6)}
--                        </div>
--                      </div>
--
--                      {/* Timestamp & Nonce row */}
--                      <div className="grid grid-cols-2 gap-2 pt-1">
--                        <div className="p-1.5 rounded bg-black/20 border border-white/5">
--                          <div className="text-[9px] text-slate-500 uppercase">Timestamp</div>
--                          <div className="text-slate-200 font-semibold flex items-center gap-1">
--                            <Icon name="schedule" size={11} className="text-cyan-400" />
--                            {block.timestamp}
--                          </div>
--                        </div>
--                        <div className="p-1.5 rounded bg-black/20 border border-white/5">
--                          <div className="text-[9px] text-slate-500 uppercase">Gas Used</div>
--                          <div className="text-slate-200 font-semibold">{block.gasUsed}</div>
--                        </div>
--                      </div>
--                    </div>
--                  </div>
--
--                  {/* Transactions Payload Section */}
--                  <div className="mt-4 pt-3 border-t border-white/10 space-y-2">
--                    <div className="flex items-center justify-between text-xs">
--                      <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider flex items-center gap-1">
--                        <Icon name="receipt_long" size={12} className="text-cyan-400" />
--                        Transactions
--                      </span>
--                      <span className="font-mono font-bold text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded text-[10px] border border-cyan-500/20">
--                        {block.transactionsCount} Txns
--                      </span>
--                    </div>
--
--                    <div className="space-y-1">
--                      {block.transactionsPreview.map((tx, txIdx) => (
--                        <div
--                          key={txIdx}
--                          className="px-2 py-1 rounded bg-black/30 border border-white/5 text-[10px] font-mono text-slate-300 flex items-center justify-between group-hover:border-white/10"
--                        >
--                          <span className="truncate max-w-[150px]">{tx}</span>
--                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
--                        </div>
--                      ))}
--                    </div>
--                  </div>
--
--                  {/* Cryptographic Link Indicator Pill */}
--                  <div className="mt-3 pt-2 text-center text-[10px] font-mono text-slate-400 flex items-center justify-center gap-1">
--                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
--                    <span>Cryptographically Anchored</span>
--                  </div>
--                </GlassCard>
--              </div>
--            );
--          })}
--        </div>
--      </div>
--
--      {/* 4 Core Pillars of Block Architecture (Educational Legend) */}
--      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
--        <GlassCard variant="subtle" className="p-4 space-y-2 border-white/5">
--          <div className="flex items-center gap-2 text-cyan-400">
--            <div className="p-1.5 rounded bg-cyan-500/10 border border-cyan-500/30">
--              <Icon name="receipt_long" size={18} />
--            </div>
--            <h4 className="font-display font-bold text-sm text-white">1. Transactions</h4>
--          </div>
--          <p className="text-xs text-slate-400 leading-relaxed">
--            State transitions, smart contract interactions, and transfers bundled and cryptographically verified by consensus nodes.
--          </p>
--        </GlassCard>
--
--        <GlassCard variant="subtle" className="p-4 space-y-2 border-white/5">
--          <div className="flex items-center gap-2 text-purple-400">
--            <div className="p-1.5 rounded bg-purple-500/10 border border-purple-500/30">
--              <Icon name="tag" size={18} />
--            </div>
--            <h4 className="font-display font-bold text-sm text-white">2. Cryptographic Hash</h4>
--          </div>
--          <p className="text-xs text-slate-400 leading-relaxed">
--            A unique 256-bit mathematical digest generated from the block’s transaction Merkle tree, timestamp, and nonce.
--          </p>
--        </GlassCard>
--
--        <GlassCard variant="subtle" className="p-4 space-y-2 border-white/5">
--          <div className="flex items-center gap-2 text-cyan-300">
--            <div className="p-1.5 rounded bg-cyan-400/10 border border-cyan-400/30">
--              <Icon name="link" size={18} />
--            </div>
--            <h4 className="font-display font-bold text-sm text-white">3. Previous Hash</h4>
--          </div>
--          <p className="text-xs text-slate-400 leading-relaxed">
--            The cryptographic pointer linking this block to its parent. Changing any past block invalidates all downstream hashes.
--          </p>
--        </GlassCard>
--
--        <GlassCard variant="subtle" className="p-4 space-y-2 border-white/5">
--          <div className="flex items-center gap-2 text-emerald-400">
--            <div className="p-1.5 rounded bg-emerald-500/10 border border-emerald-500/30">
--              <Icon name="schedule" size={18} />
--            </div>
--            <h4 className="font-display font-bold text-sm text-white">4. Timestamp & State</h4>
--          </div>
--          <p className="text-xs text-slate-400 leading-relaxed">
--            Immutable time recording that establishes the exact canonical sequence and finality of all decentralized events.
--          </p>
--        </GlassCard>
--      </div>
--    </section>
--  );
--};
--
--export default BlockchainDiagram;
-diff --git a/src/components/sections/FeaturesSection.tsx b/src/components/sections/FeaturesSection.tsx
-deleted file mode 100644
-index 24bb46f..0000000
---- a/src/components/sections/FeaturesSection.tsx
-+++ /dev/null
-@@ -1,59 +0,0 @@
--import { Icon } from '@/components/ui/Icon';
--import { Card } from '@/components/ui/Card';
--import { FEATURES } from '@/data/content';
--import type { FeatureData } from '@/types';
--
--function FeatureCardItem({
--  icon,
--  eyebrow,
--  eyebrowColorClass,
--  title,
--  titleColorClass,
--  description,
--  iconBgClass,
--  iconBorderClass,
--  glowClass,
--  offset = false,
--}: FeatureData) {
--  return (
--    <Card
--      variant="glass"
--      hoverEffect
--      className={[
--        'p-card-padding flex flex-col gap-4 group transition-all duration-500 relative overflow-hidden',
--        glowClass,
--        offset ? 'md:-translate-y-8 border-secondary-container/30' : '',
--      ]
--        .filter(Boolean)
--        .join(' ')}
--    >
--      {offset && (
--        <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary-container/20 blur-3xl rounded-full" />
--      )}
--      <div
--        className={`w-12 h-12 rounded-lg flex items-center justify-center border ${iconBgClass} ${iconBorderClass}`}
--      >
--        <Icon name={icon} className={`${eyebrowColorClass} text-2xl`} />
--      </div>
--      <div className="bg-surface-container/50 px-3 py-1 rounded-full border border-white/5 w-fit">
--        <span className={`font-label-sm text-label-sm ${eyebrowColorClass}`}>{eyebrow}</span>
--      </div>
--      <h3 className={`font-headline-lg text-[24px] font-semibold ${titleColorClass}`}>{title}</h3>
--      <p className="font-body-md text-body-md text-on-surface-variant flex-grow">{description}</p>
--    </Card>
--  );
--}
--
--export function FeaturesSection() {
--  return (
--    <section className="mb-section-gap relative z-20">
--      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
--        {FEATURES.map((feature) => (
--          <FeatureCardItem key={feature.title} {...feature} />
--        ))}
--      </div>
--    </section>
--  );
--}
--
--export default FeaturesSection;
-diff --git a/src/components/sections/Footer.tsx b/src/components/sections/Footer.tsx
-deleted file mode 100644
-index 81a0aba..0000000
---- a/src/components/sections/Footer.tsx
-+++ /dev/null
-@@ -1,38 +0,0 @@
--import { FOOTER_LINKS } from '@/data/content';
--
--interface FooterProps {
--  /** Compact variant used on in-app pages: no logo lockup, no solid background */
--  compact?: boolean;
--}
--
--export function Footer({ compact = false }: FooterProps) {
--  return (
--    <footer
--      className={`w-full flex flex-col items-center gap-6 py-12 border-t border-white/5 ${
--        compact ? 'mt-8' : 'bg-slate-950 mt-auto relative z-20'
--      }`}
--    >
--      {!compact && (
--        <div className="font-bold text-slate-200 text-lg tracking-wider font-['Space_Grotesk']">
--          ZAMARON
--        </div>
--      )}
--      <div className="flex gap-6 text-sm text-slate-400">
--        {FOOTER_LINKS.map((link) => (
--          <a
--            key={link.label}
--            href={link.href}
--            className="hover:text-cyan-400 transition-colors"
--          >
--            {link.label}
--          </a>
--        ))}
--      </div>
--      <div className="text-xs text-slate-500">
--        &copy; {new Date().getFullYear()} ZAMARON Protocol. All rights reserved.
--      </div>
--    </footer>
--  );
--}
--
--export default Footer;
-diff --git a/src/components/sections/HeroSection.tsx b/src/components/sections/HeroSection.tsx
-deleted file mode 100644
-index 8d4cf93..0000000
---- a/src/components/sections/HeroSection.tsx
-+++ /dev/null
-@@ -1,64 +0,0 @@
--import { Icon } from '@/components/ui/Icon';
--import { Button } from '@/components/ui/Button';
--import TrustBadgeItem from './TrustBadgeItem';
--import { TRUST_BADGES, HERO_IMAGE } from '@/data/content';
--
--export function HeroSection() {
--  return (
--    <section className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center min-h-[716px] mb-section-gap relative">
--      {/* Holographic background elements */}
--      <div className="absolute top-1/4 left-10 text-primary-fixed-dim opacity-30 holo-float text-4xl">
--        <Icon name="currency_bitcoin" filled />
--      </div>
--      <div className="absolute bottom-1/4 right-20 text-secondary-container opacity-40 holo-float font-data-lg text-data-lg tracking-widest">
--        0x7F4...A19
--      </div>
--
--      <div className="lg:col-span-6 space-y-8 z-20">
--        <h1 className="font-display-xl text-display-xl text-primary text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary-container leading-tight">
--          Learn Crypto. Detect Scams. Stay Protected.
--        </h1>
--        <p className="font-body-md text-body-md text-on-surface-variant max-w-lg">
--          Navigate the digital frontier with institutional-grade intelligence. Our neural
--          networks analyze, verify, and secure your transactions before you execute.
--        </p>
--
--        <div className="flex flex-wrap gap-4 pt-4">
--          <Button variant="primary" size="lg" glass>
--            Get Started
--            <Icon name="arrow_forward" className="text-[18px]" />
--          </Button>
--          <Button variant="secondary" size="lg" glass>
--            Run Scam Check
--            <Icon name="security" className="text-[18px]" />
--          </Button>
--        </div>
--
--        {/* Trust bar */}
--        <div className="pt-12 border-t border-white/5 flex flex-col sm:flex-row gap-6 sm:items-center text-on-surface-variant">
--          <span className="font-label-sm text-label-sm uppercase tracking-widest text-primary-fixed-dim">
--            Trusted by 50,000+ Users
--          </span>
--          <div className="flex gap-6">
--            {TRUST_BADGES.map((badge) => (
--              <TrustBadgeItem key={badge.label} {...badge} />
--            ))}
--          </div>
--        </div>
--      </div>
--
--      {/* Hero imagery */}
--      <div className="lg:col-span-6 relative h-[500px] flex justify-center items-center">
--        <div
--          className="absolute inset-0 bg-center bg-no-repeat bg-contain opacity-80"
--          role="img"
--          aria-label={HERO_IMAGE.alt}
--          style={{ backgroundImage: `url('${HERO_IMAGE.url}')` }}
--        />
--        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
--      </div>
--    </section>
--  );
--}
--
--export default HeroSection;
-diff --git a/src/components/sections/Navbar.tsx b/src/components/sections/Navbar.tsx
-deleted file mode 100644
-index aa6c523..0000000
---- a/src/components/sections/Navbar.tsx
-+++ /dev/null
-@@ -1,28 +0,0 @@
--import { NAV_LINKS } from '@/data/content';
--import { Button } from '@/components/ui/Button';
--
--export function Navbar() {
--  return (
--    <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 max-w-[1280px] left-1/2 -translate-x-1/2 bg-slate-950/40 backdrop-blur-xl border-b border-white/10 shadow-[0_0_20px_rgba(0,240,255,0.1)]">
--      <div className="text-2xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 font-['Space_Grotesk']">
--        ZAMARON
--      </div>
--      <div className="flex gap-8 items-center">
--        {NAV_LINKS.map((link) => (
--          <a
--            key={link.label}
--            href={link.href}
--            className="text-slate-300 hover:text-cyan-400 text-sm font-medium transition-colors"
--          >
--            {link.label}
--          </a>
--        ))}
--        <Button variant="primary" size="sm">
--          Connect Wallet
--        </Button>
--      </div>
--    </nav>
--  );
--}
--
--export default Navbar;
-diff --git a/src/components/sections/TrustBadgeItem.tsx b/src/components/sections/TrustBadgeItem.tsx
-deleted file mode 100644
-index af31a96..0000000
---- a/src/components/sections/TrustBadgeItem.tsx
-+++ /dev/null
-@@ -1,13 +0,0 @@
--import { Icon } from '@/components/ui/Icon';
--import type { TrustBadgeData } from '@/types';
--
--export function TrustBadgeItem({ icon, label, iconColorClass }: TrustBadgeData) {
--  return (
--    <div className="flex items-center gap-2">
--      <Icon name={icon} className={`${iconColorClass} text-[16px]`} />
--      <span className="font-label-sm text-label-sm text-xs">{label}</span>
--    </div>
--  );
--}
--
--export default TrustBadgeItem;
-diff --git a/src/components/ui/GlassCard.tsx b/src/components/ui/GlassCard.tsx
-index ee567a2..8e893a8 100644
---- a/src/components/ui/GlassCard.tsx
-+++ b/src/components/ui/GlassCard.tsx
-@@ -32,28 +32,28 @@ export const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
- 
-     const variantStyles = {
-       default:
--        'bg-slate-900/60 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.3)]',
-+        'bg-gradient-to-b from-white/[0.07] to-white/[0.02] bg-slate-900/60 border border-white/10 shadow-[0_10px_35px_-12px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]',
-       elevated:
--        'bg-[#0c162d]/80 border border-cyan-500/20 shadow-[0_12px_40px_rgba(0,0,0,0.5)] shadow-cyan-950/20',
-+        'bg-gradient-to-b from-[#131f3f]/85 to-[#0a142c]/90 border border-cyan-400/20 shadow-[0_18px_45px_-15px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.08)]',
-       subtle:
--        'bg-slate-950/40 border border-white/5 shadow-md',
-+        'bg-gradient-to-b from-white/[0.05] to-transparent bg-slate-950/45 border border-white/[0.07] shadow-[0_8px_25px_-15px_rgba(0,0,0,0.5)]',
-       fresnel:
--        'bg-[#0a1329]/80 border border-cyan-400/30 shadow-[0_0_25px_-5px_rgba(0,218,243,0.2),inset_0_0_15px_-5px_rgba(0,218,243,0.15)]',
-+        'bg-gradient-to-b from-[#0e1b38]/85 to-[#081126]/90 border border-cyan-400/30 shadow-[0_0_28px_-6px_rgba(0,218,243,0.22),inset_0_0_18px_-8px_rgba(0,218,243,0.18),inset_0_1px_0_rgba(255,255,255,0.08)]',
-       terminal:
--        'bg-[#060e20]/90 border border-cyan-500/25 font-mono shadow-[inset_0_0_20px_rgba(0,218,243,0.06)]',
-+        'bg-gradient-to-b from-[#081126]/92 to-[#050b1a]/95 border border-cyan-500/25 font-mono shadow-[inset_0_0_22px_rgba(0,218,243,0.07),inset_0_1px_0_rgba(255,255,255,0.06)]',
-       cyber:
--        'bg-gradient-to-b from-[#0e1b38]/80 to-[#070e1f]/90 border border-cyan-400/25 shadow-[0_10px_35px_rgba(0,0,0,0.45)]',
-+        'bg-gradient-to-b from-[#101d3d]/85 to-[#070e1f]/92 border border-cyan-400/25 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]',
-       accent:
--        'bg-gradient-to-br from-[#121d3a]/80 via-[#0a1329]/80 to-[#1a0f2e]/80 border border-purple-500/30 shadow-[0_10px_35px_rgba(155,81,224,0.15)]',
-+        'bg-gradient-to-br from-[#151f42]/85 via-[#0c1630]/85 to-[#221236]/85 border border-purple-400/30 shadow-[0_14px_40px_-14px_rgba(155,81,224,0.2),inset_0_1px_0_rgba(255,255,255,0.08)]',
-     };
- 
-     const glowStyles = {
-       none: '',
--      cyan: 'shadow-[0_0_25px_rgba(0,218,243,0.25)] border-cyan-400/40',
--      purple: 'shadow-[0_0_25px_rgba(221,183,255,0.25)] border-purple-400/40',
--      emerald: 'shadow-[0_0_25px_rgba(0,230,118,0.25)] border-emerald-400/40',
--      amber: 'shadow-[0_0_25px_rgba(255,183,77,0.25)] border-amber-400/40',
--      error: 'shadow-[0_0_25px_rgba(255,84,73,0.25)] border-red-400/40',
-+      cyan: 'shadow-[0_0_28px_-4px_rgba(0,218,243,0.3)] border-cyan-400/40',
-+      purple: 'shadow-[0_0_28px_-4px_rgba(221,183,255,0.3)] border-purple-400/40',
-+      emerald: 'shadow-[0_0_28px_-4px_rgba(0,230,118,0.3)] border-emerald-400/40',
-+      amber: 'shadow-[0_0_28px_-4px_rgba(255,183,77,0.3)] border-amber-400/40',
-+      error: 'shadow-[0_0_28px_-4px_rgba(255,84,73,0.3)] border-red-400/40',
-     };
- 
-     return (
-@@ -66,13 +66,13 @@ export const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
-           glowStyles[glow],
-           borderGradient && 'relative before:absolute before:inset-0 before:p-[1px] before:rounded-[inherit] before:bg-gradient-to-r before:from-cyan-400/40 before:via-purple-500/30 before:to-transparent before:-z-10',
-           hoverEffect &&
--            'hover:border-cyan-400/50 hover:shadow-[0_12px_35px_rgba(0,218,243,0.15)] hover:-translate-y-1',
-+            'hover:-translate-y-1 hover:border-cyan-400/45 hover:shadow-[0_18px_45px_-15px_rgba(0,218,243,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]',
-           className
-         )}
-         {...props}
-       >
-         {/* Subtle top reflection sheen */}
--        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-         {children}
-       </div>
-     );
-diff --git a/src/components/ui/GlowBackground.tsx b/src/components/ui/GlowBackground.tsx
-index 5dc6d25..16537db 100644
---- a/src/components/ui/GlowBackground.tsx
-+++ b/src/components/ui/GlowBackground.tsx
-@@ -1,5 +1,6 @@
+diff --git a/src/App.tsx b/src/App.tsx
+index 06ed9f7..838f843 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -91,7 +91,13 @@ export const App: React.FC = () => {
+           {/* Authentication Routes */}
+           <Route element={<AuthLayout />}>
+             <Route element={<GuestRoute />}>
+-              <Route path="/auth/login" element={<LoginPage />} />
++              {/* Public entry point: client accounts only. */}
++              <Route path="/signin" element={<LoginPage requiredRole="CLIENT" />} />
++              {/* Private, unlinked credential entry points for privileged staff. */}
++              <Route path="/secure-admin-login" element={<LoginPage requiredRole="ADMIN" />} />
++              <Route path="/secure-auditor-login" element={<LoginPage requiredRole="AUDITOR" />} />
++              {/* Legacy URL deliberately resolves to the client-only public sign-in. */}
++              <Route path="/auth/login" element={<Navigate to="/signin" replace />} />
+               <Route path="/auth/induction" element={<InductionPage />} />
+               <Route path="/auth/induction-signup" element={<InductionPage />} />
+             </Route>
+diff --git a/src/auth/ProtectedRoute.tsx b/src/auth/ProtectedRoute.tsx
+index f4f6a9f..b57627d 100644
+--- a/src/auth/ProtectedRoute.tsx
++++ b/src/auth/ProtectedRoute.tsx
+@@ -1,7 +1,7 @@
  import React from 'react';
- import { cn } from '@/lib/utils';
-+import web3Image from '@/assets/web3-image.jpg';
+ import { Navigate, Outlet, useLocation } from 'react-router-dom';
+ import { useAuth } from '@/context/AuthContext';
+-import { canAccessPath, LOGIN_PATH, UNAUTHORIZED_PATH } from '@/auth/rbac';
++import { canAccessPath, getLoginPathForProtectedPath, UNAUTHORIZED_PATH } from '@/auth/rbac';
+ import { AuthLoadingScreen } from '@/auth/AuthLoadingScreen';
+ import type { UserRole } from '@/types';
  
- export interface GlowBackgroundProps {
-   variant?: 'hero' | 'subtle' | 'matrix' | 'mesh';
-@@ -18,6 +19,17 @@ export const GlowBackground: React.FC<GlowBackgroundProps> = ({
-       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
-         {variant === 'hero' && (
-           <>
-+            {/* Frosted product imagery — soft, blurred, never competing with copy */}
-+            <div className="absolute -top-[12%] left-1/2 -translate-x-1/2 w-[1280px] max-w-none h-[75%] min-h-[560px] [mask-image:radial-gradient(75%_70%_at_50%_30%,black,transparent_78%)]">
-+              <img
-+                src={web3Image}
-+                alt=""
-+                className="w-full h-full object-cover object-top opacity-[0.20] blur-[3px] saturate-[0.9] brightness-[0.85] select-none"
-+                draggable={false}
-+              />
-+            </div>
-+            {/* Readability scrims */}
-+            <div className="absolute inset-0 bg-gradient-to-b from-[#060e20]/55 via-[#060e20]/30 to-[#060e20]" />
-             {/* Top Cyan Glow Orb */}
-             <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[450px] bg-gradient-to-b from-cyan-500/15 via-cyan-400/5 to-transparent blur-3xl rounded-full" />
-             {/* Secondary Purple Glow Orb */}
-@@ -25,7 +37,7 @@ export const GlowBackground: React.FC<GlowBackgroundProps> = ({
-             {/* Emerald Node Accent */}
-             <div className="absolute top-1/2 -right-48 w-[450px] h-[450px] bg-emerald-500/10 blur-[100px] rounded-full" />
-             {/* Grid overlay */}
--            <div className="absolute inset-0 bg-grid-cyber opacity-30" />
-+            <div className="absolute inset-0 bg-grid-cyber opacity-25" />
-             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#060e20]/60 to-[#060e20]" />
-           </>
-         )}
-diff --git a/src/components/ui/Marquee.tsx b/src/components/ui/Marquee.tsx
-index c782486..1718682 100644
---- a/src/components/ui/Marquee.tsx
-+++ b/src/components/ui/Marquee.tsx
-@@ -29,30 +29,37 @@ export const Marquee: React.FC<MarqueeProps> = ({
-   gradientMask = true,
-   className,
- }) => {
--  const speedClass = {
--    slow: 'duration-[60s]',
--    normal: 'duration-[35s]',
--    fast: 'duration-[20s]',
-+  // The base .animate-marquee keyframes hard-code a duration, so the real
-+  // animation speed is driven via inline style (inline wins over shorthand).
-+  const animationDuration = {
-+    slow: '75s',
-+    normal: '52s',
-+    fast: '30s',
-   }[speed];
+@@ -24,7 +24,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ roles, children
+   }
  
-   const directionClass = direction === 'right' ? 'animate-marquee-reverse' : 'animate-marquee';
- 
-   const defaultContent = items ? (
--    <div className="flex items-center gap-6 sm:gap-8 shrink-0">
-+    <div className="flex items-center gap-4 sm:gap-6 shrink-0 pr-4 sm:pr-6">
-       {items.map((item, idx) => (
-         <div
-           key={item.id || `${item.name}-${idx}`}
--          className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/50 border border-white/10 backdrop-blur-md hover:border-cyan-400/40 hover:bg-slate-900/80 transition-all cursor-default group"
-+          className="group flex items-center gap-3.5 px-4 sm:px-6 py-3 sm:py-3.5 rounded-2xl bg-white border border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)] hover:border-cyan-500/40 hover:shadow-[0_10px_28px_-14px_rgba(0,218,243,0.35)] hover:-translate-y-0.5 transition-all duration-300 cursor-default"
-         >
--          <div className="w-7 h-7 rounded-md bg-[#060e20] border border-cyan-500/20 flex items-center justify-center text-xs font-mono font-bold text-cyan-400 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(0,218,243,0.3)] transition-all">
-+          <div
-+            className={cn(
-+              'w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] sm:text-xs font-bold font-mono text-slate-700 group-hover:bg-cyan-50 group-hover:border-cyan-500/30 group-hover:text-cyan-700 transition-all duration-300'
-+            )}
-+            style={item.color ? { color: item.color } : undefined}
-+          >
-             {item.symbol || item.name.slice(0, 2).toUpperCase()}
-           </div>
--          <div>
--            <div className="font-display font-semibold text-xs text-slate-200 group-hover:text-white transition-colors">
-+          <div className="leading-none">
-+            <div className="font-display font-semibold text-sm sm:text-[15px] text-slate-800 group-hover:text-slate-950 transition-colors tracking-tight whitespace-nowrap">
-               {item.name}
-             </div>
-             {item.badge && (
--              <span className="text-[10px] font-mono text-cyan-400/80 block leading-none mt-0.5">
-+              <span className="text-[10px] sm:text-[11px] font-mono text-slate-400 group-hover:text-cyan-600 block mt-1 tracking-wide whitespace-nowrap transition-colors">
-                 {item.badge}
-               </span>
-             )}
-@@ -67,18 +74,18 @@ export const Marquee: React.FC<MarqueeProps> = ({
-   return (
-     <div
-       className={cn(
--        'relative overflow-hidden w-full py-4 select-none',
--        gradientMask && '[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]',
-+        'relative overflow-hidden w-full py-3 select-none',
-+        gradientMask && '[mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]',
-         className
-       )}
-     >
-       <div
-         className={cn(
--          'flex w-max items-center gap-6 sm:gap-8',
-+          'flex w-max items-center',
-           directionClass,
--          speedClass,
-           pauseOnHover && 'hover:[animation-play-state:paused]'
-         )}
-+        style={{ animationDuration }}
-       >
-         {defaultContent}
-         {defaultContent}
-diff --git a/src/components/ui/Reveal.tsx b/src/components/ui/Reveal.tsx
-new file mode 100644
-index 0000000..886f62c
---- /dev/null
-+++ b/src/components/ui/Reveal.tsx
-@@ -0,0 +1,67 @@
-+import React, { useEffect, useRef, useState } from 'react';
-+import { cn } from '@/lib/utils';
-+
-+export interface RevealProps {
-+  children?: React.ReactNode;
-+  className?: string;
-+  /** Stagger delay in ms before the reveal transition starts */
-+  delay?: number;
-+  /** Offset before the element is considered visible (px from viewport bottom) */
-+  offset?: number;
-+}
-+
-+/**
-+ * Subtle scroll-triggered entrance. Fades + rises the content into view once,
-+ * using the `.reveal` / `.is-visible` classes defined in index.css.
-+ * Falls back to fully visible content when IntersectionObserver is unavailable
-+ * or when the user prefers reduced motion.
-+ */
-+export const Reveal: React.FC<RevealProps> = ({ children, className, delay = 0, offset = 40 }) => {
-+  const ref = useRef<HTMLDivElement | null>(null);
-+  const [visible, setVisible] = useState(false);
-+
-+  useEffect(() => {
-+    const prefersReducedMotion =
-+      typeof window !== 'undefined' &&
-+      window.matchMedia &&
-+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-+
-+    if (prefersReducedMotion || typeof IntersectionObserver === 'undefined') {
-+      setVisible(true);
-+      return;
-+    }
-+
-+    const element = ref.current;
-+    if (!element) {
-+      setVisible(true);
-+      return;
-+    }
-+
-+    const observer = new IntersectionObserver(
-+      (entries) => {
-+        const entry = entries[0];
-+        if (entry && entry.isIntersecting) {
-+          setVisible(true);
-+          observer.disconnect();
-+        }
-+      },
-+      { threshold: 0.12, rootMargin: `0px 0px -${offset}px 0px` }
+   if (!isAuthenticated) {
+-    return <Navigate to={LOGIN_PATH} replace state={{ from: location.pathname }} />;
++    return (
++      <Navigate
++        to={getLoginPathForProtectedPath(location.pathname)}
++        replace
++        state={{ from: location.pathname }}
++      />
 +    );
-+
-+    observer.observe(element);
-+
-+    return () => observer.disconnect();
-+  }, [offset]);
-+
-+  return (
-+    <div
-+      ref={ref}
-+      className={cn('reveal', visible && 'is-visible', className)}
-+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-+    >
-+      {children}
-+    </div>
-+  );
-+};
-+
-+export default Reveal;
-diff --git a/src/components/ui/SectionHeading.tsx b/src/components/ui/SectionHeading.tsx
-index 84228c0..aae464e 100644
---- a/src/components/ui/SectionHeading.tsx
-+++ b/src/components/ui/SectionHeading.tsx
-@@ -32,20 +32,20 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
-   }[align];
+   }
  
-   return (
--    <div className={cn('flex flex-col max-w-3xl space-y-3.5', alignmentClasses, className)}>
-+    <div className={cn('flex flex-col max-w-3xl space-y-4', alignmentClasses, className)}>
-       {badge && (
-         <Badge
-           variant={badgeVariant}
-           size="sm"
-           dot={badgeDot}
-           pulse={badgePulse}
--          className="shadow-[0_0_12px_rgba(0,218,243,0.2)]"
-+          className="shadow-[0_0_14px_rgba(0,218,243,0.18)] tracking-[0.18em]"
-         >
-           {badge}
-         </Badge>
-       )}
+   const allowedByPath = canAccessPath(role, location.pathname);
+diff --git a/src/auth/index.ts b/src/auth/index.ts
+index ed93198..4c119be 100644
+--- a/src/auth/index.ts
++++ b/src/auth/index.ts
+@@ -1,5 +1,7 @@
+ export {
+   ALL_AUTHENTICATED_ROLES,
++  ADMIN_LOGIN_PATH,
++  AUDITOR_LOGIN_PATH,
+   LOGIN_PATH,
+   PRIMARY_ROLES,
+   ROLE_HOME,
+@@ -9,6 +11,7 @@ export {
+   USER_ROLES,
+   canAccessPath,
+   getDefaultRouteForRole,
++  getLoginPathForProtectedPath,
+   getPostLoginPath,
+   getRequiredRoles,
+   hasPermission,
+diff --git a/src/auth/rbac.scenarios.ts b/src/auth/rbac.scenarios.ts
+index 3685694..19621de 100644
+--- a/src/auth/rbac.scenarios.ts
++++ b/src/auth/rbac.scenarios.ts
+@@ -6,12 +6,15 @@ import {
+   canAccessPath,
+   getDefaultRouteForRole,
+   getNavSectionsForRole,
++  getLoginPathForProtectedPath,
+   getPostLoginPath,
+   isPublicPath,
+ } from '@/auth';
+ import { runRbacContractTests } from '@/auth/rbac.selftest';
+ import { runServiceAuthzChecks } from '@/services/authorization.contract';
+ import { resolveDemoUser } from '@/services/authService';
++import { claimAudit } from '@/services/auditService';
++import { DEMO_USERS } from '@/mock/data';
  
--      <h2 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
-+      <h2 className="font-display font-bold sm:font-extrabold text-[1.75rem] sm:text-4xl text-white tracking-tight leading-[1.15] text-balance">
-         {title}{' '}
-         {gradientText && (
-           <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-100 to-purple-300">
-@@ -55,10 +55,18 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
-       </h2>
+ interface Scenario {
+   name: string;
+@@ -30,7 +33,11 @@ const scenarios: Scenario[] = [
+         !canAccessPath(null, '/client/dashboard') &&
+         !canAccessPath(null, '/auditor/queue') &&
+         !canAccessPath(null, '/admin/logs');
+-      const allowed = isPublicPath('/auth/login') && isPublicPath('/');
++      const allowed =
++        isPublicPath('/signin') &&
++        isPublicPath('/secure-admin-login') &&
++        isPublicPath('/secure-auditor-login') &&
++        isPublicPath('/');
+       return denied && allowed;
+     },
+   },
+@@ -84,6 +91,25 @@ const scenarios: Scenario[] = [
+       !canAccessPath('AUDITOR', '/admin/billing') &&
+       canAccessPath('ADMIN', '/admin/refunds'),
+   },
++  {
++    name: 'Protected URLs select isolated privileged sign-in routes',
++    run: () =>
++      getLoginPathForProtectedPath('/client/dashboard') === '/signin' &&
++      getLoginPathForProtectedPath('/auditor/queue') === '/secure-auditor-login' &&
++      getLoginPathForProtectedPath('/admin/logs') === '/secure-admin-login',
++  },
++  {
++    name: 'An audit claim is compare-and-set guarded against a second claimant',
++    run: () => {
++      const first = claimAudit('ZM-8495-QX', DEMO_USERS.AUDITOR);
++      try {
++        claimAudit('ZM-8495-QX', DEMO_USERS.ADMIN);
++        return false;
++      } catch {
++        return first.leadAuditor === DEMO_USERS.AUDITOR.name && first.status === 'IN_REVIEW';
++      }
++    },
++  },
+   {
+     name: 'Page refresh keeps the same role home (session-bound defaults)',
+     run: () =>
+diff --git a/src/auth/rbac.selftest.ts b/src/auth/rbac.selftest.ts
+index d5dc563..6187b16 100644
+--- a/src/auth/rbac.selftest.ts
++++ b/src/auth/rbac.selftest.ts
+@@ -26,7 +26,7 @@ const cases: Case[] = [
+       isPublicPath('/support') &&
+       isPublicPath('/catalog') &&
+       isPublicPath('/solutions/auditing') &&
+-      isPublicPath('/auth/login') &&
++      isPublicPath('/signin') &&
+       isPublicPath('/unauthorized'),
+   },
+   {
+@@ -46,7 +46,7 @@ const cases: Case[] = [
+   },
+   {
+     name: 'unauthenticated can access public paths',
+-    run: () => canAccessPath(null, '/') && canAccessPath(null, '/auth/login'),
++    run: () => canAccessPath(null, '/') && canAccessPath(null, '/signin'),
+   },
+   {
+     name: 'client cannot access auditor or admin pages',
+diff --git a/src/auth/rbac.ts b/src/auth/rbac.ts
+index e5eaa62..f38cdb2 100644
+--- a/src/auth/rbac.ts
++++ b/src/auth/rbac.ts
+@@ -68,6 +68,9 @@ export const ROUTE_ACCESS_RULES: readonly RouteAccessRule[] = [
+   { path: '/pricing', exact: true, public: true },
+   { path: '/support', exact: true, public: true },
+   { path: '/catalog', exact: true, public: true },
++  { path: '/signin', exact: true, public: true },
++  { path: '/secure-admin-login', exact: true, public: true },
++  { path: '/secure-auditor-login', exact: true, public: true },
+   { path: '/auth', public: true },
+   { path: '/unauthorized', public: true },
  
-       {description && (
--        <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl font-sans">
-+        <p className="text-slate-300/90 text-sm sm:text-base leading-relaxed max-w-2xl font-sans text-pretty">
-           {description}
-         </p>
-       )}
-+
-+      {align === 'center' && (
-+        <div className="flex items-center justify-center gap-2 pt-1" aria-hidden="true">
-+          <span className="h-px w-8 bg-gradient-to-r from-transparent to-cyan-400/50" />
-+          <span className="h-1 w-1 rounded-full bg-cyan-400/80" />
-+          <span className="h-px w-8 bg-gradient-to-l from-transparent to-cyan-400/50" />
-+        </div>
-+      )}
-     </div>
-   );
+@@ -101,9 +104,21 @@ export const ROLE_HOME: Record<UserRole, string> = {
+   STUDENT: '/academy/learn/crypto-security-101',
  };
-diff --git a/src/data/content.ts b/src/data/content.ts
-deleted file mode 100644
-index 5a8424d..0000000
---- a/src/data/content.ts
-+++ /dev/null
-@@ -1,66 +0,0 @@
--import type { NavLink, TrustBadgeData, FeatureData } from '../types';
--
--export const NAV_LINKS: NavLink[] = [
--  { label: 'Detector', href: '#' },
--  { label: 'Academy', href: '#' },
--  { label: 'Analyzer', href: '#' },
--  { label: 'Support', href: '#' },
--];
--
--export const FOOTER_LINKS: NavLink[] = [
--  { label: 'Security Audit', href: '#' },
--  { label: 'Privacy Matrix', href: '#' },
--  { label: 'Terms of Intel', href: '#' },
--  { label: 'Neural API', href: '#' },
--];
--
--export const TRUST_BADGES: TrustBadgeData[] = [
--  { icon: 'school', label: 'Learn Safely', iconColorClass: 'text-secondary-fixed-dim' },
--  { icon: 'verified', label: 'Verify Projects', iconColorClass: 'text-primary-fixed-dim' },
--  { icon: 'notifications_active', label: 'Stay Alert', iconColorClass: 'text-error' },
--];
--
--export const FEATURES: FeatureData[] = [
--  {
--    icon: 'school',
--    eyebrow: 'Academy',
--    eyebrowColorClass: 'text-primary-fixed-dim',
--    title: 'Crypto Courses',
--    titleColorClass: 'text-primary',
--    description:
--      'Master the fundamentals of blockchain technology, wallet security, and smart contract interaction through interactive holographic modules.',
--    iconBgClass: 'bg-primary-fixed-dim/10',
--    iconBorderClass: 'border-primary-fixed-dim/30',
--    glowClass: 'hover:neon-glow-primary',
--  },
--  {
--    icon: 'policy',
--    eyebrow: 'Terminal',
--    eyebrowColorClass: 'text-secondary-container',
--    title: 'AI Scam Detector',
--    titleColorClass: 'text-secondary-fixed',
--    description:
--      'Real-time neural analysis of contract code, liquidity patterns, and developer history to identify malicious intent before you connect your wallet.',
--    iconBgClass: 'bg-secondary-container/10',
--    iconBorderClass: 'border-secondary-container/30',
--    glowClass: 'hover:neon-glow-secondary',
--    offset: true,
--  },
--  {
--    icon: 'query_stats',
--    eyebrow: 'Analytics',
--    eyebrowColorClass: 'text-primary-fixed-dim',
--    title: 'Token Risk Analyzer',
--    titleColorClass: 'text-primary',
--    description:
--      'Deep-dive metrics into tokenomics, holder distribution, and on-chain velocity. Visualize risk with our proprietary multi-layered data arrays.',
--    iconBgClass: 'bg-primary-fixed-dim/10',
--    iconBorderClass: 'border-primary-fixed-dim/30',
--    glowClass: 'hover:neon-glow-primary',
--  },
--];
--
--export const HERO_IMAGE = {
--  url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDDitylg1uGy_bSeLcWm1htpDRpnL5_8b3gXGT38uZMwQw6m0Ua4-D9vixt2zX0ITJ4uefTW71Lnq-u4O1Hb3SuWzJp6A118JD2NGv_AgJIo5DSlYOCmV71dBwVxtu_i-NsyDB8h3dH6kus17vXUCtNk_R3HXKk8-PXT5Joeh4NgVSmydOCvF-GgXcDa0PQfxvZS4ARHd4KE1rInh0j20X2-ZHLb297gsMNsacZuuW8EM1m1U3uvdCsfnokW9VkviysqlAf8cTlDANY',
--  alt: 'A highly detailed digital illustration of an iridescent, glowing purple AI brain structure hovering above a futuristic, frosted-glass holographic laptop on a sleek desk, lit by electric blue and violet light in a dark command-center setting.',
--};
-diff --git a/src/index.css b/src/index.css
-index b1addac..68f2956 100644
---- a/src/index.css
-+++ b/src/index.css
-@@ -53,10 +53,10 @@
-   --color-silver: #c0c0c0;
  
-   /* Font families */
--  --font-display: 'Space Grotesk', sans-serif;
--  --font-body: 'Hanken Grotesk', 'Inter', sans-serif;
-+  --font-display: 'Sora', 'Space Grotesk', sans-serif;
-+  --font-body: 'Inter', 'Hanken Grotesk', sans-serif;
-   --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
--  --font-headline: 'Space Grotesk', sans-serif;
-+  --font-headline: 'Sora', 'Space Grotesk', sans-serif;
-   --font-sans: 'Inter', 'Hanken Grotesk', sans-serif;
+-export const LOGIN_PATH = '/auth/login';
++export const LOGIN_PATH = '/signin';
++export const ADMIN_LOGIN_PATH = '/secure-admin-login';
++export const AUDITOR_LOGIN_PATH = '/secure-auditor-login';
+ export const UNAUTHORIZED_PATH = '/unauthorized';
  
-   /* Border radius */
-@@ -75,10 +75,10 @@
- 
-   /* Custom typography names for compatibility */
-   --font-body-md: "Inter", "Manrope", sans-serif;
--  --font-display-xl: "Space Grotesk", sans-serif;
--  --font-label-sm: "Space Grotesk", sans-serif;
--  --font-headline-lg: "Space Grotesk", sans-serif;
--  --font-data-lg: "Space Grotesk", sans-serif;
-+  --font-display-xl: "Sora", "Space Grotesk", sans-serif;
-+  --font-label-sm: "Sora", "Space Grotesk", sans-serif;
-+  --font-headline-lg: "Sora", "Space Grotesk", sans-serif;
-+  --font-data-lg: "Sora", "Space Grotesk", sans-serif;
- 
-   --text-body-md: 16px;
-   --text-body-md--line-height: 1.6;
-@@ -143,6 +143,29 @@
-     border: 1px solid rgba(255, 255, 255, 0.1);
-   }
- 
-+  /* Scroll-reveal helpers */
-+  .reveal {
-+    opacity: 0;
-+    transform: translateY(18px);
-+    transition:
-+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-+    will-change: opacity, transform;
++/** Chooses the isolated credential entry point for an unauthenticated protected request. */
++export function getLoginPathForProtectedPath(pathname: string): string {
++  const path = normalizePath(pathname);
++  if (path === '/admin' || path.startsWith('/admin/')) return ADMIN_LOGIN_PATH;
++  if (path === '/auditor' || path.startsWith('/auditor/') || path === '/leaderboard/auditors') {
++    return AUDITOR_LOGIN_PATH;
 +  }
-+  .reveal.is-visible {
-+    opacity: 1;
-+    transform: translateY(0);
-+  }
-+
-+  /* Refined gradient text */
-+  .text-gradient-cyan {
-+    background: linear-gradient(100deg, #a5f3fc 0%, #22d3ee 45%, #c4b5fd 100%);
-+    -webkit-background-clip: text;
-+    background-clip: text;
-+    -webkit-text-fill-color: transparent;
-+    color: transparent;
-+  }
-+
-   .glass-card-hover {
-     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-   }
-@@ -369,6 +392,10 @@
- }
- 
- /* Base Body Styles */
-+html {
-+  scroll-behavior: smooth;
++  return LOGIN_PATH;
 +}
 +
- body {
-   background-color: var(--color-background);
-   color: var(--color-on-background);
-@@ -376,6 +403,8 @@ body {
-   position: relative;
-   overflow-x: hidden;
-   font-family: var(--font-body-md);
-+  -webkit-font-smoothing: antialiased;
-+  text-rendering: optimizeLegibility;
+ export function isUserRole(value: unknown): value is UserRole {
+   return typeof value === 'string' && (USER_ROLES as readonly string[]).includes(value);
  }
+diff --git a/src/auth/usePermission.ts b/src/auth/usePermission.ts
+index 5e50e5a..9f0f94b 100644
+--- a/src/auth/usePermission.ts
++++ b/src/auth/usePermission.ts
+@@ -22,6 +22,6 @@ export function usePermission() {
+     isAdmin: isAuthenticated && role === 'ADMIN',
+     isAuditor: isAuthenticated && role === 'AUDITOR',
+     isClient: isAuthenticated && role === 'CLIENT',
+-    homePath: isAuthenticated ? getDefaultRouteForRole(role) : '/auth/login',
++    homePath: isAuthenticated ? getDefaultRouteForRole(role) : '/signin',
+   };
+ }
+diff --git a/src/components/layouts/DashboardLayout.tsx b/src/components/layouts/DashboardLayout.tsx
+index d9db433..8abb473 100644
+--- a/src/components/layouts/DashboardLayout.tsx
++++ b/src/components/layouts/DashboardLayout.tsx
+@@ -20,7 +20,7 @@ export const DashboardLayout: React.FC = () => {
  
- /* Selection */
-diff --git a/src/pages/marketing/HomePage.tsx b/src/pages/marketing/HomePage.tsx
-index 292658c..78375ed 100644
---- a/src/pages/marketing/HomePage.tsx
-+++ b/src/pages/marketing/HomePage.tsx
-@@ -1,20 +1,17 @@
--import React, { useState } from 'react';
-+import React from 'react';
- import { Link } from 'react-router-dom';
- import { Button } from '@/components/ui/Button';
- import { GlassCard } from '@/components/ui/GlassCard';
+   const handleLogout = () => {
+     logout();
+-    navigate('/auth/login', { replace: true });
++    navigate('/signin', { replace: true });
+   };
+ 
+   return (
+diff --git a/src/components/layouts/MarketingLayout.tsx b/src/components/layouts/MarketingLayout.tsx
+index ead16d9..2a68a14 100644
+--- a/src/components/layouts/MarketingLayout.tsx
++++ b/src/components/layouts/MarketingLayout.tsx
+@@ -11,7 +11,7 @@ export const MarketingLayout: React.FC = () => {
+   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   const location = useLocation();
+   const { isAuthenticated, role, logout } = useAuth();
+-  const consolePath = isAuthenticated ? getDefaultRouteForRole(role) : '/auth/login';
++  const consolePath = isAuthenticated ? getDefaultRouteForRole(role) : '/signin';
+ 
+   const navLinks = [
+     { label: 'Solutions', href: '/solutions/auditing' },
+@@ -106,12 +106,12 @@ export const MarketingLayout: React.FC = () => {
+               </>
+             ) : (
+               <>
+-                <Link to="/auth/login" className="hidden sm:block">
++                <Link to="/signin" className="hidden sm:block">
+                   <Button variant="outline" size="sm" icon="terminal">
+                     Terminal Access
+                   </Button>
+                 </Link>
+-                <Link to="/auth/login">
++                <Link to="/signin">
+                   <Button variant="primary" size="sm" icon="dashboard">
+                     Launch Console
+                   </Button>
+diff --git a/src/components/shared/MasterCatalogDrawer.tsx b/src/components/shared/MasterCatalogDrawer.tsx
+index 435e6f2..d2dd4cc 100644
+--- a/src/components/shared/MasterCatalogDrawer.tsx
++++ b/src/components/shared/MasterCatalogDrawer.tsx
+@@ -58,7 +58,7 @@ export const ALL_PAGE_CATALOG: PageEntry[] = [
+   {
+     title: 'Terminal Access Login',
+     sourceFile: 'login-terminal.html',
+-    route: '/auth/login',
++    route: '/signin',
+     domain: 'Auth',
+     description: 'Operator authentication with WebAuthn passkey and interactive parallax grid.',
+   },
+diff --git a/src/context/AuthContext.tsx b/src/context/AuthContext.tsx
+index ff8e27a..deee582 100644
+--- a/src/context/AuthContext.tsx
++++ b/src/context/AuthContext.tsx
+@@ -13,7 +13,7 @@ interface AuthContextType {
+   isAuthenticated: boolean;
+   isLoading: boolean;
+   role: UserRole;
+-  login: (email: string, password?: string) => Promise<UserProfile>;
++  login: (email: string, password?: string, requiredRole?: UserRole) => Promise<UserProfile>;
+   register: (input: { name: string; email: string; password: string }) => Promise<UserProfile>;
+   logout: () => void;
+   walletConnected: boolean;
+@@ -53,8 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
+     };
+   }, []);
+ 
+-  const login = useCallback(async (email: string, password?: string) => {
+-    const session = await authenticate({ email, password });
++  const login = useCallback(async (email: string, password?: string, requiredRole?: UserRole) => {
++    const session = await authenticate({ email, password, requiredRole });
+     setUser(session.user);
+     setWalletConnected(session.walletConnected);
+     return session.user;
+diff --git a/src/pages/auth/InductionPage.tsx b/src/pages/auth/InductionPage.tsx
+index b4dfd06..9fd0688 100644
+--- a/src/pages/auth/InductionPage.tsx
++++ b/src/pages/auth/InductionPage.tsx
+@@ -151,7 +151,7 @@ export const InductionPage: React.FC = () => {
+ 
+       <div className="pt-4 border-t border-white/10 text-center text-xs font-mono text-slate-400">
+         Already registered?{' '}
+-        <Link to="/auth/login" className="text-cyan-400 font-bold hover:underline">
++        <Link to="/signin" className="text-cyan-400 font-bold hover:underline">
+           Terminal Sign-In
+         </Link>
+       </div>
+diff --git a/src/pages/auth/LoginPage.tsx b/src/pages/auth/LoginPage.tsx
+index 38f4483..20ba31d 100644
+--- a/src/pages/auth/LoginPage.tsx
++++ b/src/pages/auth/LoginPage.tsx
+@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
  import { Badge } from '@/components/ui/Badge';
  import { Icon } from '@/components/ui/Icon';
- import { StatCard } from '@/components/shared/StatCard';
--import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
- import { Marquee, MarqueeItem } from '@/components/ui/Marquee';
- import { SectionHeading } from '@/components/ui/SectionHeading';
- import { GlowBackground } from '@/components/ui/GlowBackground';
--import { BlockchainDiagram } from '@/components/sections/BlockchainDiagram';
- import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
-+import { Reveal } from '@/components/ui/Reveal';
+ import { useAuth } from '@/context/AuthContext';
+-import { getPostLoginPath, PRIMARY_ROLES } from '@/auth/rbac';
++import { getPostLoginPath } from '@/auth/rbac';
+ import { DEMO_USERS } from '@/mock/data';
+ import type { UserRole } from '@/types';
  
- export const HomePage: React.FC = () => {
--  const [catalogOpen, setCatalogOpen] = useState(false);
--
-   const trustedNetworks: MarqueeItem[] = [
-     { name: 'Ethereum', symbol: 'ETH', badge: 'L1 Mainnet' },
-     { name: 'Arbitrum', symbol: 'ARB', badge: 'Nitro Rollup' },
-@@ -147,378 +144,293 @@ export const HomePage: React.FC = () => {
-   ];
+@@ -14,31 +14,54 @@ interface LoginLocationState {
+   from?: string;
+ }
  
-   return (
--    <div className="space-y-24 pb-20">
-+    <div className="space-y-24 lg:space-y-32 pb-24">
-       {/* Hero Section with Glow Background */}
--      <GlowBackground variant="hero" className="pt-16 pb-12">
-+      <GlowBackground variant="hero" className="pt-20 pb-16 sm:pt-24 sm:pb-20">
-         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-           {/* Top Pill Badge */}
--          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-semibold shadow-[0_0_20px_rgba(0,218,243,0.25)] backdrop-blur-md">
--            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
--            <span>CRYSTALLINE NEXUS • INSTITUTIONAL SECURITY PROTOCOL</span>
--          </div>
-+          <Reveal>
-+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.05] border border-cyan-400/25 text-cyan-200 font-mono text-[11px] sm:text-xs font-semibold tracking-[0.14em] shadow-[0_0_24px_rgba(0,218,243,0.18),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
-+              <span className="relative flex w-2 h-2">
-+                <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-60 animate-ping" />
-+                <span className="relative inline-flex w-2 h-2 rounded-full bg-cyan-400" />
-+              </span>
-+              <span>CRYSTALLINE NEXUS • INSTITUTIONAL SECURITY PROTOCOL</span>
-+            </div>
-+          </Reveal>
- 
-           {/* Main Hero Headline */}
--          <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tight leading-[1.1] max-w-4xl mx-auto">
--            Securing the Future of{' '}
--            <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-100 to-purple-300">
--              Decentralized Finance
--            </span>
--          </h1>
-+          <Reveal delay={90}>
-+            <h1 className="font-display font-extrabold text-[2.5rem] sm:text-6xl lg:text-[4.25rem] text-white tracking-[-0.03em] leading-[1.05] max-w-4xl mx-auto text-balance">
-+              Securing the Future of{' '}
-+              <span className="text-gradient-cyan">Decentralized Finance</span>
-+            </h1>
-+          </Reveal>
- 
-           {/* Subtitle */}
--          <p className="text-slate-300 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed font-sans">
--            Uncompromising smart contract auditing, automated EVM bytecode forensics, and 24/7
--            real-time threat surveillance. Protecting over{' '}
--            <span className="text-cyan-300 font-bold font-mono">$64 Billion</span> in on-chain assets.
--          </p>
-+          <Reveal delay={180}>
-+            <p className="text-slate-300 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed font-sans text-pretty">
-+              Uncompromising smart contract auditing, automated EVM bytecode forensics, and 24/7
-+              real-time threat surveillance. Protecting over{' '}
-+              <span className="text-cyan-300 font-bold font-mono">$64 Billion</span> in on-chain
-+              assets.
-+            </p>
-+          </Reveal>
- 
-           {/* CTA Buttons */}
--          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
--            <Link to="/client/audits/new">
--              <Button size="lg" icon="shield" className="shadow-[0_0_25px_rgba(0,218,243,0.45)]">
--                Request Security Audit
--              </Button>
--            </Link>
--            <Link to="/threat-hub/skynet">
--              <Button variant="outline" size="lg" icon="radar">
--                Launch Skynet Radar
--              </Button>
--            </Link>
--            <button
--              onClick={() => setCatalogOpen(true)}
--              className="px-5 py-3 rounded-xl text-sm font-mono font-bold bg-slate-900/70 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400 transition-all flex items-center gap-2 cursor-pointer backdrop-blur-md"
--            >
--              <Icon name="grid_view" size={18} />
--              <span>Browse 47 Screens Matrix</span>
--            </button>
--          </div>
-+          <Reveal delay={260}>
-+            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-+              <Link to="/client/audits/new">
-+                <Button
-+                  size="lg"
-+                  icon="shield"
-+                  className="shadow-[0_0_30px_rgba(0,218,243,0.4),0_12px_30px_-12px_rgba(0,218,243,0.5)] hover:shadow-[0_0_40px_rgba(0,218,243,0.55),0_16px_40px_-12px_rgba(0,218,243,0.6)]"
-+                >
-+                  Request Security Audit
-+                </Button>
-+              </Link>
-+              <Link to="/threat-hub/skynet">
-+                <Button variant="outline" size="lg" icon="radar">
-+                  Launch Skynet Radar
-+                </Button>
-+              </Link>
-+            </div>
-+          </Reveal>
- 
-           {/* Live Top Metrics Grid with Animated Counters */}
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-10 text-left">
--            <StatCard
--              label="Total Value Protected"
--              value="$64.2B"
--              numericValue={64.2}
--              prefix="$"
--              suffix="B"
--              decimals={1}
--              delta="+14.2%"
--              icon="security"
--              variant="fresnel"
--              animate
--            />
--            <StatCard
--              label="Protocols Verified"
--              value="1,420"
--              numericValue={1420}
--              suffix="+"
--              decimals={0}
--              delta="+38 this mo"
--              icon="fact_check"
--              variant="glass"
--              animate
--            />
--            <StatCard
--              label="Threats Mitigated"
--              value="8,940"
--              numericValue={8940}
--              decimals={0}
--              delta="100% resolved"
--              icon="gpp_bad"
--              iconColor="text-red-400"
--              variant="glass"
--              animate
--            />
--            <StatCard
--              label="Global Z-Score"
--              value="98.4"
--              numericValue={98.4}
--              suffix=" / 100"
--              decimals={1}
--              delta="Optimal Health"
--              icon="radar"
--              iconColor="text-emerald-400"
--              variant="glass"
--              animate
--            />
-+            <Reveal delay={120}>
-+              <StatCard
-+                label="Total Value Protected"
-+                value="$64.2B"
-+                numericValue={64.2}
-+                prefix="$"
-+                suffix="B"
-+                decimals={1}
-+                delta="+14.2%"
-+                icon="security"
-+                variant="fresnel"
-+                animate
-+              />
-+            </Reveal>
-+            <Reveal delay={200}>
-+              <StatCard
-+                label="Protocols Verified"
-+                value="1,420"
-+                numericValue={1420}
-+                suffix="+"
-+                decimals={0}
-+                delta="+38 this mo"
-+                icon="fact_check"
-+                variant="glass"
-+                animate
-+              />
-+            </Reveal>
-+            <Reveal delay={280}>
-+              <StatCard
-+                label="Threats Mitigated"
-+                value="8,940"
-+                numericValue={8940}
-+                decimals={0}
-+                delta="100% resolved"
-+                icon="gpp_bad"
-+                iconColor="text-red-400"
-+                variant="glass"
-+                animate
-+              />
-+            </Reveal>
-+            <Reveal delay={360}>
-+              <StatCard
-+                label="Global Z-Score"
-+                value="98.4"
-+                numericValue={98.4}
-+                suffix=" / 100"
-+                decimals={1}
-+                delta="Optimal Health"
-+                icon="radar"
-+                iconColor="text-emerald-400"
-+                variant="glass"
-+                animate
-+              />
-+            </Reveal>
-           </div>
-         </div>
-       </GlowBackground>
- 
-       {/* Trusted Ecosystem Technologies & Networks Marquee */}
--      <section className="space-y-4">
--        <div className="text-center">
--          <p className="text-xs font-mono font-semibold text-slate-400 uppercase tracking-widest">
--            Institutional Verification Across Leading Blockchain Ecosystems
--          </p>
-+      <section className="relative bg-white text-slate-800" aria-label="Trusted ecosystem networks">
-+        <div className="border-y border-slate-200 shadow-[0_18px_50px_-28px_rgba(2,6,23,0.28)]">
-+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 pb-2">
-+            <div className="flex items-center justify-center gap-4 pb-6">
-+              <span className="hidden sm:block h-px flex-1 max-w-[120px] bg-gradient-to-r from-transparent to-slate-300" />
-+              <p className="text-[10px] sm:text-xs font-mono font-semibold text-slate-500 uppercase tracking-[0.18em] sm:tracking-[0.22em] text-center">
-+                Institutional Verification Across Leading Blockchain Ecosystems
-+              </p>
-+              <span className="hidden sm:block h-px flex-1 max-w-[120px] bg-gradient-to-l from-transparent to-slate-300" />
-+            </div>
-+            <Marquee items={trustedNetworks} speed="slow" />
-+          </div>
-         </div>
--        <Marquee items={trustedNetworks} speed="normal" />
-       </section>
- 
--      {/* LANDING PAGE ONLY: Interactive Animated Blockchain Visual Diagram */}
--      <BlockchainDiagram />
--
-       {/* Animated Numerical Statistics Grid (Count-Up Section) */}
--      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
--        <SectionHeading
--          badge="VERIFIED BENCHMARKS"
--          title="Battle-Tested Security by the Numbers"
--          description="Continuous formal verification, rapid incident response, and automated threat interception measured across our global decentralized infrastructure."
-+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-+        <div
-+          className="absolute inset-x-0 -top-16 bottom-0 -z-10 bg-[radial-gradient(55%_45%_at_50%_0%,rgba(0,218,243,0.05),transparent_70%)] pointer-events-none"
-+          aria-hidden="true"
-         />
-+        <Reveal>
-+          <SectionHeading
-+            badge="VERIFIED BENCHMARKS"
-+            title="Battle-Tested Security by the Numbers"
-+            description="Continuous formal verification, rapid incident response, and automated threat interception measured across our global decentralized infrastructure."
-+          />
-+        </Reveal>
- 
-         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
--          {keyStatistics.map((stat) => (
--            <GlassCard
--              key={stat.label}
--              variant="default"
--              hoverEffect
--              blur="lg"
--              className="p-5 flex flex-col justify-between text-center space-y-3 group"
--            >
--              <div className="mx-auto p-2.5 rounded-xl bg-[#060e20] border border-cyan-500/20 text-cyan-400 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_15px_rgba(0,218,243,0.3)] transition-all">
--                <Icon name={stat.icon} size={22} />
--              </div>
--
--              <div>
--                <div className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight">
--                  <AnimatedCounter
--                    value={stat.value}
--                    prefix={stat.prefix}
--                    suffix={stat.suffix}
--                    decimals={stat.decimals}
--                  />
-+          {keyStatistics.map((stat, idx) => (
-+            <Reveal key={stat.label} delay={(idx % 6) * 80}>
-+              <GlassCard
-+                variant="default"
-+                hoverEffect
-+                blur="lg"
-+                className="p-5 flex flex-col justify-between text-center space-y-3 group h-full"
-+              >
-+                <div className="mx-auto p-2.5 rounded-xl bg-[#060e20] border border-cyan-500/20 text-cyan-400 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_15px_rgba(0,218,243,0.3)] transition-all">
-+                  <Icon name={stat.icon} size={22} />
-                 </div>
--                <div className="text-xs font-mono font-semibold text-slate-300 mt-1">
--                  {stat.label}
+-export const LoginPage: React.FC = () => {
+-  const [email, setEmail] = useState(DEMO_USERS.CLIENT.email);
++interface LoginPageProps {
++  /** The route's server-issued account class. This is never user-selectable. */
++  requiredRole?: UserRole;
++}
 +
-+                <div>
-+                  <div className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
-+                    <AnimatedCounter
-+                      value={stat.value}
-+                      prefix={stat.prefix}
-+                      suffix={stat.suffix}
-+                      decimals={stat.decimals}
-+                    />
-+                  </div>
-+                  <div className="text-xs font-mono font-semibold text-slate-300 mt-1.5">
-+                    {stat.label}
-+                  </div>
-                 </div>
--              </div>
++const LOGIN_COPY: Record<UserRole, { title: string; description: string; badge: string }> = {
++  CLIENT: {
++    title: 'Client sign in',
++    description: 'Sign in to manage your protocol security engagements.',
++    badge: 'CLIENT PORTAL',
++  },
++  AUDITOR: {
++    title: 'Auditor access',
++    description: 'Authorized audit personnel only. Your account clearance is verified during sign in.',
++    badge: 'RESTRICTED AUDITOR TERMINAL',
++  },
++  ADMIN: {
++    title: 'Administrator access',
++    description: 'Authorized administrators only. Your account clearance is verified during sign in.',
++    badge: 'RESTRICTED ADMIN TERMINAL',
++  },
++  STUDENT: {
++    title: 'Sign in',
++    description: 'Authenticate to continue.',
++    badge: 'TERMINAL ACCESS',
++  },
++};
++
++export const LoginPage: React.FC<LoginPageProps> = ({ requiredRole = 'CLIENT' }) => {
++  const [email, setEmail] = useState(DEMO_USERS[requiredRole].email);
+   const [password, setPassword] = useState('nexus-operator');
+   const [showPassword, setShowPassword] = useState(false);
+-  const [authMethod, setAuthMethod] = useState<'PASSWORD' | 'PASSKEY' | 'WALLET'>('PASSWORD');
+-  const [selectedRole, setSelectedRole] = useState<UserRole>('CLIENT');
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState<string | null>(null);
+   const { login } = useAuth();
+   const navigate = useNavigate();
+   const location = useLocation();
+   const from = (location.state as LoginLocationState | null)?.from;
++  const copy = LOGIN_COPY[requiredRole];
  
--              <div className="text-[10px] font-mono text-slate-400 pt-2 border-t border-white/10">
--                {stat.description}
--              </div>
--            </GlassCard>
-+                <div className="text-[10px] font-mono text-slate-400 pt-2.5 border-t border-white/10">
-+                  {stat.description}
-+                </div>
-+              </GlassCard>
-+            </Reveal>
-           ))}
-         </div>
-       </section>
+-  const applyDemoRole = (role: UserRole) => {
+-    setSelectedRole(role);
+-    setEmail(DEMO_USERS[role].email);
+-    setError(null);
+-  };
+-
+-  const handleLogin = async (e: React.FormEvent) => {
+-    e.preventDefault();
++  const handleLogin = async (event: React.FormEvent) => {
++    event.preventDefault();
+     setLoading(true);
+     setError(null);
+     try {
+-      const user = await login(email, password);
++      // The expected role is an immutable route property. authenticate() resolves
++      // the actual account role itself and rejects a mismatch before issuing a session.
++      const user = await login(email, password, requiredRole);
+       navigate(getPostLoginPath(user.role, from), { replace: true });
+     } catch (err) {
+       setError(err instanceof Error ? err.message : 'Authentication failed.');
+@@ -53,139 +76,47 @@ export const LoginPage: React.FC = () => {
+       blur="xl"
+       className="w-full max-w-md p-8 space-y-6 shadow-[0_0_40px_rgba(0,218,243,0.15)] relative border-cyan-500/30"
+     >
+-      <div className="flex items-center justify-between">
++      <div className="flex items-center justify-between gap-3">
+         <Badge variant="primary" size="sm" dot pulse>
+-          TERMINAL ACCESS
++          {copy.badge}
+         </Badge>
+         <span className="text-[10px] font-mono text-slate-400">SESSION: #ZT-8924-X</span>
+       </div>
  
-       {/* 4-Stage Methodology Preview */}
--      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
--        <SectionHeading
--          badge="THE ZAMARON PROTOCOL"
--          badgeVariant="primary"
--          title="Rigorous 4-Step Forensic Methodology"
--          description="Combining machine-speed automated precision with elite human cryptographic verification for airtight smart contract protection."
-+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-+        <div
-+          className="absolute inset-x-0 top-0 bottom-0 -z-10 bg-[radial-gradient(45%_40%_at_80%_10%,rgba(155,81,224,0.06),transparent_70%)] pointer-events-none"
-+          aria-hidden="true"
-         />
-+        <Reveal>
-+          <SectionHeading
-+            badge="THE ZAMARON PROTOCOL"
-+            badgeVariant="primary"
-+            title="Rigorous 4-Step Forensic Methodology"
-+            description="Combining machine-speed automated precision with elite human cryptographic verification for airtight smart contract protection."
-+          />
-+        </Reveal>
- 
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
--          {steps.map((step) => (
--            <GlassCard
--              key={step.num}
--              variant="elevated"
--              hoverEffect
--              blur="xl"
--              className="p-6 flex flex-col justify-between space-y-4 border-white/10 group"
--            >
--              <div className="space-y-4">
--                <div className="flex items-center justify-between">
--                  <span className="font-mono text-3xl font-black text-cyan-400/80 group-hover:text-cyan-300 transition-colors">
--                    {step.num}
--                  </span>
--                  <div className="p-2 rounded-lg bg-[#060e20] border border-cyan-500/20 text-cyan-400 group-hover:border-cyan-400/40">
--                    <Icon name={step.icon} size={20} />
-+          {steps.map((step, idx) => (
-+            <Reveal key={step.num} delay={idx * 90}>
-+              <GlassCard
-+                variant="elevated"
-+                hoverEffect
-+                blur="xl"
-+                className="p-6 flex flex-col justify-between space-y-4 border-white/10 group h-full"
-+              >
-+                <div className="space-y-4">
-+                  <div className="flex items-center justify-between">
-+                    <span className="font-mono text-3xl font-bold text-cyan-400/80 group-hover:text-cyan-300 transition-colors">
-+                      {step.num}
-+                    </span>
-+                    <div className="p-2 rounded-lg bg-[#060e20] border border-cyan-500/20 text-cyan-400 group-hover:border-cyan-400/40 group-hover:shadow-[0_0_12px_rgba(0,218,243,0.25)] transition-all">
-+                      <Icon name={step.icon} size={20} />
-+                    </div>
-                   </div>
--                </div>
- 
--                <h3 className="font-display font-bold text-lg text-white group-hover:text-cyan-200 transition-colors">
--                  {step.title}
--                </h3>
--                <p className="text-xs text-slate-300 leading-relaxed font-sans">
--                  {step.desc}
--                </p>
--              </div>
-+                  <h3 className="font-display font-semibold text-lg text-white group-hover:text-cyan-200 transition-colors">
-+                    {step.title}
-+                  </h3>
-+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
-+                    {step.desc}
-+                  </p>
-+                </div>
- 
--              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-400">
--                <span>PHASE {step.num}</span>
--                <span className="text-cyan-400 flex items-center gap-0.5">
--                  VERIFIED <Icon name="check_circle" size={12} />
--                </span>
--              </div>
--            </GlassCard>
-+                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-400">
-+                  <span>PHASE {step.num}</span>
-+                  <span className="text-cyan-400 flex items-center gap-0.5">
-+                    VERIFIED <Icon name="check_circle" size={12} />
-+                  </span>
-+                </div>
-+              </GlassCard>
-+            </Reveal>
-           ))}
-         </div>
- 
--        <div className="text-center pt-2">
--          <Link to="/solutions/auditing">
--            <Button variant="outline" size="md" iconRight="arrow_forward">
--              Explore Full Auditing Architecture
--            </Button>
--          </Link>
+       <div className="space-y-1">
+-        <h2 className="font-display font-black text-2xl text-white">Welcome back, Operator</h2>
+-        <p className="text-xs text-slate-400 font-sans leading-relaxed">
+-          Authenticate your node credentials to access the encrypted console.
+-        </p>
+-      </div>
+-
+-      {/* Demo Role Selector */}
+-      <div className="space-y-2">
+-        <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+-          Demo clearance (binds session role)
 -        </div>
-+        <Reveal delay={140}>
-+          <div className="text-center pt-2">
-+            <Link to="/solutions/auditing">
-+              <Button variant="outline" size="md" iconRight="arrow_forward">
-+                Explore Full Auditing Architecture
-+              </Button>
-+            </Link>
-+          </div>
-+        </Reveal>
-       </section>
- 
-       {/* Core Technology Pillars */}
--      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
--        <SectionHeading
--          badge="DEFENSE-IN-DEPTH"
--          badgeVariant="secondary"
--          title="Institutional-Grade Security Suite"
--          description="Built from the ground up to protect high-stakes decentralized finance protocols, bridges, and liquid staking derivatives."
-+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-+        <div
-+          className="absolute inset-x-0 top-0 bottom-0 -z-10 bg-[radial-gradient(50%_45%_at_15%_85%,rgba(0,230,118,0.05),transparent_70%)] pointer-events-none"
-+          aria-hidden="true"
-         />
-+        <Reveal>
-+          <SectionHeading
-+            badge="DEFENSE-IN-DEPTH"
-+            badgeVariant="secondary"
-+            title="Institutional-Grade Security Suite"
-+            description="Built from the ground up to protect high-stakes decentralized finance protocols, bridges, and liquid staking derivatives."
-+          />
-+        </Reveal>
- 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
--          {pillars.map((p) => (
--            <GlassCard
--              key={p.title}
--              variant="fresnel"
--              hoverEffect
--              blur="xl"
--              className="p-7 space-y-4 border-white/10 group"
--            >
--              <div className="flex items-center justify-between">
--                <div className="p-3 rounded-xl bg-[#060e20] text-cyan-400 border border-cyan-500/30 group-hover:shadow-[0_0_15px_rgba(0,218,243,0.3)] transition-all">
--                  <Icon name={p.icon} size={28} />
-+          {pillars.map((p, idx) => (
-+            <Reveal key={p.title} delay={(idx % 2) * 100}>
-+              <GlassCard
-+                variant="fresnel"
-+                hoverEffect
-+                blur="xl"
-+                className="p-7 space-y-4 border-white/10 group h-full"
-+              >
-+                <div className="flex items-center justify-between">
-+                  <div className="p-3 rounded-xl bg-[#060e20] text-cyan-400 border border-cyan-500/30 group-hover:border-cyan-400/60 group-hover:shadow-[0_0_18px_rgba(0,218,243,0.3)] group-hover:scale-[1.03] transition-all">
-+                    <Icon name={p.icon} size={28} />
-+                  </div>
-+                  <Badge variant="outline" size="sm">
-+                    {p.tag}
-+                  </Badge>
-                 </div>
--                <Badge variant="outline" size="sm">
--                  {p.tag}
--                </Badge>
--              </div>
- 
--              <h3 className="font-display font-bold text-xl text-white group-hover:text-cyan-200 transition-colors">
--                {p.title}
--              </h3>
--              <p className="text-sm text-slate-300 leading-relaxed font-sans">
--                {p.desc}
--              </p>
--            </GlassCard>
-+                <h3 className="font-display font-semibold text-xl text-white group-hover:text-cyan-200 transition-colors">
-+                  {p.title}
-+                </h3>
-+                <p className="text-sm text-slate-300 leading-relaxed font-sans">
-+                  {p.desc}
-+                </p>
-+              </GlassCard>
-+            </Reveal>
-           ))}
-         </div>
-       </section>
--
--      {/* Quick Launchpad to Core Modules */}
--      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
--        <GlassCard
--          variant="fresnel"
--          blur="xl"
--          className="p-8 sm:p-10 space-y-8 border-cyan-500/30 shadow-[0_0_30px_rgba(0,218,243,0.15)]"
--        >
--          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
--            <div className="space-y-1.5">
--              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs">
--                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
--                <span>COMMAND CENTER DIRECT ACCESS</span>
--              </div>
--              <h3 className="font-display font-black text-2xl sm:text-3xl text-white">
--                Access the ZAMARON Operations Hub
--              </h3>
--              <p className="text-sm text-slate-300 max-w-2xl font-sans">
--                Explore specialized consoles for Clients, Security Auditors, Threat Analysts, Ops Admins, and Academy Learners.
--              </p>
--            </div>
--
+-        <div className="grid grid-cols-3 gap-1 p-1 bg-[#060e20]/80 rounded-lg border border-white/10">
+-          {PRIMARY_ROLES.map((role) => (
 -            <button
--              onClick={() => setCatalogOpen(true)}
--              className="px-6 py-3 rounded-xl bg-cyan-400 text-[#00363d] font-mono font-bold text-sm hover:bg-cyan-300 cursor-pointer shadow-[0_0_20px_rgba(0,218,243,0.4)] transition-all shrink-0"
+-              key={role}
+-              type="button"
+-              onClick={() => applyDemoRole(role)}
+-              className={`py-1.5 text-[11px] font-mono rounded-md font-semibold transition-all cursor-pointer ${
+-                selectedRole === role
+-                  ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
+-                  : 'text-slate-400 hover:text-white'
+-              }`}
 -            >
--              Open Full 47-Screen Index
+-              {role}
 -            </button>
+-          ))}
+-        </div>
+-        <p className="text-[10px] font-mono text-slate-500">
+-          {DEMO_USERS[selectedRole].email} • role issued by auth service
+-        </p>
+-      </div>
+-
+-      {/* Auth Method Tabs */}
+-      <div className="grid grid-cols-3 gap-1 p-1 bg-[#060e20]/80 rounded-lg border border-white/10">
+-        <button
+-          type="button"
+-          onClick={() => setAuthMethod('PASSWORD')}
+-          className={`py-1.5 text-[11px] font-mono rounded-md font-semibold transition-all cursor-pointer ${
+-            authMethod === 'PASSWORD'
+-              ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
+-              : 'text-slate-400 hover:text-white'
+-          }`}
+-        >
+-          PASSKEY / PWD
+-        </button>
+-        <button
+-          type="button"
+-          onClick={() => setAuthMethod('PASSKEY')}
+-          className={`py-1.5 text-[11px] font-mono rounded-md font-semibold transition-all cursor-pointer ${
+-            authMethod === 'PASSKEY'
+-              ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
+-              : 'text-slate-400 hover:text-white'
+-          }`}
+-        >
+-          WEBAUTHN
+-        </button>
+-        <button
+-          type="button"
+-          onClick={() => setAuthMethod('WALLET')}
+-          className={`py-1.5 text-[11px] font-mono rounded-md font-semibold transition-all cursor-pointer ${
+-            authMethod === 'WALLET'
+-              ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_12px_rgba(0,218,243,0.3)]'
+-              : 'text-slate-400 hover:text-white'
+-          }`}
+-        >
+-          WEB3 WALLET
+-        </button>
++        <h2 className="font-display font-black text-2xl text-white">{copy.title}</h2>
++        <p className="text-xs text-slate-400 font-sans leading-relaxed">{copy.description}</p>
+       </div>
+ 
+       <form onSubmit={handleLogin} className="space-y-4">
+-        {authMethod === 'PASSWORD' && (
+-          <>
+-            <Input
+-              label="Terminal Identity (Email)"
+-              type="email"
+-              value={email}
+-              onChange={(e) => setEmail(e.target.value)}
+-              icon="alternate_email"
+-              placeholder="operator@nexus.io"
+-              required
+-            />
+-            <div className="relative">
+-              <Input
+-                label="Access Key (Password)"
+-                type={showPassword ? 'text' : 'password'}
+-                value={password}
+-                onChange={(e) => setPassword(e.target.value)}
+-                icon="vpn_key"
+-                placeholder="••••••••••••"
+-                required
+-              />
+-              <button
+-                type="button"
+-                onClick={() => setShowPassword(!showPassword)}
+-                className="absolute right-3 top-7 text-slate-400 hover:text-white cursor-pointer"
+-              >
+-                <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={18} />
+-              </button>
+-            </div>
+-          </>
+-        )}
+-
+-        {authMethod === 'PASSKEY' && (
+-          <div className="p-6 bg-[#060e20]/80 border border-cyan-500/30 rounded-xl text-center space-y-4">
+-            <div className="w-12 h-12 mx-auto rounded-full bg-cyan-500/10 border border-cyan-400 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,218,243,0.3)]">
+-              <Icon name="fingerprint" size={28} />
+-            </div>
+-            <div>
+-              <div className="text-sm font-bold text-white font-display">Biometric / Hardware Key</div>
+-              <div className="text-xs text-slate-400 mt-1">FIDO2 WebAuthn authentication via YubiKey or TouchID.</div>
+-            </div>
 -          </div>
+-        )}
 -
--          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 pt-4 border-t border-white/10">
--            <Link
--              to="/client/dashboard"
--              className="p-4 rounded-xl bg-[#060e20]/70 border border-white/10 hover:border-cyan-400 hover:bg-[#0c162d] text-center group transition-all"
--            >
--              <Icon
--                name="dashboard"
--                size={26}
--                className="text-cyan-400 group-hover:scale-110 transition-transform mb-2 mx-auto"
--              />
--              <div className="text-xs font-mono font-bold text-white group-hover:text-cyan-200">
--                Client Console
--              </div>
--              <div className="text-[10px] font-mono text-slate-400 mt-1">Audit Tracking</div>
--            </Link>
--
--            <Link
--              to="/auditor/queue"
--              className="p-4 rounded-xl bg-[#060e20]/70 border border-white/10 hover:border-purple-400 hover:bg-[#0c162d] text-center group transition-all"
--            >
--              <Icon
--                name="assignment_late"
--                size={26}
--                className="text-purple-400 group-hover:scale-110 transition-transform mb-2 mx-auto"
--              />
--              <div className="text-xs font-mono font-bold text-white group-hover:text-purple-200">
--                Auditor Queue
--              </div>
--              <div className="text-[10px] font-mono text-slate-400 mt-1">Triage & Analysis</div>
--            </Link>
--
--            <Link
--              to="/threat-hub/skynet"
--              className="p-4 rounded-xl bg-[#060e20]/70 border border-white/10 hover:border-emerald-400 hover:bg-[#0c162d] text-center group transition-all"
--            >
--              <Icon
--                name="radar"
--                size={26}
--                className="text-emerald-400 group-hover:scale-110 transition-transform mb-2 mx-auto"
--              />
--              <div className="text-xs font-mono font-bold text-white group-hover:text-emerald-200">
--                Skynet Radar
--              </div>
--              <div className="text-[10px] font-mono text-slate-400 mt-1">Live Surveillance</div>
--            </Link>
--
--            <Link
--              to="/threat-hub/whales"
--              className="p-4 rounded-xl bg-[#060e20]/70 border border-white/10 hover:border-amber-400 hover:bg-[#0c162d] text-center group transition-all"
--            >
--              <Icon
--                name="tsunami"
--                size={26}
--                className="text-amber-400 group-hover:scale-110 transition-transform mb-2 mx-auto"
--              />
--              <div className="text-xs font-mono font-bold text-white group-hover:text-amber-200">
--                Whale Alerts
--              </div>
--              <div className="text-[10px] font-mono text-slate-400 mt-1">Capital Flows</div>
--            </Link>
--
--            <Link
--              to="/governance"
--              className="p-4 rounded-xl bg-[#060e20]/70 border border-white/10 hover:border-purple-300 hover:bg-[#0c162d] text-center group transition-all"
--            >
--              <Icon
--                name="gavel"
--                size={26}
--                className="text-purple-300 group-hover:scale-110 transition-transform mb-2 mx-auto"
--              />
--              <div className="text-xs font-mono font-bold text-white group-hover:text-purple-200">
--                DAO Governance
--              </div>
--              <div className="text-[10px] font-mono text-slate-400 mt-1">Proposals & Votes</div>
--            </Link>
--
--            <Link
--              to="/academy/learn/crypto-security-101"
--              className="p-4 rounded-xl bg-[#060e20]/70 border border-white/10 hover:border-cyan-300 hover:bg-[#0c162d] text-center group transition-all"
--            >
--              <Icon
--                name="school"
--                size={26}
--                className="text-cyan-300 group-hover:scale-110 transition-transform mb-2 mx-auto"
--              />
--              <div className="text-xs font-mono font-bold text-white group-hover:text-cyan-200">
--                LMS Academy
--              </div>
--              <div className="text-[10px] font-mono text-slate-400 mt-1">Forensic Courses</div>
--            </Link>
+-        {authMethod === 'WALLET' && (
+-          <div className="p-6 bg-[#060e20]/80 border border-cyan-500/30 rounded-xl text-center space-y-4">
+-            <div className="w-12 h-12 mx-auto rounded-full bg-cyan-500/10 border border-cyan-400 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,218,243,0.3)]">
+-              <Icon name="account_balance_wallet" size={28} />
+-            </div>
+-            <div>
+-              <div className="text-sm font-bold text-white font-display">Sign with Web3 Wallet</div>
+-              <div className="text-xs text-slate-400 mt-1">EIP-4361 Sign-In with Ethereum (SIWE).</div>
+-            </div>
 -          </div>
--        </GlassCard>
--      </section>
--
--      {/* Master 47 Screens Catalog Drawer */}
--      <MasterCatalogDrawer isOpen={catalogOpen} onClose={() => setCatalogOpen(false)} />
-     </div>
+-        )}
++        <Input
++          label="Email"
++          type="email"
++          value={email}
++          onChange={(event) => setEmail(event.target.value)}
++          icon="alternate_email"
++          placeholder="you@example.com"
++          required
++        />
++        <div className="relative">
++          <Input
++            label="Password"
++            type={showPassword ? 'text' : 'password'}
++            value={password}
++            onChange={(event) => setPassword(event.target.value)}
++            icon="vpn_key"
++            placeholder="••••••••••••"
++            required
++          />
++          <button
++            type="button"
++            onClick={() => setShowPassword((visible) => !visible)}
++            className="absolute right-3 top-7 text-slate-400 hover:text-white cursor-pointer"
++            aria-label={showPassword ? 'Hide password' : 'Show password'}
++          >
++            <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={18} />
++          </button>
++        </div>
+ 
+         {error && (
+           <div className="text-xs font-mono text-red-400 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2">
+@@ -194,18 +125,20 @@ export const LoginPage: React.FC = () => {
+         )}
+ 
+         <Button type="submit" size="lg" className="w-full" loading={loading} icon="bolt">
+-          Authenticate Terminal
++          Sign in
+         </Button>
+       </form>
+ 
+-      <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
+-        <Link to="/auth/induction" className="hover:text-cyan-300 transition-colors">
+-          New Operator? <span className="text-cyan-400 font-bold">Begin Induction</span>
+-        </Link>
+-        <Link to="/auth/secure-gate" className="hover:text-slate-200">
+-          Hardware Enclave
+-        </Link>
+-      </div>
++      {requiredRole === 'CLIENT' && (
++        <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
++          <Link to="/auth/induction" className="hover:text-cyan-300 transition-colors">
++            New client? <span className="text-cyan-400 font-bold">Begin induction</span>
++          </Link>
++          <Link to="/auth/secure-gate" className="hover:text-slate-200">
++            Hardware enclave
++          </Link>
++        </div>
++      )}
+     </GlassCard>
    );
  };
-diff --git a/src/types/index.ts b/src/types/index.ts
-index 668f525..d8ae694 100644
---- a/src/types/index.ts
-+++ b/src/types/index.ts
-@@ -1,28 +1,3 @@
--export interface NavLink {
--  label: string;
--  href: string;
--}
--
--export interface TrustBadgeData {
--  icon: string;
--  label: string;
--  iconColorClass: string;
--}
--
--export interface FeatureData {
--  icon: string;
--  eyebrow: string;
--  eyebrowColorClass: string;
--  title: string;
--  titleColorClass: string;
--  description: string;
--  iconBgClass: string;
--  iconBorderClass: string;
--  glowClass: string;
--  /** True for the middle "featured" card that floats up and gets a glow blob */
--  offset?: boolean;
--}
--
- export type ButtonVariant = 'primary' | 'secondary';
- export type ButtonSize = 'sm' | 'lg';
+diff --git a/src/pages/auth/SecureGatePage.tsx b/src/pages/auth/SecureGatePage.tsx
+index 880ea65..8d981c8 100644
+--- a/src/pages/auth/SecureGatePage.tsx
++++ b/src/pages/auth/SecureGatePage.tsx
+@@ -91,7 +91,7 @@ export const SecureGatePage: React.FC = () => {
+       </form>
  
-diff --git a/src/vite-env.d.ts b/src/vite-env.d.ts
-new file mode 100644
-index 0000000..11f02fe
---- /dev/null
-+++ b/src/vite-env.d.ts
-@@ -0,0 +1 @@
-+/// <reference types="vite/client" />
+       <div className="pt-4 border-t border-white/10 text-xs font-mono text-slate-400">
+-        <Link to="/auth/login" className="hover:text-cyan-300 transition-colors">
++        <Link to="/signin" className="hover:text-cyan-300 transition-colors">
+           Return to Primary Terminal Login
+         </Link>
+       </div>
+diff --git a/src/services/auditService.ts b/src/services/auditService.ts
+index c03f82d..9b3a20b 100644
+--- a/src/services/auditService.ts
++++ b/src/services/auditService.ts
+@@ -80,7 +80,9 @@ export function getAudit(id: string, principal?: UserProfile | null): AuditReque
+ }
+ 
+ export function getAuditFindings(principal?: UserProfile | null, auditId = 'ZM-8492-NX'): AuditFinding[] {
+-  requirePermission('client:read', principal);
++  // Resolve the parent engagement first so CLIENT access is tenant-scoped even
++  // when callers request findings directly instead of through the audit detail.
++  getAudit(auditId, principal);
+   return cloneValue(findingsByAudit[auditId] ?? []);
+ }
+ 
+@@ -113,16 +115,26 @@ export function createAuditRequest(
+   return cloneValue(audit);
+ }
+ 
++function requireAssignedAuditor(id: string, principal?: UserProfile | null): { user: UserProfile; index: number } {
++  const user = requirePermission('auditor:write', principal);
++  const index = audits.findIndex((audit) => audit.id === id);
++  if (index < 0) {
++    throw new AuthorizationError('FORBIDDEN', `Audit ${id} was not found.`);
++  }
++  // Administrators retain the existing operational override. Individual
++  // auditors can only manage work assigned to their authenticated identity.
++  if (user.role !== 'ADMIN' && audits[index].leadAuditor !== user.name) {
++    throw new AuthorizationError('FORBIDDEN', 'This engagement is not assigned to the current auditor.');
++  }
++  return { user, index };
++}
++
+ export function updateAuditStatus(
+   id: string,
+   patch: Partial<Pick<AuditRequest, 'status' | 'leadAuditor' | 'progressPercent'>>,
+   principal?: UserProfile | null
+ ): AuditRequest {
+-  requirePermission('auditor:write', principal);
+-  const index = audits.findIndex((audit) => audit.id === id);
+-  if (index < 0) {
+-    throw new AuthorizationError('FORBIDDEN', `Audit ${id} was not found.`);
+-  }
++  const { index } = requireAssignedAuditor(id, principal);
+   audits[index] = { ...audits[index], ...patch };
+   persistAudits();
+   return cloneValue(audits[index]);
+@@ -130,27 +142,37 @@ export function updateAuditStatus(
+ 
+ export function claimAudit(id: string, principal?: UserProfile | null): AuditRequest {
+   const user = requirePermission('auditor:write', principal);
+-  return updateAuditStatus(
+-    id,
+-    {
+-      leadAuditor: user.name,
+-      status: 'IN_REVIEW',
+-      progressPercent: Math.max(audits.find((a) => a.id === id)?.progressPercent ?? 0, 40),
+-    },
+-    user
+-  );
++  const index = audits.findIndex((audit) => audit.id === id);
++  if (index < 0) {
++    throw new AuthorizationError('FORBIDDEN', `Audit ${id} was not found.`);
++  }
++
++  const audit = audits[index];
++  // This is a compare-and-set guard in the current service seam. Production
++  // must implement the same condition atomically in its database transaction.
++  if (audit.status !== 'QUEUED' || audit.leadAuditor) {
++    throw new AuthorizationError('FORBIDDEN', 'This engagement has already been claimed.');
++  }
++
++  audits[index] = {
++    ...audit,
++    leadAuditor: user.name,
++    status: 'IN_REVIEW',
++    progressPercent: Math.max(audit.progressPercent, 40),
++  };
++  persistAudits();
++  return cloneValue(audits[index]);
+ }
+ 
+ export function updateFinding(
+   auditId: string,
+   findingId: string,
+-  patch: Partial<Pick<AuditFinding, 'status' | 'notes'>>,
++  patch: Partial<Pick<AuditFinding, 'severity' | 'status' | 'notes' | 'remediation' | 'description' | 'location' | 'lineRange'>>,
+   principal?: UserProfile | null
+ ): AuditFinding {
+-  const actor = requirePermission('client:read', principal);
+-  if (actor.role === 'STUDENT') {
+-    throw new AuthorizationError('FORBIDDEN', 'Students cannot triage findings.');
+-  }
++  // Finding classification and internal notes are auditor actions. Client
++  // report access is read-only and never grants a mutation capability.
++  requireAssignedAuditor(auditId, principal);
+   const list = findingsByAudit[auditId] ?? [];
+   const index = list.findIndex((finding) => finding.id === findingId);
+   if (index < 0) {
+diff --git a/src/services/authService.scenarios.ts b/src/services/authService.scenarios.ts
+index a3d5521..ce81de8 100644
+--- a/src/services/authService.scenarios.ts
++++ b/src/services/authService.scenarios.ts
+@@ -76,15 +76,34 @@ async function run() {
+     throw new Error('Page refresh must restore the same CLIENT session');
+   }
+ 
+-  const auditorSession = await authenticate({ email: 'auditor@zamoron.io' });
++  let clientWasRejectedByAdminLogin = false;
++  try {
++    await authenticate({ email: 'client@zamoron.io', requiredRole: 'ADMIN' });
++  } catch {
++    clientWasRejectedByAdminLogin = true;
++  }
++  if (!clientWasRejectedByAdminLogin) {
++    throw new Error('A CLIENT account must not authenticate through the admin login route');
++  }
++
++  const auditorSession = await authenticate({ email: 'auditor@zamoron.io', requiredRole: 'AUDITOR' });
+   if (auditorSession.user.role !== 'AUDITOR') {
+     throw new Error('auditor@zamoron.io must authenticate as AUDITOR');
+   }
+ 
+-  const adminSession = await authenticate({ email: 'admin@zamoron.io' });
++  const refreshedAuditor = await restoreSession();
++  if (!refreshedAuditor || refreshedAuditor.user.role !== 'AUDITOR') {
++    throw new Error('Page refresh must restore the same AUDITOR session');
++  }
++
++  const adminSession = await authenticate({ email: 'admin@zamoron.io', requiredRole: 'ADMIN' });
+   if (adminSession.user.role !== 'ADMIN') {
+     throw new Error('admin@zamoron.io must authenticate as ADMIN');
+   }
++  const refreshedAdmin = await restoreSession();
++  if (!refreshedAdmin || refreshedAdmin.user.role !== 'ADMIN') {
++    throw new Error('Page refresh must restore the same ADMIN session');
++  }
+ 
+   persistSession(adminSession);
+   destroySession();
+@@ -106,8 +125,9 @@ async function run() {
+   }
+ 
+   console.log('PASS  login persists a role-bound session');
+-  console.log('PASS  refresh restores the same session');
++  console.log('PASS  refresh restores the same client, auditor, and admin sessions');
+   console.log('PASS  client / auditor / admin emails map to the correct roles');
++  console.log('PASS  client accounts are rejected from the private admin login route');
+   console.log('PASS  logout + refresh stays unauthenticated');
+   console.log('PASS  induction cannot mint auditor or admin');
+   console.log('PASS  restoreSession holds the loading gate before resolving');
+diff --git a/src/services/authService.ts b/src/services/authService.ts
+index 3055808..444c811 100644
+--- a/src/services/authService.ts
++++ b/src/services/authService.ts
+@@ -77,6 +77,11 @@ export interface AuthenticateInput {
+   email: string;
+   password?: string;
+   name?: string;
++  /**
++   * Set only by a fixed login route, never by a role picker or user input.
++   * A real API receives this as route policy and validates it from its account directory.
++   */
++  requiredRole?: UserRole;
+ }
+ 
+ export async function authenticate(input: AuthenticateInput): Promise<AuthSession> {
+@@ -85,7 +90,13 @@ export async function authenticate(input: AuthenticateInput): Promise<AuthSessio
+   if (!email) {
+     throw new Error('Terminal identity is required.');
+   }
++
++  // Role is resolved from the authenticated account record; it is not accepted
++  // from the browser as a claim. Do this before persisting any session.
+   const user = resolveDemoUser(email);
++  if (input.requiredRole && user.role !== input.requiredRole) {
++    throw new Error(`This account is not authorized for the ${input.requiredRole.toLowerCase()} sign-in route.`);
++  }
+   if (input.name) {
+     user.name = input.name;
+   }
+diff --git a/src/services/authorization.contract.ts b/src/services/authorization.contract.ts
+index 1720467..bc0a58e 100644
+--- a/src/services/authorization.contract.ts
++++ b/src/services/authorization.contract.ts
+@@ -1,5 +1,5 @@
+ import { DEMO_USERS } from '@/mock/data';
+-import { getAuditFindings, listAuditorQueue, listClientAudits } from '@/services/auditService';
++import { getAuditFindings, listAuditorQueue, listClientAudits, updateFinding } from '@/services/auditService';
+ import { getBillingHistory, getSecurityLogs, updateSecurityConfig } from '@/services/adminService';
+ import { listManagedCourses, listPublishedCourses } from '@/services/courseService';
+ import { AuthorizationError } from '@/services/authorization';
+@@ -30,6 +30,12 @@ export function runServiceAuthzChecks(): { passed: boolean; failed: string[] } {
+   expectAllowed('client reads own audits', () => listClientAudits(DEMO_USERS.CLIENT), failed);
+   expectAllowed('client reads findings', () => getAuditFindings(DEMO_USERS.CLIENT), failed);
+   expectDenied('client reads auditor queue', () => listAuditorQueue(DEMO_USERS.CLIENT), failed);
++  expectDenied('client changes auditor finding classification', () => {
++    const finding = getAuditFindings(DEMO_USERS.CLIENT)[0];
++    if (!finding) throw new Error('Expected a seeded finding');
++    // updateFinding is deliberately only reachable by the assigned auditor.
++    updateFinding('ZM-8492-NX', finding.id, { status: 'FALSE_POSITIVE' }, DEMO_USERS.CLIENT);
++  }, failed);
+   expectDenied('client reads security logs', () => getSecurityLogs(DEMO_USERS.CLIENT), failed);
+   expectDenied('client reads billing', () => getBillingHistory(DEMO_USERS.CLIENT), failed);
+ 
+diff --git a/tsconfig.tsbuildinfo b/tsconfig.tsbuildinfo
+index b5ddb3d..044615c 100644
+--- a/tsconfig.tsbuildinfo
++++ b/tsconfig.tsbuildinfo
+@@ -1 +1 @@
+-{"root":["./src/App.tsx","./src/main.tsx","./src/auth/AuthLoadingScreen.tsx","./src/auth/GuestRoute.tsx","./src/auth/ProtectedRoute.tsx","./src/auth/index.ts","./src/auth/navigation.ts","./src/auth/rbac.scenarios.ts","./src/auth/rbac.selftest.ts","./src/auth/rbac.ts","./src/auth/usePermission.ts","./src/components/academy/AIMentorChat.tsx","./src/components/academy/CourseSideNav.tsx","./src/components/academy/LessonNotes.tsx","./src/components/academy/QuickQuizFab.tsx","./src/components/academy/TopNavBar.tsx","./src/components/academy/VideoPlayer.tsx","./src/components/admin/ActivityStream.tsx","./src/components/admin/AdminSideNav.tsx","./src/components/admin/AdminStats.tsx","./src/components/admin/AdminTopNav.tsx","./src/components/admin/MasterRegistry.tsx","./src/components/admin/RiskHeatmap.tsx","./src/components/analytics/AnalyticsSideNav.tsx","./src/components/analytics/AnalyticsTopBar.tsx","./src/components/analytics/AnalyticsTopNav.tsx","./src/components/analytics/AssessmentHistory.tsx","./src/components/analytics/KpiCards.tsx","./src/components/analytics/MetricsGrid.tsx","./src/components/analytics/ProficiencyGauge.tsx","./src/components/analytics/ProficiencyHero.tsx","./src/components/analytics/SkillRadar.tsx","./src/components/assessment/AssessmentSideNav.tsx","./src/components/assessment/CodeSnippet.tsx","./src/components/assessment/InfoCards.tsx","./src/components/assessment/QuizHeader.tsx","./src/components/assessment/QuizOptions.tsx","./src/components/certificate/CertificateCard.tsx","./src/components/certificate/SecuritySeal.tsx","./src/components/content/ContentSideNav.tsx","./src/components/content/ContentTopNav.tsx","./src/components/content/ModuleEditor.tsx","./src/components/content/NeuralPatterns.tsx","./src/components/content/ReportTemplates.tsx","./src/components/content/ScamDefinitions.tsx","./src/components/courses/CourseCard.tsx","./src/components/courses/CourseGrid.tsx","./src/components/courses/DashboardNavLink.tsx","./src/components/courses/DashboardSidebar.tsx","./src/components/courses/FeaturedCourseHero.tsx","./src/components/courses/FilterPills.tsx","./src/components/courses/MobileBottomNav.tsx","./src/components/courses/MobileTopNav.tsx","./src/components/courses/SearchBar.tsx","./src/components/ecosystem/BannerStats.tsx","./src/components/ecosystem/ClusterTelemetry.tsx","./src/components/ecosystem/EcosystemSideNav.tsx","./src/components/ecosystem/EcosystemTopNav.tsx","./src/components/ecosystem/NeuralAccuracy.tsx","./src/components/ecosystem/ScannerLoad.tsx","./src/components/ecosystem/SystemAlerts.tsx","./src/components/ecosystem/TrafficHeatmap.tsx","./src/components/layouts/AuthLayout.tsx","./src/components/layouts/DashboardLayout.tsx","./src/components/layouts/MarketingLayout.tsx","./src/components/risk-report/ChatInput.tsx","./src/components/risk-report/ChatMessage.tsx","./src/components/risk-report/ChatSidebar.tsx","./src/components/risk-report/NeuralRiskScoreCard.tsx","./src/components/risk-report/RiskBadge.tsx","./src/components/risk-report/Sidebar.tsx","./src/components/risk-report/SidebarNavLink.tsx","./src/components/risk-report/StatusMetricCard.tsx","./src/components/risk-report/ThreatItem.tsx","./src/components/risk-report/ThreatVectorPanel.tsx","./src/components/scam-detector/HeroSearch.tsx","./src/components/scam-detector/MyHistory.tsx","./src/components/scam-detector/NetworkHealth.tsx","./src/components/scam-detector/SideNav.tsx","./src/components/scam-detector/ThreatFeed.tsx","./src/components/scam-detector/TopNav.tsx","./src/components/scanner/AuditHistory.tsx","./src/components/scanner/AuditStats.tsx","./src/components/scanner/RiskMap.tsx","./src/components/scanner/ScanSearch.tsx","./src/components/scanner/ScannerSideNav.tsx","./src/components/scanner/ScannerTopNav.tsx","./src/components/scanner/ThreatFeed.tsx","./src/components/sections/BlockchainDiagram.tsx","./src/components/sections/FeaturesSection.tsx","./src/components/sections/Footer.tsx","./src/components/sections/HeroSection.tsx","./src/components/sections/Navbar.tsx","./src/components/sections/TrustBadgeItem.tsx","./src/components/security/ActiveMonitors.tsx","./src/components/security/AuditHistoryList.tsx","./src/components/security/DemoDataNotice.tsx","./src/components/security/IncidentFeed.tsx","./src/components/security/LogStream.tsx","./src/components/security/ProjectCard.tsx","./src/components/security/ScoreDimensionBar.tsx","./src/components/security/SecurityScoreGauge.tsx","./src/components/security/SecuritySideNav.tsx","./src/components/security/SecurityStats.tsx","./src/components/security/SecurityTierBadge.tsx","./src/components/security/SecurityTopNav.tsx","./src/components/security/TokenRiskChecks.tsx","./src/components/security/TrustBadges.tsx","./src/components/shared/AddressBadge.tsx","./src/components/shared/CodeViewer.tsx","./src/components/shared/LiveLogStream.tsx","./src/components/shared/MasterCatalogDrawer.tsx","./src/components/shared/QuorumProgress.tsx","./src/components/shared/RadarChart.tsx","./src/components/shared/StatCard.tsx","./src/components/ui/AnimatedCounter.tsx","./src/components/ui/Badge.tsx","./src/components/ui/Button.tsx","./src/components/ui/Card.tsx","./src/components/ui/GlassCard.tsx","./src/components/ui/GlowBackground.tsx","./src/components/ui/Icon.tsx","./src/components/ui/Input.tsx","./src/components/ui/Marquee.tsx","./src/components/ui/Modal.tsx","./src/components/ui/SectionHeading.tsx","./src/components/ui/Select.tsx","./src/components/ui/Switch.tsx","./src/components/ui/Tabs.tsx","./src/context/AuthContext.tsx","./src/data/content.ts","./src/data/coursesContent.ts","./src/data/lmsSeed.ts","./src/data/riskReportContent.ts","./src/data/securityData.ts","./src/hooks/useIncidents.ts","./src/hooks/useLeaderboard.ts","./src/hooks/useProjects.ts","./src/hooks/useTokenScan.ts","./src/lib/download.ts","./src/lib/evm.ts","./src/lib/markdown.ts","./src/lib/persistentStore.ts","./src/lib/utils.ts","./src/mock/data.ts","./src/pages/academy/AssessmentQuizPage.tsx","./src/pages/academy/CertificatePage.tsx","./src/pages/academy/CoursePlayerPage.tsx","./src/pages/admin/AlertConfigPage.tsx","./src/pages/admin/BillingHistoryPage.tsx","./src/pages/admin/ContentAdministrationPage.tsx","./src/pages/admin/CourseBuilderPage.tsx","./src/pages/admin/DevelopersApiPage.tsx","./src/pages/admin/InvoiceTemplatePage.tsx","./src/pages/admin/PaymentGatewaysPage.tsx","./src/pages/admin/RefundsPage.tsx","./src/pages/admin/SecurityConfigPage.tsx","./src/pages/admin/SecurityLogsPage.tsx","./src/pages/admin/SecurityLogsTacticalPage.tsx","./src/pages/admin/TokenRiskEditorPage.tsx","./src/pages/admin/UsersProtocolsPage.tsx","./src/pages/auditor/AiTerminalPage.tsx","./src/pages/auditor/AuditorLeaderboardPage.tsx","./src/pages/auditor/AuditorQueuePage.tsx","./src/pages/auditor/ForensicsPage.tsx","./src/pages/auth/InductionPage.tsx","./src/pages/auth/LoginPage.tsx","./src/pages/auth/SecureGatePage.tsx","./src/pages/auth/UnauthorizedPage.tsx","./src/pages/catalog/MasterCatalogPage.tsx","./src/pages/client/CheckoutPage.tsx","./src/pages/client/ClientDashboardPage.tsx","./src/pages/client/DocumentVaultPage.tsx","./src/pages/client/DualPaneReviewPage.tsx","./src/pages/client/FinalReportPage.tsx","./src/pages/client/LiveAuditTrackerPage.tsx","./src/pages/client/NewAuditRequestPage.tsx","./src/pages/client/VulnerabilityTriagePage.tsx","./src/pages/governance/GovernancePage.tsx","./src/pages/governance/ProposalDetailPage.tsx","./src/pages/governance/UserProfilePage.tsx","./src/pages/marketing/HomePage.tsx","./src/pages/marketing/PricingPage.tsx","./src/pages/marketing/SolutionsAuditingPage.tsx","./src/pages/marketing/SupportPage.tsx","./src/pages/threat-hub/EcosystemHealthPage.tsx","./src/pages/threat-hub/ProjectProfilePage.tsx","./src/pages/threat-hub/SecurityIncidentsPage.tsx","./src/pages/threat-hub/SecurityLeaderboardPage.tsx","./src/pages/threat-hub/SkynetDashboardPage.tsx","./src/pages/threat-hub/TokenAnalyzerPage.tsx","./src/pages/threat-hub/WhaleAlertsPage.tsx","./src/services/academyService.ts","./src/services/adminService.ts","./src/services/auditService.ts","./src/services/authService.scenarios.ts","./src/services/authService.ts","./src/services/authorization.contract.ts","./src/services/authorization.ts","./src/services/courseService.ts","./src/services/governanceService.ts","./src/services/incidentService.ts","./src/services/projectService.ts","./src/services/securityScoreService.ts","./src/services/supportService.ts","./src/services/tokenScanService.ts","./src/services/vaultService.ts","./src/types/academy.ts","./src/types/admin.ts","./src/types/analytics.ts","./src/types/assessment.ts","./src/types/certificate.ts","./src/types/content.ts","./src/types/courses.ts","./src/types/ecosystem.ts","./src/types/index.ts","./src/types/lms.ts","./src/types/ops.ts","./src/types/scanner.ts","./src/types/security.ts","./src/types/threat.ts"],"version":"5.9.3"}
+\ No newline at end of file
++{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/auth/AuthLoadingScreen.tsx","./src/auth/GuestRoute.tsx","./src/auth/ProtectedRoute.tsx","./src/auth/index.ts","./src/auth/navigation.ts","./src/auth/rbac.scenarios.ts","./src/auth/rbac.selftest.ts","./src/auth/rbac.ts","./src/auth/usePermission.ts","./src/components/academy/AIMentorChat.tsx","./src/components/academy/CourseSideNav.tsx","./src/components/academy/LessonNotes.tsx","./src/components/academy/QuickQuizFab.tsx","./src/components/academy/TopNavBar.tsx","./src/components/academy/VideoPlayer.tsx","./src/components/admin/ActivityStream.tsx","./src/components/admin/AdminSideNav.tsx","./src/components/admin/AdminStats.tsx","./src/components/admin/AdminTopNav.tsx","./src/components/admin/MasterRegistry.tsx","./src/components/admin/RiskHeatmap.tsx","./src/components/analytics/AnalyticsSideNav.tsx","./src/components/analytics/AnalyticsTopBar.tsx","./src/components/analytics/AnalyticsTopNav.tsx","./src/components/analytics/AssessmentHistory.tsx","./src/components/analytics/KpiCards.tsx","./src/components/analytics/MetricsGrid.tsx","./src/components/analytics/ProficiencyGauge.tsx","./src/components/analytics/ProficiencyHero.tsx","./src/components/analytics/SkillRadar.tsx","./src/components/assessment/AssessmentSideNav.tsx","./src/components/assessment/CodeSnippet.tsx","./src/components/assessment/InfoCards.tsx","./src/components/assessment/QuizHeader.tsx","./src/components/assessment/QuizOptions.tsx","./src/components/certificate/CertificateCard.tsx","./src/components/certificate/SecuritySeal.tsx","./src/components/content/ContentSideNav.tsx","./src/components/content/ContentTopNav.tsx","./src/components/content/ModuleEditor.tsx","./src/components/content/NeuralPatterns.tsx","./src/components/content/ReportTemplates.tsx","./src/components/content/ScamDefinitions.tsx","./src/components/courses/CourseCard.tsx","./src/components/courses/CourseGrid.tsx","./src/components/courses/DashboardNavLink.tsx","./src/components/courses/DashboardSidebar.tsx","./src/components/courses/FeaturedCourseHero.tsx","./src/components/courses/FilterPills.tsx","./src/components/courses/MobileBottomNav.tsx","./src/components/courses/MobileTopNav.tsx","./src/components/courses/SearchBar.tsx","./src/components/ecosystem/BannerStats.tsx","./src/components/ecosystem/ClusterTelemetry.tsx","./src/components/ecosystem/EcosystemSideNav.tsx","./src/components/ecosystem/EcosystemTopNav.tsx","./src/components/ecosystem/NeuralAccuracy.tsx","./src/components/ecosystem/ScannerLoad.tsx","./src/components/ecosystem/SystemAlerts.tsx","./src/components/ecosystem/TrafficHeatmap.tsx","./src/components/layouts/AuthLayout.tsx","./src/components/layouts/DashboardLayout.tsx","./src/components/layouts/MarketingLayout.tsx","./src/components/risk-report/ChatInput.tsx","./src/components/risk-report/ChatMessage.tsx","./src/components/risk-report/ChatSidebar.tsx","./src/components/risk-report/NeuralRiskScoreCard.tsx","./src/components/risk-report/RiskBadge.tsx","./src/components/risk-report/Sidebar.tsx","./src/components/risk-report/SidebarNavLink.tsx","./src/components/risk-report/StatusMetricCard.tsx","./src/components/risk-report/ThreatItem.tsx","./src/components/risk-report/ThreatVectorPanel.tsx","./src/components/scam-detector/HeroSearch.tsx","./src/components/scam-detector/MyHistory.tsx","./src/components/scam-detector/NetworkHealth.tsx","./src/components/scam-detector/SideNav.tsx","./src/components/scam-detector/ThreatFeed.tsx","./src/components/scam-detector/TopNav.tsx","./src/components/scanner/AuditHistory.tsx","./src/components/scanner/AuditStats.tsx","./src/components/scanner/RiskMap.tsx","./src/components/scanner/ScanSearch.tsx","./src/components/scanner/ScannerSideNav.tsx","./src/components/scanner/ScannerTopNav.tsx","./src/components/scanner/ThreatFeed.tsx","./src/components/security/ActiveMonitors.tsx","./src/components/security/AuditHistoryList.tsx","./src/components/security/DemoDataNotice.tsx","./src/components/security/IncidentFeed.tsx","./src/components/security/LogStream.tsx","./src/components/security/ProjectCard.tsx","./src/components/security/ScoreDimensionBar.tsx","./src/components/security/SecurityScoreGauge.tsx","./src/components/security/SecuritySideNav.tsx","./src/components/security/SecurityStats.tsx","./src/components/security/SecurityTierBadge.tsx","./src/components/security/SecurityTopNav.tsx","./src/components/security/TokenRiskChecks.tsx","./src/components/security/TrustBadges.tsx","./src/components/shared/AddressBadge.tsx","./src/components/shared/CodeViewer.tsx","./src/components/shared/LiveLogStream.tsx","./src/components/shared/MasterCatalogDrawer.tsx","./src/components/shared/QuorumProgress.tsx","./src/components/shared/RadarChart.tsx","./src/components/shared/StatCard.tsx","./src/components/ui/AnimatedCounter.tsx","./src/components/ui/Badge.tsx","./src/components/ui/Button.tsx","./src/components/ui/Card.tsx","./src/components/ui/GlassCard.tsx","./src/components/ui/GlowBackground.tsx","./src/components/ui/Icon.tsx","./src/components/ui/Input.tsx","./src/components/ui/Marquee.tsx","./src/components/ui/Modal.tsx","./src/components/ui/Reveal.tsx","./src/components/ui/SectionHeading.tsx","./src/components/ui/Select.tsx","./src/components/ui/Switch.tsx","./src/components/ui/Tabs.tsx","./src/context/AuthContext.tsx","./src/data/coursesContent.ts","./src/data/lmsSeed.ts","./src/data/riskReportContent.ts","./src/data/securityData.ts","./src/hooks/useIncidents.ts","./src/hooks/useLeaderboard.ts","./src/hooks/useProjects.ts","./src/hooks/useTokenScan.ts","./src/lib/download.ts","./src/lib/evm.ts","./src/lib/markdown.ts","./src/lib/persistentStore.ts","./src/lib/utils.ts","./src/mock/data.ts","./src/pages/academy/AssessmentQuizPage.tsx","./src/pages/academy/CertificatePage.tsx","./src/pages/academy/CoursePlayerPage.tsx","./src/pages/admin/AlertConfigPage.tsx","./src/pages/admin/BillingHistoryPage.tsx","./src/pages/admin/ContentAdministrationPage.tsx","./src/pages/admin/CourseBuilderPage.tsx","./src/pages/admin/DevelopersApiPage.tsx","./src/pages/admin/InvoiceTemplatePage.tsx","./src/pages/admin/PaymentGatewaysPage.tsx","./src/pages/admin/RefundsPage.tsx","./src/pages/admin/SecurityConfigPage.tsx","./src/pages/admin/SecurityLogsPage.tsx","./src/pages/admin/SecurityLogsTacticalPage.tsx","./src/pages/admin/TokenRiskEditorPage.tsx","./src/pages/admin/UsersProtocolsPage.tsx","./src/pages/auditor/AiTerminalPage.tsx","./src/pages/auditor/AuditorLeaderboardPage.tsx","./src/pages/auditor/AuditorQueuePage.tsx","./src/pages/auditor/ForensicsPage.tsx","./src/pages/auth/InductionPage.tsx","./src/pages/auth/LoginPage.tsx","./src/pages/auth/SecureGatePage.tsx","./src/pages/auth/UnauthorizedPage.tsx","./src/pages/catalog/MasterCatalogPage.tsx","./src/pages/client/CheckoutPage.tsx","./src/pages/client/ClientDashboardPage.tsx","./src/pages/client/DocumentVaultPage.tsx","./src/pages/client/DualPaneReviewPage.tsx","./src/pages/client/FinalReportPage.tsx","./src/pages/client/LiveAuditTrackerPage.tsx","./src/pages/client/NewAuditRequestPage.tsx","./src/pages/client/VulnerabilityTriagePage.tsx","./src/pages/governance/GovernancePage.tsx","./src/pages/governance/ProposalDetailPage.tsx","./src/pages/governance/UserProfilePage.tsx","./src/pages/marketing/HomePage.tsx","./src/pages/marketing/PricingPage.tsx","./src/pages/marketing/SolutionsAuditingPage.tsx","./src/pages/marketing/SupportPage.tsx","./src/pages/threat-hub/EcosystemHealthPage.tsx","./src/pages/threat-hub/ProjectProfilePage.tsx","./src/pages/threat-hub/SecurityIncidentsPage.tsx","./src/pages/threat-hub/SecurityLeaderboardPage.tsx","./src/pages/threat-hub/SkynetDashboardPage.tsx","./src/pages/threat-hub/TokenAnalyzerPage.tsx","./src/pages/threat-hub/WhaleAlertsPage.tsx","./src/services/academyService.ts","./src/services/adminService.ts","./src/services/auditService.ts","./src/services/authService.scenarios.ts","./src/services/authService.ts","./src/services/authorization.contract.ts","./src/services/authorization.ts","./src/services/courseService.ts","./src/services/governanceService.ts","./src/services/incidentService.ts","./src/services/projectService.ts","./src/services/securityScoreService.ts","./src/services/supportService.ts","./src/services/tokenScanService.ts","./src/services/vaultService.ts","./src/types/academy.ts","./src/types/admin.ts","./src/types/analytics.ts","./src/types/assessment.ts","./src/types/certificate.ts","./src/types/content.ts","./src/types/courses.ts","./src/types/ecosystem.ts","./src/types/index.ts","./src/types/lms.ts","./src/types/ops.ts","./src/types/scanner.ts","./src/types/security.ts","./src/types/threat.ts"],"version":"5.9.3"}
+\ No newline at end of file

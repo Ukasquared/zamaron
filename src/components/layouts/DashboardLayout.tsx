@@ -20,7 +20,7 @@ export const DashboardLayout: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/auth/login', { replace: true });
+    navigate('/signin', { replace: true });
   };
 
   return (
