@@ -1,28 +1,3 @@
-export interface NavLink {
-  label: string;
-  href: string;
-}
-
-export interface TrustBadgeData {
-  icon: string;
-  label: string;
-  iconColorClass: string;
-}
-
-export interface FeatureData {
-  icon: string;
-  eyebrow: string;
-  eyebrowColorClass: string;
-  title: string;
-  titleColorClass: string;
-  description: string;
-  iconBgClass: string;
-  iconBorderClass: string;
-  glowClass: string;
-  /** True for the middle "featured" card that floats up and gets a glow blob */
-  offset?: boolean;
-}
-
 export type ButtonVariant = 'primary' | 'secondary';
 export type ButtonSize = 'sm' | 'lg';
 

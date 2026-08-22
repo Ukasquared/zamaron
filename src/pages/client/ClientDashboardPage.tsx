@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { GlassCard, GlassCardHeader, GlassCardTitle } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
 import { Badge, SeverityBadge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
@@ -24,25 +24,30 @@ export const ClientDashboardPage: React.FC = () => {
       return [];
     }
   }, [user]);
+
   return (
     <div className="space-y-8">
       {/* Top Banner with Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-container/70 border border-outline/70 p-6 rounded-md backdrop-blur-md">
+      <GlassCard
+        variant="elevated"
+        blur="xl"
+        className="p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-white/10"
+      >
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1.5">
             <h1 className="font-display font-black text-2xl sm:text-3xl text-white">
               Client Security Console
             </h1>
-            <Badge variant="primary" size="sm">
+            <Badge variant="primary" size="sm" dot pulse>
               LIVE POSTURE
             </Badge>
           </div>
-          <p className="text-xs text-slate-400 font-sans">
+          <p className="text-xs text-slate-400 font-sans leading-relaxed">
             Continuous smart contract verification, vulnerability triage, and cryptographic vaults.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <Link to="/client/audits/new">
             <Button size="md" icon="add_circle">
               Request New Audit
@@ -54,7 +59,7 @@ export const ClientDashboardPage: React.FC = () => {
             </Button>
           </Link>
         </div>
-      </div>
+      </GlassCard>
 
       {/* KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -63,7 +68,7 @@ export const ClientDashboardPage: React.FC = () => {
           value={`${mockAuditRequests.filter((a) => a.status !== 'COMPLETED' && a.status !== 'VERIFIED').length} In Progress`}
           delta={`${mockAuditRequests.filter((a) => a.status === 'QUEUED').length} Queued`}
           icon="timelapse"
-          iconColor="text-primary"
+          iconColor="text-cyan-400"
           variant="fresnel"
         />
         <StatCard
@@ -80,7 +85,7 @@ export const ClientDashboardPage: React.FC = () => {
           delta="Immediate Remediation"
           deltaType="negative"
           icon="bug_report"
-          iconColor="text-error"
+          iconColor="text-red-400"
           variant="glass"
         />
         <StatCard
@@ -97,21 +102,21 @@ export const ClientDashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Active Audits Table (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
-          <Card variant="glass" className="p-6 space-y-4">
-            <CardHeader className="mb-2">
+          <GlassCard variant="default" blur="xl" className="p-6 space-y-4 border-white/10">
+            <GlassCardHeader className="mb-2">
               <div>
-                <CardTitle>Active Audit Engagements</CardTitle>
+                <GlassCardTitle>Active Audit Engagements</GlassCardTitle>
                 <p className="text-xs text-slate-400">Real-time status and phase progress across your smart contracts.</p>
               </div>
-              <Link to="/client/audits/new" className="text-xs text-primary font-mono hover:underline flex items-center gap-1">
+              <Link to="/client/audits/new" className="text-xs text-cyan-400 font-mono hover:underline flex items-center gap-1">
                 + New Submission
               </Link>
-            </CardHeader>
+            </GlassCardHeader>
 
             <div className="overflow-x-auto cyber-scrollbar">
               <table className="w-full text-left font-mono text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-outline/70 text-slate-400 uppercase text-[10px]">
+                  <tr className="border-b border-white/10 text-slate-400 uppercase text-[10px]">
                     <th className="pb-3 pr-4">Protocol / Ref ID</th>
                     <th className="pb-3 px-3">Status</th>
                     <th className="pb-3 px-3">Phase Progress</th>
@@ -119,13 +124,13 @@ export const ClientDashboardPage: React.FC = () => {
                     <th className="pb-3 pl-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-outline/40">
+                <tbody className="divide-y divide-white/5">
                   {mockAuditRequests.map((req) => (
                     <tr key={req.id} className="hover:bg-white/5 transition-colors">
                       <td className="py-3.5 pr-4">
                         <div className="font-bold text-white font-display text-sm">{req.projectName}</div>
                         <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                          <span className="text-primary">{req.id}</span> • {req.protocolType}
+                          <span className="text-cyan-400">{req.id}</span> • {req.protocolType}
                         </div>
                       </td>
                       <td className="py-3.5 px-3">
@@ -151,9 +156,9 @@ export const ClientDashboardPage: React.FC = () => {
                             <span>Progress</span>
                             <span className="text-white font-bold">{req.progressPercent}%</span>
                           </div>
-                          <div className="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+                          <div className="w-full h-1.5 bg-[#060e20] rounded-full overflow-hidden border border-white/10">
                             <div
-                              className="h-full bg-primary rounded-full transition-all"
+                              className="h-full bg-cyan-400 rounded-full transition-all shadow-[0_0_8px_rgba(0,218,243,0.5)]"
                               style={{ width: `${req.progressPercent}%` }}
                             />
                           </div>
@@ -162,7 +167,7 @@ export const ClientDashboardPage: React.FC = () => {
                       <td className="py-3.5 px-3">
                         <div className="flex items-center gap-1 text-[11px]">
                           {req.findingsCount.critical > 0 && (
-                            <span className="text-error font-bold">{req.findingsCount.critical} Crit</span>
+                            <span className="text-red-400 font-bold">{req.findingsCount.critical} Crit</span>
                           )}
                           {req.findingsCount.high > 0 && (
                             <span className="text-orange-400 font-semibold">• {req.findingsCount.high} High</span>
@@ -191,52 +196,52 @@ export const ClientDashboardPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </GlassCard>
         </div>
 
         {/* Priority Vulnerability Feed (1 col) */}
         <div className="space-y-6">
-          <Card variant="fresnel" className="p-6 space-y-4">
-            <CardHeader className="mb-2">
+          <GlassCard variant="fresnel" blur="xl" className="p-6 space-y-4 border-cyan-500/30">
+            <GlassCardHeader className="mb-2">
               <div className="flex items-center gap-2">
-                <Icon name="warning" size={20} className="text-error" />
-                <CardTitle>Vulnerability Triage Feed</CardTitle>
+                <Icon name="warning" size={20} className="text-red-400" />
+                <GlassCardTitle>Vulnerability Triage Feed</GlassCardTitle>
               </div>
-              <Link to="/client/audits/ZM-8492-NX/triage" className="text-xs text-primary font-mono hover:underline">
+              <Link to="/client/audits/ZM-8492-NX/triage" className="text-xs text-cyan-400 font-mono hover:underline">
                 View All
               </Link>
-            </CardHeader>
+            </GlassCardHeader>
 
             <div className="space-y-3">
               {mockFindings.map((finding) => (
                 <Link
                   key={finding.id}
                   to="/client/audits/ZM-8492-NX/triage"
-                  className="block p-3 bg-[#060e20] border border-outline/70 rounded hover:border-primary/50 transition-all group"
+                  className="block p-3.5 bg-[#060e20]/80 border border-white/10 rounded-xl hover:border-cyan-400/50 hover:bg-[#0c162d] transition-all group"
                 >
                   <div className="flex items-center justify-between gap-2 mb-1.5">
                     <SeverityBadge severity={finding.severity} size="sm" />
                     <span className="text-[10px] font-mono text-slate-400">{finding.category}</span>
                   </div>
-                  <h4 className="font-display font-semibold text-xs text-white group-hover:text-primary transition-colors leading-tight">
+                  <h4 className="font-display font-semibold text-xs text-white group-hover:text-cyan-200 transition-colors leading-tight">
                     {finding.title}
                   </h4>
-                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-2 pt-1 border-t border-outline/30">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-2 pt-1.5 border-t border-white/10">
                     <span>{finding.location}</span>
-                    <span className="text-primary font-bold">{finding.lineRange}</span>
+                    <span className="text-cyan-400 font-bold">{finding.lineRange}</span>
                   </div>
                 </Link>
               ))}
             </div>
 
-            <div className="pt-2 border-t border-outline/50 text-center">
+            <div className="pt-2 border-t border-white/10 text-center">
               <Link to="/client/audits/ZM-8492-NX/report">
                 <Button variant="outline" size="sm" className="w-full" icon="description">
                   Generate Cryptographic Final Report
                 </Button>
               </Link>
             </div>
-          </Card>
+          </GlassCard>
         </div>
       </div>
     </div>

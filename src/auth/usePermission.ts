@@ -22,6 +22,6 @@ export function usePermission() {
     isAdmin: isAuthenticated && role === 'ADMIN',
     isAuditor: isAuthenticated && role === 'AUDITOR',
     isClient: isAuthenticated && role === 'CLIENT',
-    homePath: isAuthenticated ? getDefaultRouteForRole(role) : '/auth/login',
+    homePath: isAuthenticated ? getDefaultRouteForRole(role) : '/signin',
   };
 }

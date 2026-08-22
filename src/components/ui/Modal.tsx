@@ -50,27 +50,27 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#060e20]/80 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-[#060e20]/80 backdrop-blur-xl transition-opacity animate-fade-in"
         onClick={onClose}
       />
 
       {/* Modal Box */}
       <div
         className={cn(
-          'relative w-full bg-[#0b1326] border border-primary/40 rounded-md shadow-[0_0_50px_rgba(0,218,243,0.15)] z-10 overflow-hidden flex flex-col max-h-[90vh]',
+          'relative w-full bg-[#081126]/95 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl shadow-[0_0_50px_rgba(0,218,243,0.2)] z-10 overflow-hidden flex flex-col max-h-[90vh]',
           maxWidthStyles[maxWidth],
           className
         )}
       >
         {/* Top Glow Bar */}
-        <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-primary to-transparent" />
+        <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
 
         {/* Modal Header */}
         {(title || subtitle) && (
-          <div className="flex items-center justify-between px-5 py-4 border-b border-outline/50 bg-[#0c162d]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#0a152d]/80">
             <div>
               {title && (
-                <h3 className="font-display font-bold text-base text-white tracking-wide">
+                <h3 className="font-display font-black text-lg text-white tracking-wide">
                   {title}
                 </h3>
               )}
@@ -80,7 +80,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1 rounded-sm hover:bg-surface-variant transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Icon name="close" size={20} />
             </button>
@@ -88,7 +88,7 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Modal Body */}
-        <div className="p-5 overflow-y-auto cyber-scrollbar flex-1">{children}</div>
+        <div className="p-6 overflow-y-auto cyber-scrollbar flex-1">{children}</div>
       </div>
     </div>
   );

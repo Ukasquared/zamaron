@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Card } from '@/components/ui/Card';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -44,7 +44,11 @@ export const InductionPage: React.FC = () => {
   };
 
   return (
-    <Card variant="fresnel" className="w-full max-w-lg p-8 space-y-6 shadow-2xl relative">
+    <GlassCard
+      variant="fresnel"
+      blur="xl"
+      className="w-full max-w-lg p-8 space-y-6 shadow-[0_0_40px_rgba(0,218,243,0.15)] relative border-cyan-500/30"
+    >
       <div className="flex items-center justify-between">
         <Badge variant="secondary" size="sm">
           OPERATOR INDUCTION
@@ -55,8 +59,8 @@ export const InductionPage: React.FC = () => {
       </div>
 
       <div className="space-y-1">
-        <h2 className="font-display font-bold text-2xl text-white">Register Node Identity</h2>
-        <p className="text-xs text-slate-400 font-sans">
+        <h2 className="font-display font-black text-2xl text-white">Register Node Identity</h2>
+        <p className="text-xs text-slate-400 font-sans leading-relaxed">
           Provision your cryptographic credentials to interface with the Zamaron decentralized network.
         </p>
       </div>
@@ -99,7 +103,7 @@ export const InductionPage: React.FC = () => {
               <span
                 className={
                   score <= 25
-                    ? 'text-error'
+                    ? 'text-red-400'
                     : score <= 50
                     ? 'text-amber-400'
                     : score <= 75
@@ -110,11 +114,11 @@ export const InductionPage: React.FC = () => {
                 {score <= 25 ? 'WEAK' : score <= 50 ? 'NOMINAL' : score <= 75 ? 'STRONG' : 'CRYPTOGRAPHIC HARDENED'}
               </span>
             </div>
-            <div className="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-[#060e20] rounded-full overflow-hidden border border-white/10">
               <div
                 className={`h-full transition-all duration-300 ${
                   score <= 25
-                    ? 'bg-error'
+                    ? 'bg-red-400'
                     : score <= 50
                     ? 'bg-amber-400'
                     : score <= 75
@@ -127,15 +131,15 @@ export const InductionPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-3 bg-[#060e20] border border-outline rounded text-[11px] text-slate-400 flex items-start gap-2">
-          <Icon name="verified_user" size={16} className="text-primary shrink-0 mt-0.5" />
+        <div className="p-3.5 bg-[#060e20]/80 border border-white/10 rounded-xl text-[11px] text-slate-400 flex items-start gap-2.5">
+          <Icon name="verified_user" size={16} className="text-cyan-400 shrink-0 mt-0.5" />
           <span>
             By initiating induction, you agree to the Cryptographic Code of Ethics and zero-knowledge telemetry recording.
           </span>
         </div>
 
         {error && (
-          <div className="text-xs font-mono text-error bg-error/10 border border-error/40 rounded px-3 py-2">
+          <div className="text-xs font-mono text-red-400 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2">
             {error}
           </div>
         )}
@@ -145,12 +149,12 @@ export const InductionPage: React.FC = () => {
         </Button>
       </form>
 
-      <div className="pt-4 border-t border-outline/50 text-center text-xs font-mono text-slate-400">
+      <div className="pt-4 border-t border-white/10 text-center text-xs font-mono text-slate-400">
         Already registered?{' '}
-        <Link to="/auth/login" className="text-primary font-bold hover:underline">
+        <Link to="/signin" className="text-cyan-400 font-bold hover:underline">
           Terminal Sign-In
         </Link>
       </div>
-    </Card>
+    </GlassCard>
   );
 };

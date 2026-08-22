@@ -26,7 +26,7 @@ const cases: Case[] = [
       isPublicPath('/support') &&
       isPublicPath('/catalog') &&
       isPublicPath('/solutions/auditing') &&
-      isPublicPath('/auth/login') &&
+      isPublicPath('/signin') &&
       isPublicPath('/unauthorized'),
   },
   {
@@ -46,7 +46,7 @@ const cases: Case[] = [
   },
   {
     name: 'unauthenticated can access public paths',
-    run: () => canAccessPath(null, '/') && canAccessPath(null, '/auth/login'),
+    run: () => canAccessPath(null, '/') && canAccessPath(null, '/signin'),
   },
   {
     name: 'client cannot access auditor or admin pages',

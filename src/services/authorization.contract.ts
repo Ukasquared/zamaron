@@ -1,5 +1,5 @@
 import { DEMO_USERS } from '@/mock/data';
-import { getAuditFindings, listAuditorQueue, listClientAudits } from '@/services/auditService';
+import { getAuditFindings, listAuditorQueue, listClientAudits, updateFinding } from '@/services/auditService';
 import { getBillingHistory, getSecurityLogs, updateSecurityConfig } from '@/services/adminService';
 import { listManagedCourses, listPublishedCourses } from '@/services/courseService';
 import { AuthorizationError } from '@/services/authorization';
@@ -30,6 +30,12 @@ export function runServiceAuthzChecks(): { passed: boolean; failed: string[] } {
   expectAllowed('client reads own audits', () => listClientAudits(DEMO_USERS.CLIENT), failed);
   expectAllowed('client reads findings', () => getAuditFindings(DEMO_USERS.CLIENT), failed);
   expectDenied('client reads auditor queue', () => listAuditorQueue(DEMO_USERS.CLIENT), failed);
+  expectDenied('client changes auditor finding classification', () => {
+    const finding = getAuditFindings(DEMO_USERS.CLIENT)[0];
+    if (!finding) throw new Error('Expected a seeded finding');
+    // updateFinding is deliberately only reachable by the assigned auditor.
+    updateFinding('ZM-8492-NX', finding.id, { status: 'FALSE_POSITIVE' }, DEMO_USERS.CLIENT);
+  }, failed);
   expectDenied('client reads security logs', () => getSecurityLogs(DEMO_USERS.CLIENT), failed);
   expectDenied('client reads billing', () => getBillingHistory(DEMO_USERS.CLIENT), failed);
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { GlassCard, GlassCardHeader, GlassCardTitle } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
@@ -28,9 +28,13 @@ export const SkynetDashboardPage: React.FC = () => {
   return (
     <div className="space-y-8 pb-16">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-container/70 border border-outline/70 p-6 rounded-md backdrop-blur-md">
+      <GlassCard
+        variant="elevated"
+        blur="xl"
+        className="p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-white/10"
+      >
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1.5">
             <Badge variant="primary" dot pulse>
               SKYNET SURVEILLANCE RADAR
             </Badge>
@@ -41,13 +45,13 @@ export const SkynetDashboardPage: React.FC = () => {
           <h1 className="font-display font-black text-2xl sm:text-3xl text-white mt-1">
             Skynet Security Overview
           </h1>
-          <p className="text-xs text-slate-400 font-sans mt-0.5">
+          <p className="text-xs text-slate-400 font-sans mt-0.5 leading-relaxed">
             Continuous on-chain monitoring, automated Z-Score evaluations, and pre-launch risk telemetry.
             {exportNote ? ` ${exportNote}` : ` Snapshot ${refreshedAt}`}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -79,7 +83,7 @@ export const SkynetDashboardPage: React.FC = () => {
             Export Intel Brief
           </Button>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Top Level Metric KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -111,7 +115,7 @@ export const SkynetDashboardPage: React.FC = () => {
           value="8,940 Blocked"
           delta="100% Intercept Rate"
           icon="gpp_bad"
-          iconColor="text-error"
+          iconColor="text-red-400"
           variant="glass"
         />
       </div>
@@ -119,26 +123,26 @@ export const SkynetDashboardPage: React.FC = () => {
       {/* Middle Section: Pre-Launch Watchlist + Live Ecosystem Monitoring */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pre-Launch Watchlist Card */}
-        <Card variant="glass" className="p-6 space-y-4">
-          <CardHeader className="mb-2">
+        <GlassCard variant="default" blur="xl" className="p-6 space-y-4 border-white/10">
+          <GlassCardHeader className="mb-2">
             <div className="flex items-center gap-2">
-              <Icon name="rocket_launch" size={20} className="text-primary" />
-              <CardTitle>Pre-Launch Watchlist</CardTitle>
+              <Icon name="rocket_launch" size={20} className="text-cyan-400" />
+              <GlassCardTitle>Pre-Launch Watchlist</GlassCardTitle>
             </div>
             <Badge variant="outline" size="sm">STAGING RADAR</Badge>
-          </CardHeader>
+          </GlassCardHeader>
 
           <div className="overflow-x-auto cyber-scrollbar">
             <table className="w-full text-left font-mono text-xs border-collapse">
               <thead>
-                <tr className="border-b border-outline/70 text-slate-400 uppercase text-[10px]">
+                <tr className="border-b border-white/10 text-slate-400 uppercase text-[10px]">
                   <th className="pb-3 pr-3">Project / Ticker</th>
                   <th className="pb-3 px-3">Z-Score & Tier</th>
                   <th className="pb-3 px-3">Sentiment / Date</th>
                   <th className="pb-3 pl-3 text-right">Audit Stage</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-outline/40">
+              <tbody className="divide-y divide-white/5">
                 {prelaunchProjects.map((p) => (
                   <tr key={p.name} className="hover:bg-white/5 transition-colors">
                     <td className="py-3.5 pr-3">
@@ -147,7 +151,7 @@ export const SkynetDashboardPage: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-3">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-primary font-bold">{p.score}</span>
+                        <span className="text-cyan-400 font-bold">{p.score}</span>
                         <Badge variant="primary" size="sm">{p.rating}</Badge>
                       </div>
                     </td>
@@ -168,34 +172,34 @@ export const SkynetDashboardPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-        </Card>
+        </GlassCard>
 
         {/* Live Ecosystem Monitoring Card */}
-        <Card variant="glass" className="p-6 space-y-4">
-          <CardHeader className="mb-2">
+        <GlassCard variant="default" blur="xl" className="p-6 space-y-4 border-white/10">
+          <GlassCardHeader className="mb-2">
             <div className="flex items-center gap-2">
               <Icon name="language" size={20} className="text-emerald-400" />
-              <CardTitle>Live Ecosystem Monitoring</CardTitle>
+              <GlassCardTitle>Live Ecosystem Monitoring</GlassCardTitle>
             </div>
             <Badge variant="success" size="sm" dot>ON-CHAIN FEED</Badge>
-          </CardHeader>
+          </GlassCardHeader>
 
           <div className="overflow-x-auto cyber-scrollbar">
             <table className="w-full text-left font-mono text-xs border-collapse">
               <thead>
-                <tr className="border-b border-outline/70 text-slate-400 uppercase text-[10px]">
+                <tr className="border-b border-white/10 text-slate-400 uppercase text-[10px]">
                   <th className="pb-3 pr-3">Project</th>
                   <th className="pb-3 px-3">Rating</th>
                   <th className="pb-3 px-3">MCAP / Volume</th>
                   <th className="pb-3 pl-3 text-right">Price (24h)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-outline/40">
+              <tbody className="divide-y divide-white/5">
                 {liveMonitoring.map((m) => (
                   <tr key={m.name} className="hover:bg-white/5 transition-colors">
                     <td className="py-3.5 pr-3">
                       <div className="font-bold text-white font-display text-sm">{m.name}</div>
-                      <div className="text-[10px] text-primary font-mono">{m.score}</div>
+                      <div className="text-[10px] text-cyan-400 font-mono">{m.score}</div>
                     </td>
                     <td className="py-3.5 px-3">
                       <Badge variant="primary" size="sm">{m.rating}</Badge>
@@ -206,7 +210,7 @@ export const SkynetDashboardPage: React.FC = () => {
                     </td>
                     <td className="py-3.5 pl-3 text-right">
                       <div className="font-bold text-white">{m.price}</div>
-                      <div className={`text-[10px] font-bold flex items-center justify-end gap-0.5 ${m.positive ? 'text-emerald-400' : 'text-error'}`}>
+                      <div className={`text-[10px] font-bold flex items-center justify-end gap-0.5 ${m.positive ? 'text-emerald-400' : 'text-red-400'}`}>
                         <Icon name={m.positive ? 'trending_up' : 'trending_down'} size={12} />
                         {m.change}
                       </div>
@@ -216,22 +220,22 @@ export const SkynetDashboardPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-        </Card>
+        </GlassCard>
       </div>
 
       {/* Lower Section: Chain Resilience Leaderboard + Live Threat Log Stream */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Chain Resilience Table (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <Card variant="fresnel" className="p-6 space-y-4">
-            <CardHeader className="mb-2">
-              <CardTitle>Top Tier Blockchain Resilience Matrix</CardTitle>
-            </CardHeader>
+          <GlassCard variant="fresnel" blur="xl" className="p-6 space-y-4 border-cyan-500/30">
+            <GlassCardHeader className="mb-2">
+              <GlassCardTitle>Top Tier Blockchain Resilience Matrix</GlassCardTitle>
+            </GlassCardHeader>
 
             <div className="overflow-x-auto cyber-scrollbar">
               <table className="w-full text-left font-mono text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-outline/70 text-slate-400 uppercase text-[10px]">
+                  <tr className="border-b border-white/10 text-slate-400 uppercase text-[10px]">
                     <th className="pb-3 pr-3">Chain Network</th>
                     <th className="pb-3 px-3">Z-Score</th>
                     <th className="pb-3 px-3">TVP</th>
@@ -239,12 +243,12 @@ export const SkynetDashboardPage: React.FC = () => {
                     <th className="pb-3 pl-3 text-right">Threats Blocked</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-outline/40">
+                <tbody className="divide-y divide-white/5">
                   {mockSecurityLeaderboard.map((item) => (
                     <tr key={item.name} className="hover:bg-white/5">
                       <td className="py-3 pr-3 font-semibold text-white">{item.name}</td>
                       <td className="py-3 px-3">
-                        <span className="text-primary font-bold">{item.zScore}</span>
+                        <span className="text-cyan-400 font-bold">{item.zScore}</span>
                       </td>
                       <td className="py-3 px-3 text-slate-300">{item.tvp}</td>
                       <td className="py-3 px-3 text-slate-400">{item.auditedCount}</td>
@@ -256,7 +260,7 @@ export const SkynetDashboardPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </GlassCard>
         </div>
 
         {/* Live Attack Feed (5 cols) */}

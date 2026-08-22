@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { GlowBackground } from '@/components/ui/GlowBackground';
 
 export const PricingPage: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'per-audit' | 'annual'>('per-audit');
@@ -67,108 +69,123 @@ export const PricingPage: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-      {/* Title */}
-      <div className="text-center max-w-3xl mx-auto space-y-4">
-        <Badge variant="primary">TRANSPARENT PRICING</Badge>
-        <h1 className="font-display font-black text-4xl sm:text-5xl text-white">
-          Institutional Security. Predictable Pricing.
-        </h1>
-        <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-          Select the precision tier that aligns with your total value locked, timeline, and architectural complexity.
-        </p>
+    <div className="space-y-16 py-12">
+      {/* Title with Glow */}
+      <GlowBackground variant="subtle" className="py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <SectionHeading
+            badge="TRANSPARENT PRICING"
+            title="Institutional Security. Predictable Pricing."
+            description="Select the precision tier that aligns with your total value locked, timeline, and architectural complexity."
+          />
 
-        {/* Toggle */}
-        <div className="inline-flex items-center p-1 rounded bg-[#0b1326] border border-outline mt-4">
-          <button
-            onClick={() => setBillingCycle('per-audit')}
-            className={`px-4 py-1.5 rounded text-xs font-mono font-semibold transition-colors cursor-pointer ${
-              billingCycle === 'per-audit' ? 'bg-primary text-[#00363d] font-bold' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            PER AUDIT SCOPE
-          </button>
-          <button
-            onClick={() => setBillingCycle('annual')}
-            className={`px-4 py-1.5 rounded text-xs font-mono font-semibold transition-colors cursor-pointer ${
-              billingCycle === 'annual' ? 'bg-primary text-[#00363d] font-bold' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            ANNUAL RETAINER (-20%)
-          </button>
+          {/* Billing Cycle Toggle */}
+          <div className="inline-flex items-center p-1 rounded-xl bg-[#0b1326] border border-white/10 mt-4 backdrop-blur-md">
+            <button
+              onClick={() => setBillingCycle('per-audit')}
+              className={`px-4 py-2 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
+                billingCycle === 'per-audit'
+                  ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_15px_rgba(0,218,243,0.3)]'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              PER AUDIT SCOPE
+            </button>
+            <button
+              onClick={() => setBillingCycle('annual')}
+              className={`px-4 py-2 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
+                billingCycle === 'annual'
+                  ? 'bg-cyan-400 text-[#00363d] font-bold shadow-[0_0_15px_rgba(0,218,243,0.3)]'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ANNUAL RETAINER (-20%)
+            </button>
+          </div>
         </div>
-      </div>
+      </GlowBackground>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-        {tiers.map((t) => (
-          <Card
-            key={t.name}
-            variant={t.highlight ? 'fresnel' : 'glass'}
-            hoverEffect
-            className={`p-8 flex flex-col justify-between relative ${
-              t.highlight ? 'border-primary shadow-[0_0_30px_rgba(0,218,243,0.2)]' : ''
-            }`}
-          >
-            {t.highlight && (
-              <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
-                <span className="bg-primary text-[#00363d] font-mono text-[10px] font-bold px-3 py-1 rounded shadow-md">
-                  RECOMMENDED
-                </span>
-              </div>
-            )}
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Badge variant={t.highlight ? 'primary' : 'outline'} size="sm">
-                  {t.badge}
-                </Badge>
-                <h3 className="font-display font-bold text-2xl text-white">{t.name}</h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-sans">{t.desc}</p>
-              </div>
-
-              <div className="pt-4 border-t border-outline/50">
-                <div className="font-display font-black text-3xl sm:text-4xl text-white">
-                  {t.price === 'Custom Scope'
-                    ? t.price
-                    : billingCycle === 'annual'
-                      ? t.price.replace(/[0-9,]+/, (m) =>
-                          Math.round(Number(m.replace(/,/g, '')) * 0.8).toLocaleString()
-                        )
-                      : t.price}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          {tiers.map((t) => (
+            <GlassCard
+              key={t.name}
+              variant={t.highlight ? 'fresnel' : 'elevated'}
+              hoverEffect
+              blur="xl"
+              className={`p-8 flex flex-col justify-between relative border-white/10 ${
+                t.highlight ? 'border-cyan-400 shadow-[0_0_35px_rgba(0,218,243,0.25)] -translate-y-1' : ''
+              }`}
+            >
+              {t.highlight && (
+                <div className="absolute top-0 right-0 transform translate-x-1 -translate-y-1">
+                  <span className="bg-cyan-400 text-[#00363d] font-mono text-[10px] font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl shadow-md uppercase tracking-wider">
+                    RECOMMENDED
+                  </span>
                 </div>
-                <div className="text-xs font-mono text-slate-400 mt-1">{t.period}</div>
+              )}
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Badge variant={t.highlight ? 'primary' : 'outline'} size="sm">
+                    {t.badge}
+                  </Badge>
+                  <h3 className="font-display font-bold text-2xl text-white">{t.name}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed font-sans">{t.desc}</p>
+                </div>
+
+                <div className="pt-4 border-t border-white/10">
+                  <div className="font-display font-black text-3xl sm:text-4xl text-white">
+                    {t.price === 'Custom Scope'
+                      ? t.price
+                      : billingCycle === 'annual'
+                        ? t.price.replace(/[0-9,]+/, (m) =>
+                            Math.round(Number(m.replace(/,/g, '')) * 0.8).toLocaleString()
+                          )
+                        : t.price}
+                  </div>
+                  <div className="text-xs font-mono text-slate-400 mt-1">{t.period}</div>
+                </div>
+
+                {/* Feature List */}
+                <div className="space-y-2.5 pt-4">
+                  <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
+                    Deliverables Included:
+                  </span>
+                  <ul className="space-y-2 text-xs font-sans text-slate-300">
+                    {t.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Icon name="check_circle" size={16} className="text-cyan-400 shrink-0 mt-0.5" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
 
-              {/* Feature List */}
-              <div className="space-y-2.5 pt-4">
-                <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
-                  Deliverables Included:
-                </span>
-                <ul className="space-y-2 text-xs font-sans text-slate-300">
-                  {t.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <Icon name="check_circle" size={16} className="text-primary shrink-0 mt-0.5" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="pt-8">
-              <Link to={`/client/audits/new?tier=${t.name.includes('Standard') ? 'STANDARD' : t.name.includes('Professional') ? 'PROFESSIONAL' : 'ENTERPRISE'}`}>
-                <Button
-                  variant={t.highlight ? 'primary' : 'outline'}
-                  className="w-full"
-                  size="md"
+              <div className="pt-8">
+                <Link
+                  to={`/client/audits/new?tier=${
+                    t.name.includes('Standard')
+                      ? 'STANDARD'
+                      : t.name.includes('Professional')
+                      ? 'PROFESSIONAL'
+                      : 'ENTERPRISE'
+                  }`}
                 >
-                  {t.cta}
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        ))}
+                  <Button
+                    variant={t.highlight ? 'primary' : 'outline'}
+                    className="w-full"
+                    size="md"
+                  >
+                    {t.cta}
+                  </Button>
+                </Link>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
       </div>
     </div>
   );

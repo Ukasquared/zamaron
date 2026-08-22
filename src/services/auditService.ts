@@ -80,7 +80,9 @@ export function getAudit(id: string, principal?: UserProfile | null): AuditReque
 }
 
 export function getAuditFindings(principal?: UserProfile | null, auditId = 'ZM-8492-NX'): AuditFinding[] {
-  requirePermission('client:read', principal);
+  // Resolve the parent engagement first so CLIENT access is tenant-scoped even
+  // when callers request findings directly instead of through the audit detail.
+  getAudit(auditId, principal);
   return cloneValue(findingsByAudit[auditId] ?? []);
 }
 
@@ -113,16 +115,26 @@ export function createAuditRequest(
   return cloneValue(audit);
 }
 
+function requireAssignedAuditor(id: string, principal?: UserProfile | null): { user: UserProfile; index: number } {
+  const user = requirePermission('auditor:write', principal);
+  const index = audits.findIndex((audit) => audit.id === id);
+  if (index < 0) {
+    throw new AuthorizationError('FORBIDDEN', `Audit ${id} was not found.`);
+  }
+  // Administrators retain the existing operational override. Individual
+  // auditors can only manage work assigned to their authenticated identity.
+  if (user.role !== 'ADMIN' && audits[index].leadAuditor !== user.name) {
+    throw new AuthorizationError('FORBIDDEN', 'This engagement is not assigned to the current auditor.');
+  }
+  return { user, index };
+}
+
 export function updateAuditStatus(
   id: string,
   patch: Partial<Pick<AuditRequest, 'status' | 'leadAuditor' | 'progressPercent'>>,
   principal?: UserProfile | null
 ): AuditRequest {
-  requirePermission('auditor:write', principal);
-  const index = audits.findIndex((audit) => audit.id === id);
-  if (index < 0) {
-    throw new AuthorizationError('FORBIDDEN', `Audit ${id} was not found.`);
-  }
+  const { index } = requireAssignedAuditor(id, principal);
   audits[index] = { ...audits[index], ...patch };
   persistAudits();
   return cloneValue(audits[index]);
@@ -130,27 +142,37 @@ export function updateAuditStatus(
 
 export function claimAudit(id: string, principal?: UserProfile | null): AuditRequest {
   const user = requirePermission('auditor:write', principal);
-  return updateAuditStatus(
-    id,
-    {
-      leadAuditor: user.name,
-      status: 'IN_REVIEW',
-      progressPercent: Math.max(audits.find((a) => a.id === id)?.progressPercent ?? 0, 40),
-    },
-    user
-  );
+  const index = audits.findIndex((audit) => audit.id === id);
+  if (index < 0) {
+    throw new AuthorizationError('FORBIDDEN', `Audit ${id} was not found.`);
+  }
+
+  const audit = audits[index];
+  // This is a compare-and-set guard in the current service seam. Production
+  // must implement the same condition atomically in its database transaction.
+  if (audit.status !== 'QUEUED' || audit.leadAuditor) {
+    throw new AuthorizationError('FORBIDDEN', 'This engagement has already been claimed.');
+  }
+
+  audits[index] = {
+    ...audit,
+    leadAuditor: user.name,
+    status: 'IN_REVIEW',
+    progressPercent: Math.max(audit.progressPercent, 40),
+  };
+  persistAudits();
+  return cloneValue(audits[index]);
 }
 
 export function updateFinding(
   auditId: string,
   findingId: string,
-  patch: Partial<Pick<AuditFinding, 'status' | 'notes'>>,
+  patch: Partial<Pick<AuditFinding, 'severity' | 'status' | 'notes' | 'remediation' | 'description' | 'location' | 'lineRange'>>,
   principal?: UserProfile | null
 ): AuditFinding {
-  const actor = requirePermission('client:read', principal);
-  if (actor.role === 'STUDENT') {
-    throw new AuthorizationError('FORBIDDEN', 'Students cannot triage findings.');
-  }
+  // Finding classification and internal notes are auditor actions. Client
+  // report access is read-only and never grants a mutation capability.
+  requireAssignedAuditor(auditId, principal);
   const list = findingsByAudit[auditId] ?? [];
   const index = list.findIndex((finding) => finding.id === findingId);
   if (index < 0) {
