@@ -32,12 +32,6 @@ export const MarketingLayout: React.FC = () => {
         <span className="text-slate-400 hidden sm:inline">
           Institutional-Grade Smart Contract Auditing & AI Forensic Analysis
         </span>
-        <button
-          onClick={() => setCatalogOpen(true)}
-          className="text-cyan-400 hover:text-cyan-300 underline font-semibold flex items-center gap-1 cursor-pointer"
-        >
-          View All 47 Screens Matrix <Icon name="grid_view" size={14} />
-        </button>
       </div>
 
       {/* Main Navbar with Glassmorphism */}
@@ -80,14 +74,6 @@ export const MarketingLayout: React.FC = () => {
 
           {/* Action CTAs */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setCatalogOpen(true)}
-              className="p-2 rounded-lg bg-slate-900/60 border border-white/10 hover:border-cyan-400/40 text-slate-300 hover:text-white transition-all cursor-pointer hidden sm:flex items-center gap-1.5 text-xs font-mono backdrop-blur-md"
-              title="Open Master Navigation Matrix"
-            >
-              <Icon name="grid_view" size={16} className="text-cyan-400" />
-              <span>47 Screens</span>
-            </button>
 
             {isAuthenticated ? (
               <>
