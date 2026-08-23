@@ -375,9 +375,7 @@ export const HomePage: React.FC = () => {
                   showCursor
                   cursorCharacter="_"
                   deletingSpeed={50}
-                  variableSpeedEnabled={false}
-                  variableSpeedMin={60}
-                  variableSpeedMax={120}
+                  variableSpeed={{ min: 60, max: 120 }}
                   cursorBlinkDuration={0.5}
                 />
               </div>
