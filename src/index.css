@@ -143,18 +143,84 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  /* Scroll-reveal helpers */
+  /* Premium Scroll Reveal — choreographed entrances */
   .reveal {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(16px);
     transition:
-      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform;
   }
   .reveal.is-visible {
     opacity: 1;
     transform: translateY(0);
+  }
+  /* Scale variant — adds depth through gentle scale */
+  .reveal--scale {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+    transition:
+      opacity 760ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 760ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  .reveal--scale.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  /* Blur variant — polished hero-grade entry */
+  .reveal--blur {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(10px);
+    transition:
+      opacity 760ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 760ms cubic-bezier(0.16, 1, 0.3, 1),
+      filter 760ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal--blur.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+  /* Clip/mask reveal — cinematic curtain */
+  .reveal--clip {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+    clip-path: inset(0 0 100% 0 round 16px);
+    transition:
+      opacity 560ms cubic-bezier(0.16, 1, 0.3, 1) 80ms,
+      transform 780ms cubic-bezier(0.16, 1, 0.3, 1),
+      clip-path 780ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, clip-path;
+  }
+  .reveal--clip.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    clip-path: inset(0 0 0 0 round 16px);
+  }
+  /* Hero variant — scale+blur+rise combined, most deluxe */
+  .reveal--hero {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(8px);
+    transition:
+      opacity 860ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 860ms cubic-bezier(0.16, 1, 0.3, 1),
+      filter 860ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal--hero.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+
+  /* Fallback for stagger children driven by parent delay */
+  .reveal-group > * {
+    --stagger-delay: 0ms;
   }
 
   /* Refined gradient text */
@@ -306,6 +372,69 @@
     background-image: radial-gradient(rgba(0, 218, 243, 0.15) 1px, transparent 1px);
     background-size: 24px 24px;
   }
+
+  /* Spotlight card — cursor-responsive subtle glow */
+  .spotlight-card {
+    --mx: 50%;
+    --my: 50%;
+    --spotlight-opacity: 0;
+    position: relative;
+  }
+  .spotlight-card::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: var(--spotlight-opacity);
+    transition: opacity 0.28s ease;
+    background: radial-gradient(560px circle at var(--mx) var(--my), rgba(0, 218, 243, 0.11), transparent 68%);
+    z-index: 0;
+  }
+  .spotlight-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Magnetic button shimmer */
+  .btn-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(112deg, transparent 28%, rgba(255,255,255,0.14) 48%, transparent 58%);
+    transform: translateX(-108%);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .btn-shimmer:hover::after {
+    transform: translateX(108%);
+  }
+
+  /* Hero page-load choreography fallback (if JS disabled, still visible) */
+  .hero-shell {
+    --hero-delay-0: 0ms;
+    --hero-delay-1: 95ms;
+    --hero-delay-2: 180ms;
+    --hero-delay-3: 260ms;
+  }
+
+  /* Image reveal — scale + clip */
+  .img-reveal {
+    overflow: hidden;
+    border-radius: inherit;
+  }
+  .img-reveal img {
+    transform: scale(1.06);
+    transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+  .img-reveal.is-visible img {
+    transform: scale(1);
+  }
 }
 
 /* Keyframe Animations */
@@ -331,12 +460,14 @@
   display: flex;
   width: fit-content;
   animation: marquee 35s linear infinite;
+  will-change: transform;
 }
 
 .animate-marquee-reverse {
   display: flex;
   width: fit-content;
   animation: marquee-reverse 35s linear infinite;
+  will-change: transform;
 }
 
 @keyframes scan {
@@ -374,6 +505,36 @@
 .animate-fade-in {
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Subtle hero orb breathing — keeps Web3 viz alive without distraction */
+@keyframes orbBreathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.06); }
+}
+.animate-orb-breathe {
+  animation: orbBreathe 7s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+@keyframes orbDrift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-12px, 10px); }
+}
+.animate-orb-drift {
+  animation: orbDrift 18s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes gridShift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(40px); }
+}
+
+/* Page-load veil fade (used by GlowBackground overlay) */
+@keyframes veilFade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Subtle shine across marquee cards on hover — handled via transform already */
 
 /* Custom Scrollbar for Browser Chrome */
 ::-webkit-scrollbar {
@@ -413,7 +574,7 @@ body {
   color: #00f0ff;
 }
 
-/* Accessibility: Respect Reduced Motion Preferences */
+/* Accessibility: Respect Reduced Motion Preferences — upgraded to keep content visible but motionless */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -422,5 +583,15 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  .reveal,
+  .reveal--scale,
+  .reveal--blur,
+  .reveal--clip,
+  .reveal--hero {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
   }
 }
