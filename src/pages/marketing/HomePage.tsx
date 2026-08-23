@@ -10,7 +10,14 @@ import { SectionHeading } from '@/components/ui/SectionHeading';
 import { GlowBackground } from '@/components/ui/GlowBackground';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { Reveal } from '@/components/ui/Reveal';
+import { Parallax } from '@/components/ui/Parallax';
+import { ScrollProgress } from '@/components/ui/ScrollProgress';
+import MetaBalls from '@/components/ui/MetaBalls';
+// import LayoutAnchor from '@/components/ui/AnchorLayout';
 
+/**
+ * HomePage — Zamaron marketing landing with premium motion language
+ */
 export const HomePage: React.FC = () => {
   const trustedNetworks: MarqueeItem[] = [
     { name: 'Ethereum', symbol: 'ETH', badge: 'L1 Mainnet' },
@@ -144,13 +151,33 @@ export const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-24 lg:space-y-32 pb-24">
-      {/* Hero Section with Glow Background */}
-      <GlowBackground variant="hero" className="pt-20 pb-16 sm:pt-24 sm:pb-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-          {/* Top Pill Badge */}
-          <Reveal>
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.05] border border-cyan-400/25 text-cyan-200 font-mono text-[11px] sm:text-xs font-semibold tracking-[0.14em] shadow-[0_0_24px_rgba(0,218,243,0.18),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
+    <div className=" pb-24">
+      <ScrollProgress />
+
+      {/* Hero Section — page-load choreography + parallax depth + blockchain viz */}
+      <GlowBackground variant="hero"className="relative overflow-hidden">
+
+          
+    <div className="absolute inset-0 z-0 pointer-events-none">
+      <MetaBalls
+        color="#ffffff"
+        cursorBallColor="#ffffff"
+        cursorBallSize={3}
+        ballCount={15}
+        animationSize={30}
+        enableMouseInteraction
+        enableTransparency={true}
+        hoverSmoothness={0.15}
+        clumpFactor={1}
+        speed={0.3}
+      />
+    </div>
+
+         <div className="relative z-10 py-20 sm:py-24">
+            <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+          {/* Top Pill Badge — first beat of load, blur+fade */}
+          <Reveal variant="blur" delay={0} duration={680}>
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.05] border border-cyan-400/25 text-cyan-200 font-mono text-[11px] sm:text-xs font-semibold tracking-[0.14em] shadow-[0_0_24px_rgba(0,218,243,0.18),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md will-change-transform">
               <span className="relative flex w-2 h-2">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-60 animate-ping" />
                 <span className="relative inline-flex w-2 h-2 rounded-full bg-cyan-400" />
@@ -159,16 +186,16 @@ export const HomePage: React.FC = () => {
             </div>
           </Reveal>
 
-          {/* Main Hero Headline */}
-          <Reveal delay={90}>
+          {/* Main Hero Headline — hero-variant (scale+blur+rise) */}
+          <Reveal variant="hero" delay={85}>
             <h1 className="font-display font-extrabold text-[2.5rem] sm:text-6xl lg:text-[4.25rem] text-white tracking-[-0.03em] leading-[1.05] max-w-4xl mx-auto text-balance">
               Securing the Future of{' '}
               <span className="text-gradient-cyan">Decentralized Finance</span>
             </h1>
           </Reveal>
 
-          {/* Subtitle */}
-          <Reveal delay={180}>
+          {/* Subtitle — rises with slight blur, second beat */}
+          <Reveal variant="rise" delay={180}>
             <p className="text-slate-300 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed font-sans text-pretty">
               Uncompromising smart contract auditing, automated EVM bytecode forensics, and 24/7
               real-time threat surveillance. Protecting over{' '}
@@ -177,10 +204,10 @@ export const HomePage: React.FC = () => {
             </p>
           </Reveal>
 
-          {/* CTA Buttons */}
-          <Reveal delay={260}>
+          {/* CTA Buttons — rise + subtle lift/shimmer on hover */}
+          <Reveal variant="rise" delay={260}>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-              <Link to="/client/audits/new">
+              <Link to="/client/audits/new" className="will-change-transform">
                 <Button
                   size="lg"
                   icon="shield"
@@ -189,7 +216,7 @@ export const HomePage: React.FC = () => {
                   Request Security Audit
                 </Button>
               </Link>
-              <Link to="/threat-hub/skynet">
+              <Link to="/threat-hub/skynet" className="will-change-transform">
                 <Button variant="outline" size="lg" icon="radar">
                   Launch Skynet Radar
                 </Button>
@@ -197,9 +224,9 @@ export const HomePage: React.FC = () => {
             </div>
           </Reveal>
 
-          {/* Live Top Metrics Grid with Animated Counters */}
+          {/* Live Top Metrics Grid — staggered scale reveals */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-10 text-left">
-            <Reveal delay={120}>
+            <Reveal variant="scale" delay={380}>
               <StatCard
                 label="Total Value Protected"
                 value="$64.2B"
@@ -213,7 +240,7 @@ export const HomePage: React.FC = () => {
                 animate
               />
             </Reveal>
-            <Reveal delay={200}>
+            <Reveal variant="scale" delay={460}>
               <StatCard
                 label="Protocols Verified"
                 value="1,420"
@@ -226,7 +253,7 @@ export const HomePage: React.FC = () => {
                 animate
               />
             </Reveal>
-            <Reveal delay={280}>
+            <Reveal variant="scale" delay={540}>
               <StatCard
                 label="Threats Mitigated"
                 value="8,940"
@@ -239,7 +266,7 @@ export const HomePage: React.FC = () => {
                 animate
               />
             </Reveal>
-            <Reveal delay={360}>
+            <Reveal variant="scale" delay={620}>
               <StatCard
                 label="Global Z-Score"
                 value="98.4"
@@ -255,31 +282,45 @@ export const HomePage: React.FC = () => {
             </Reveal>
           </div>
         </div>
+         </div>
+        
       </GlowBackground>
 
-      {/* Trusted Ecosystem Technologies & Networks Marquee */}
-      <section className="relative bg-white text-slate-800" aria-label="Trusted ecosystem networks">
+      {/* Trusted Ecosystem Technologies & Networks — seamless infinite marquee */}
+      <section className="relative bg-white text-slate-800 overflow-hidden" aria-label="Trusted ecosystem networks">
         <div className="border-y border-slate-200 shadow-[0_18px_50px_-28px_rgba(2,6,23,0.28)]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 pb-2">
-            <div className="flex items-center justify-center gap-4 pb-6">
-              <span className="hidden sm:block h-px flex-1 max-w-[120px] bg-gradient-to-r from-transparent to-slate-300" />
-              <p className="text-[10px] sm:text-xs font-mono font-semibold text-slate-500 uppercase tracking-[0.18em] sm:tracking-[0.22em] text-center">
-                Institutional Verification Across Leading Blockchain Ecosystems
-              </p>
-              <span className="hidden sm:block h-px flex-1 max-w-[120px] bg-gradient-to-l from-transparent to-slate-300" />
-            </div>
-            <Marquee items={trustedNetworks} speed="slow" />
+            <Reveal variant="rise" threshold={0.1}>
+              <div className="flex items-center justify-center gap-4 pb-6">
+                <span className="hidden sm:block h-px flex-1 max-w-[120px] bg-gradient-to-r from-transparent to-slate-300" />
+                <p className="text-[10px] sm:text-xs font-mono font-semibold text-slate-500 uppercase tracking-[0.18em] sm:tracking-[0.22em] text-center">
+                  Institutional Verification Across Leading Blockchain Ecosystems
+                </p>
+                <span className="hidden sm:block h-px flex-1 max-w-[120px] bg-gradient-to-l from-transparent to-slate-300" />
+              </div>
+            </Reveal>
+            {/* Marquee uses duplicated flex track (no jump) + mask edges */}
+            <Reveal variant="fade" delay={120}>
+              <Marquee items={trustedNetworks} speed="slow" />
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* Animated Numerical Statistics Grid (Count-Up Section) */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div
-          className="absolute inset-x-0 -top-16 bottom-0 -z-10 bg-[radial-gradient(55%_45%_at_50%_0%,rgba(0,218,243,0.05),transparent_70%)] pointer-events-none"
-          aria-hidden="true"
-        />
-        <Reveal>
+
+      {/* Animated Numerical Statistics Grid (Count-Up Section) — staggered scale + spotlight */}
+      <div className="mt-10 sm:mt-16 lg:mt-20 mb-8 sm:mb-12">
+
+        <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 ">
+        {/* Decorative radial — drifts with parallax */}
+        <Parallax speed={-0.05} clamp={24} className="absolute inset-x-0 -top-16 bottom-0 -z-10 pointer-events-none">
+          <div
+            className="absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_0%,rgba(0,218,243,0.05),transparent_70%)]"
+            aria-hidden="true"
+          />
+        </Parallax>
+
+        <Reveal variant="blur" threshold={0.14}>
           <SectionHeading
             badge="VERIFIED BENCHMARKS"
             title="Battle-Tested Security by the Numbers"
@@ -289,14 +330,15 @@ export const HomePage: React.FC = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {keyStatistics.map((stat, idx) => (
-            <Reveal key={stat.label} delay={(idx % 6) * 80}>
+            <Reveal key={stat.label} variant="scale" delay={(idx % 6) * 70} threshold={0.12}>
               <GlassCard
                 variant="default"
                 hoverEffect
+                spotlight
                 blur="lg"
                 className="p-5 flex flex-col justify-between text-center space-y-3 group h-full"
               >
-                <div className="mx-auto p-2.5 rounded-xl bg-[#060e20] border border-cyan-500/20 text-cyan-400 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_15px_rgba(0,218,243,0.3)] transition-all">
+                <div className="mx-auto p-2.5 rounded-xl bg-[#060e20] border border-cyan-500/20 text-cyan-400 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_15px_rgba(0,218,243,0.3)] group-hover:scale-[1.04] transition-all duration-300 will-change-transform">
                   <Icon name={stat.icon} size={22} />
                 </div>
 
@@ -322,14 +364,19 @@ export const HomePage: React.FC = () => {
           ))}
         </div>
       </section>
+       </div>
+     
 
-      {/* 4-Stage Methodology Preview */}
+      {/* 4-Stage Methodology Preview — clip/scale stagger + tilt */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div
-          className="absolute inset-x-0 top-0 bottom-0 -z-10 bg-[radial-gradient(45%_40%_at_80%_10%,rgba(155,81,224,0.06),transparent_70%)] pointer-events-none"
-          aria-hidden="true"
-        />
-        <Reveal>
+        <Parallax speed={-0.06} clamp={26} className="absolute inset-x-0 top-0 bottom-0 -z-10 pointer-events-none">
+          <div
+            className="absolute inset-0 bg-[radial-gradient(45%_40%_at_80%_10%,rgba(155,81,224,0.06),transparent_70%)]"
+            aria-hidden="true"
+          />
+        </Parallax>
+
+        <Reveal variant="blur" threshold={0.16}>
           <SectionHeading
             badge="THE ZAMARON PROTOCOL"
             badgeVariant="primary"
@@ -340,10 +387,12 @@ export const HomePage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {steps.map((step, idx) => (
-            <Reveal key={step.num} delay={idx * 90}>
+            <Reveal key={step.num} variant="scale" delay={idx * 85} threshold={0.12}>
               <GlassCard
                 variant="elevated"
                 hoverEffect
+                spotlight
+                tilt
                 blur="xl"
                 className="p-6 flex flex-col justify-between space-y-4 border-white/10 group h-full"
               >
@@ -352,7 +401,7 @@ export const HomePage: React.FC = () => {
                     <span className="font-mono text-3xl font-bold text-cyan-400/80 group-hover:text-cyan-300 transition-colors">
                       {step.num}
                     </span>
-                    <div className="p-2 rounded-lg bg-[#060e20] border border-cyan-500/20 text-cyan-400 group-hover:border-cyan-400/40 group-hover:shadow-[0_0_12px_rgba(0,218,243,0.25)] transition-all">
+                    <div className="p-2 rounded-lg bg-[#060e20] border border-cyan-500/20 text-cyan-400 group-hover:border-cyan-400/40 group-hover:shadow-[0_0_12px_rgba(0,218,243,0.25)] transition-all will-change-transform">
                       <Icon name={step.icon} size={20} />
                     </div>
                   </div>
@@ -376,7 +425,7 @@ export const HomePage: React.FC = () => {
           ))}
         </div>
 
-        <Reveal delay={140}>
+        <Reveal variant="rise" delay={100} threshold={0.12}>
           <div className="text-center pt-2">
             <Link to="/solutions/auditing">
               <Button variant="outline" size="md" iconRight="arrow_forward">
@@ -387,13 +436,16 @@ export const HomePage: React.FC = () => {
         </Reveal>
       </section>
 
-      {/* Core Technology Pillars */}
+      {/* Core Technology Pillars — fresnel + spotlight + delicate scale on icon */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div
-          className="absolute inset-x-0 top-0 bottom-0 -z-10 bg-[radial-gradient(50%_45%_at_15%_85%,rgba(0,230,118,0.05),transparent_70%)] pointer-events-none"
-          aria-hidden="true"
-        />
-        <Reveal>
+        <Parallax speed={-0.05} clamp={24} className="absolute inset-x-0 top-0 bottom-0 -z-10 pointer-events-none">
+          <div
+            className="absolute inset-0 bg-[radial-gradient(50%_45%_at_15%_85%,rgba(0,230,118,0.05),transparent_70%)]"
+            aria-hidden="true"
+          />
+        </Parallax>
+
+        <Reveal variant="blur" threshold={0.16}>
           <SectionHeading
             badge="DEFENSE-IN-DEPTH"
             badgeVariant="secondary"
@@ -404,15 +456,17 @@ export const HomePage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {pillars.map((p, idx) => (
-            <Reveal key={p.title} delay={(idx % 2) * 100}>
+            <Reveal key={p.title} variant="scale" delay={(idx % 2) * 110} threshold={0.13}>
               <GlassCard
                 variant="fresnel"
                 hoverEffect
+                spotlight
+                tilt
                 blur="xl"
                 className="p-7 space-y-4 border-white/10 group h-full"
               >
                 <div className="flex items-center justify-between">
-                  <div className="p-3 rounded-xl bg-[#060e20] text-cyan-400 border border-cyan-500/30 group-hover:border-cyan-400/60 group-hover:shadow-[0_0_18px_rgba(0,218,243,0.3)] group-hover:scale-[1.03] transition-all">
+                  <div className="p-3 rounded-xl bg-[#060e20] text-cyan-400 border border-cyan-500/30 group-hover:border-cyan-400/60 group-hover:shadow-[0_0_18px_rgba(0,218,243,0.3)] group-hover:scale-[1.04] transition-all duration-300 will-change-transform">
                     <Icon name={p.icon} size={28} />
                   </div>
                   <Badge variant="outline" size="sm">

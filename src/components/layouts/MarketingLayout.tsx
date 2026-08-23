@@ -82,24 +82,19 @@ export const MarketingLayout: React.FC = () => {
                   onClick={logout}
                   className="text-xs font-mono text-slate-400 hover:text-white hidden sm:inline px-2 py-1"
                 >
-                  End Session
+                  Sign Out
                 </button>
                 <Link to={consolePath}>
                   <Button variant="primary" size="sm" icon="dashboard">
-                    Open {role} Console
+                    Sign In
                   </Button>
                 </Link>
               </>
             ) : (
               <>
-                <Link to="/signin" className="hidden sm:block">
-                  <Button variant="outline" size="sm" icon="terminal">
-                    Terminal Access
-                  </Button>
-                </Link>
                 <Link to="/signin">
                   <Button variant="primary" size="sm" icon="dashboard">
-                    Launch Console
+                    Sign In
                   </Button>
                 </Link>
               </>
