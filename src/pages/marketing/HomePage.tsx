@@ -13,7 +13,7 @@ import { Reveal } from '@/components/ui/Reveal';
 import { Parallax } from '@/components/ui/Parallax';
 import { ScrollProgress } from '@/components/ui/ScrollProgress';
 import MetaBalls from '@/components/ui/MetaBalls';
-import LayoutAnchor from '@/components/ui/AnchorLayout';
+// import LayoutAnchor from '@/components/ui/AnchorLayout';
 
 /**
  * HomePage — Zamaron marketing landing with premium motion language
