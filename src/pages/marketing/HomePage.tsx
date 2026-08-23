@@ -159,7 +159,7 @@ export const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className=" pb-24">
+    <div className="">
       <ScrollProgress />
 
       {/* Hero Section — page-load choreography + parallax depth + blockchain viz */}
@@ -434,7 +434,7 @@ export const HomePage: React.FC = () => {
       </div>
 
       {/* Core Technology Pillars — fresnel + spotlight + delicate scale on icon */}
-      <div className="mt-10 sm:mt-16 lg:mt-20 mb-8 sm:mb-12">
+      <div className="mt-10 sm:mt-16 lg:mt-20">
         <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <Parallax
             speed={-0.05}
