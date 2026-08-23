@@ -1,9 +1,18 @@
 @import "tailwindcss";
+
+/* stylelint-disable-next-line at-rule-no-unknown */
 @plugin "@tailwindcss/forms" {
   strategy: "class";
 }
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme {
+
+  /* vertical marquee */
+   --animate-vertical-marquee: vertical-marquee var(--marquee-duration) linear infinite;
+  --animate-vertical-marquee-reverse: vertical-marquee-reverse var(--marquee-duration) linear infinite;
+
+
   /* Colors */
   --color-error: #ff5449;
   --color-error-container: #93000a;
@@ -574,6 +583,24 @@ body {
   color: #00f0ff;
 }
 
+@keyframes vertical-marquee {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes vertical-marquee-reverse {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
 /* Accessibility: Respect Reduced Motion Preferences — upgraded to keep content visible but motionless */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -594,4 +621,6 @@ body {
     filter: none !important;
     clip-path: none !important;
   }
+
+
 }

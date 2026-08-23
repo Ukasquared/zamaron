@@ -23,16 +23,6 @@ export const MarketingLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#060e20] text-slate-100 flex flex-col font-sans relative selection:bg-cyan-500/30 selection:text-cyan-300">
-      {/* Top Banner */}
-      <div className="bg-[#081226]/90 border-b border-cyan-500/20 px-4 py-1.5 text-center text-xs font-mono flex items-center justify-center gap-3 backdrop-blur-md">
-        <span className="flex items-center gap-1.5 text-cyan-400 font-bold">
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          NEXUS PROTOCOL RELEASE
-        </span>
-        <span className="text-slate-400 hidden sm:inline">
-          Institutional-Grade Smart Contract Auditing & AI Forensic Analysis
-        </span>
-      </div>
 
       {/* Main Navbar with Glassmorphism */}
       <header className="sticky top-0 z-40 bg-[#060e20]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
@@ -80,21 +70,16 @@ export const MarketingLayout: React.FC = () => {
                 <button
                   type="button"
                   onClick={logout}
-                  className="text-xs font-mono text-slate-400 hover:text-white hidden sm:inline px-2 py-1"
+                  className="text-sm font-mono text-slate-400 hover:text-white hidden sm:inline px-2 py-1"
                 >
-                  Sign Out
+                  Log Out
                 </button>
-                <Link to={consolePath}>
-                  <Button variant="primary" size="sm" icon="dashboard">
-                    Sign In
-                  </Button>
-                </Link>
               </>
             ) : (
               <>
                 <Link to="/signin">
-                  <Button variant="primary" size="sm" icon="dashboard">
-                    Sign In
+                  <Button variant="primary" size="md">
+                    Log In
                   </Button>
                 </Link>
               </>
