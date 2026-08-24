@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { Modal } from '@/components/ui/Modal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -22,50 +21,6 @@ export const SupportPage: React.FC = () => {
   const [ticketNote, setTicketNote] = useState<string | null>(null);
   const articles = useMemo(() => searchArticles(search), [search]);
 
-  const statusItems = [
-    {
-      name: 'Core Audit Ledger',
-      status: 'OPERATIONAL',
-      latency: '14ms',
-      load: 72,
-      icon: 'gavel',
-    },
-    {
-      name: 'Neural Forensics Engine',
-      status: 'OPERATIONAL',
-      latency: '28ms',
-      load: 64,
-      icon: 'smart_toy',
-    },
-    {
-      name: 'Skynet Threat Radar',
-      status: 'OPERATIONAL',
-      latency: '8ms',
-      load: 88,
-      icon: 'radar',
-    },
-    {
-      name: 'Document Cryptographic Vault',
-      status: 'OPERATIONAL',
-      latency: '18ms',
-      load: 79,
-      icon: 'lock',
-    },
-    {
-      name: 'DAO Governance Relays',
-      status: 'OPERATIONAL',
-      latency: '42ms',
-      load: 58,
-      icon: 'how_to_vote',
-    },
-    {
-      name: 'Payment Rail Settle Gate',
-      status: 'OPERATIONAL',
-      latency: '35ms',
-      load: 67,
-      icon: 'payments',
-    },
-  ];
 
   const categories = [
     {
