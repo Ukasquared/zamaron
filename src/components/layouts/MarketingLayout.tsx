@@ -15,7 +15,7 @@ export const MarketingLayout: React.FC = () => {
 
   const navLinks = [
     { label: 'Solutions', href: '/solutions/auditing' },
-    { label: 'Pricing', href: '/pricing' },
+    { label: 'Request Audit', href: '/client/audits/new' },
     { label: 'Threat Hub', href: '/threat-hub/skynet' },
     { label: 'Academy', href: '/academy/learn/crypto-security-101' },
     { label: 'Support', href: '/support' },

@@ -3,12 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { useAuth } from '@/context/AuthContext';
 import { getDefaultRouteForRole } from '@/auth/rbac';
 
-export const InductionPage: React.FC = () => {
+export const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,25 +48,17 @@ export const InductionPage: React.FC = () => {
       blur="xl"
       className="w-full max-w-lg p-8 space-y-6 shadow-[0_0_40px_rgba(0,218,243,0.15)] relative border-cyan-500/30"
     >
-      <div className="flex items-center justify-between">
-        <Badge variant="secondary" size="sm">
-          OPERATOR INDUCTION
-        </Badge>
-        <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-          <Icon name="lock" size={14} /> TLS 2.0 HARDENED
-        </span>
-      </div>
 
       <div className="space-y-1">
-        <h2 className="font-display font-black text-2xl text-white">Register Node Identity</h2>
+        <h2 className="font-display font-black text-2xl text-white">Create Account</h2>
         <p className="text-xs text-slate-400 font-sans leading-relaxed">
-          Provision your cryptographic credentials to interface with the Zamaron decentralized network.
+          Provision your credentials to interface with the Zamaron decentralized network.
         </p>
       </div>
 
       <form onSubmit={handleRegister} className="space-y-4">
         <Input
-          label="Operator Identity Name"
+          label="Full Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           icon="person"
@@ -76,7 +67,7 @@ export const InductionPage: React.FC = () => {
         />
 
         <Input
-          label="Institutional Email"
+          label="Email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -87,7 +78,7 @@ export const InductionPage: React.FC = () => {
 
         <div className="space-y-2">
           <Input
-            label="Cryptographic Passphrase"
+            label="Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -99,7 +90,7 @@ export const InductionPage: React.FC = () => {
           {/* Complexity Meter */}
           <div className="space-y-1 pt-1">
             <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-              <span>Entropy Score:</span>
+              <span>Password Strength:</span>
               <span
                 className={
                   score <= 25
@@ -134,7 +125,7 @@ export const InductionPage: React.FC = () => {
         <div className="p-3.5 bg-[#060e20]/80 border border-white/10 rounded-xl text-[11px] text-slate-400 flex items-start gap-2.5">
           <Icon name="verified_user" size={16} className="text-cyan-400 shrink-0 mt-0.5" />
           <span>
-            By initiating induction, you agree to the Cryptographic Code of Ethics and zero-knowledge telemetry recording.
+            By creating an account, you agree to the Cryptographic Code of Ethics and zero-knowledge telemetry recording.
           </span>
         </div>
 
@@ -144,15 +135,15 @@ export const InductionPage: React.FC = () => {
           </div>
         )}
 
-        <Button type="submit" size="lg" className="w-full" loading={loading} icon="fingerprint">
-          Complete Induction
+        <Button type="submit" size="lg" className="w-full" loading={loading} icon="bolt">
+          Create Account
         </Button>
       </form>
 
       <div className="pt-4 border-t border-white/10 text-center text-xs font-mono text-slate-400">
         Already registered?{' '}
         <Link to="/signin" className="text-cyan-400 font-bold hover:underline">
-          Terminal Sign-In
+          Login here
         </Link>
       </div>
     </GlassCard>
