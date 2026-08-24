@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { useAuth } from '@/context/AuthContext';
 import { getDefaultRouteForRole } from '@/auth/rbac';
