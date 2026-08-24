@@ -18,7 +18,7 @@ export const DASHBOARD_NAV_SECTIONS: DashboardNavSection[] = [
     title: 'Client Console',
     items: [
       { label: 'Dashboard', href: '/client/dashboard', icon: 'dashboard' },
-      { label: 'New Audit Request', href: '/client/audits/new', icon: 'add_task', badge: 'NEW' },
+      { label: 'New Audit Request', href: '/client/audits/new', icon: 'add_task', badge:'' },
       { label: 'Live Audit Tracker', href: '/client/audits/ZM-8492-NX/status', icon: 'timelapse' },
       { label: 'Dual-Pane Code Review', href: '/client/audits/ZM-8492-NX/review', icon: 'code' },
       { label: 'Vulnerability Triage', href: '/client/audits/ZM-8492-NX/triage', icon: 'bug_report' },
