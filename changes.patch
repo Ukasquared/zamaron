@@ -1,634 +1,1169 @@
-diff --git a/src/components/layouts/MarketingLayout.tsx b/src/components/layouts/MarketingLayout.tsx
-index 204d6ab..87026e1 100644
---- a/src/components/layouts/MarketingLayout.tsx
-+++ b/src/components/layouts/MarketingLayout.tsx
-@@ -1,121 +1,22 @@
- import React, { useState } from 'react';
--import { Link, Outlet, useLocation } from 'react-router-dom';
--import { Button } from '@/components/ui/Button';
--import { Icon } from '@/components/ui/Icon';
-+import { Outlet } from 'react-router-dom';
- import { MasterCatalogDrawer } from '@/components/shared/MasterCatalogDrawer';
- import { useAuth } from '@/context/AuthContext';
- import { getDefaultRouteForRole } from '@/auth/rbac';
-+import { Link } from 'react-router-dom';
-+import { Icon } from '@/components/ui/Icon';
-+import { Navbar } from '@/components/ui/Navigation/Navbar';
+diff --git a/src/index.css b/src/index.css
+index 1070315..e854781 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -444,9 +444,417 @@
+   .img-reveal.is-visible img {
+     transform: scale(1);
+   }
++
++  /* Solutions page — orbital hero, travelling audit signal, and card telemetry */
++  .solution-orbit {
++    position: relative;
++    width: 22rem;
++    aspect-ratio: 1;
++    border: 1px dashed rgba(34, 211, 238, 0.2);
++    border-radius: 9999px;
++    opacity: 0.52;
++    animation: solutionOrbitSpin 24s linear infinite;
++    box-shadow: 0 0 70px rgba(0, 218, 243, 0.05), inset 0 0 55px rgba(0, 218, 243, 0.04);
++  }
++  .solution-orbit::before,
++  .solution-orbit::after {
++    content: "";
++    position: absolute;
++    border-radius: inherit;
++    border: 1px solid rgba(167, 139, 250, 0.12);
++  }
++  .solution-orbit::before {
++    inset: 18%;
++  }
++  .solution-orbit::after {
++    inset: 37%;
++    border-color: rgba(34, 211, 238, 0.2);
++    box-shadow: 0 0 24px rgba(34, 211, 238, 0.12);
++  }
++  .solution-orbit > span {
++    position: absolute;
++    top: -4px;
++    left: 50%;
++    width: 8px;
++    height: 8px;
++    border-radius: 9999px;
++    background: #67e8f9;
++    box-shadow: 0 0 18px rgba(103, 232, 249, 0.9);
++  }
++  .solution-live-dot,
++  .support-index-dot {
++    position: relative;
++    display: inline-flex;
++    width: 6px;
++    height: 6px;
++    border-radius: 9999px;
++    background: #22d3ee;
++    box-shadow: 0 0 10px rgba(34, 211, 238, 0.75);
++  }
++  .solution-live-dot::after,
++  .support-index-dot::after {
++    content: "";
++    position: absolute;
++    inset: -4px;
++    border: 1px solid rgba(34, 211, 238, 0.45);
++    border-radius: inherit;
++    animation: telemetryPing 2.4s ease-out infinite;
++  }
++  .solution-flow-rail {
++    position: absolute;
++    z-index: 0;
++    top: 2rem;
++    bottom: 2rem;
++    left: 3.75rem;
++    width: 1px;
++    overflow: visible;
++    background: linear-gradient(to bottom, transparent, rgba(34, 211, 238, 0.34) 8%, rgba(167, 139, 250, 0.25) 92%, transparent);
++  }
++  .solution-flow-signal {
++    position: absolute;
++    top: 0;
++    left: -2px;
++    width: 5px;
++    height: 42px;
++    border-radius: 9999px;
++    background: linear-gradient(to bottom, transparent, #67e8f9, transparent);
++    filter: drop-shadow(0 0 7px rgba(34, 211, 238, 0.9));
++    animation: solutionSignalTravel 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
++  }
++  .solution-step-card {
++    isolation: isolate;
++  }
++  .solution-card-scan {
++    position: absolute;
++    z-index: 0;
++    inset-block: 0;
++    left: -42%;
++    width: 32%;
++    opacity: 0.15;
++    transform: skewX(-14deg);
++    background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.18), transparent);
++    animation: solutionCardScan 8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
++    pointer-events: none;
++  }
++  .solution-step-number {
++    position: relative;
++    isolation: isolate;
++  }
++  .solution-step-pulse {
++    position: absolute;
++    inset: 4px;
++    z-index: 0;
++    border: 1px solid rgba(34, 211, 238, 0.34);
++    border-radius: 0.5rem;
++    animation: solutionStepPulse 3.4s ease-in-out infinite;
++  }
++  .solution-phase-chip {
++    gap: 0.45rem;
++    transition: color 300ms ease, border-color 300ms ease;
++  }
++  .solution-step-card:hover .solution-phase-chip {
++    color: #a5f3fc;
++    border-color: rgba(34, 211, 238, 0.22);
++  }
++  .solution-phase-dot {
++    width: 5px;
++    height: 5px;
++    border-radius: 9999px;
++    background: #22d3ee;
++    box-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
++    animation: pulseGlow 2.2s ease-in-out infinite;
++  }
++  .solution-cta-orbit {
++    position: absolute;
++    top: 50%;
++    right: -5rem;
++    width: 17rem;
++    aspect-ratio: 1;
++    translate: 0 -50%;
++    border: 1px dashed rgba(34, 211, 238, 0.12);
++    border-radius: 9999px;
++    animation: solutionOrbitSpin 30s linear infinite reverse;
++    pointer-events: none;
++  }
++  .solution-cta-orbit::before,
++  .solution-cta-orbit::after {
++    content: "";
++    position: absolute;
++    border: 1px solid rgba(167, 139, 250, 0.1);
++    border-radius: inherit;
++  }
++  .solution-cta-orbit::before { inset: 22%; }
++  .solution-cta-orbit::after { inset: 42%; border-color: rgba(34, 211, 238, 0.16); }
++
++  /* Support page — radar sweep, staggered diagnostics, and responsive search motion */
++  .support-radar {
++    position: relative;
++    width: 23rem;
++    aspect-ratio: 1;
++    overflow: hidden;
++    border: 1px solid rgba(34, 211, 238, 0.16);
++    border-radius: 9999px;
++    opacity: 0.46;
++    background:
++      linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
++      linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px),
++      repeating-radial-gradient(circle, transparent 0 3.55rem, rgba(34, 211, 238, 0.12) 3.6rem 3.65rem);
++    background-size: 100% 50%, 50% 100%, 100% 100%;
++    background-position: center, center, center;
++    background-repeat: no-repeat;
++    box-shadow: 0 0 80px rgba(0, 218, 243, 0.05), inset 0 0 55px rgba(0, 218, 243, 0.04);
++  }
++  .support-radar::before {
++    content: "";
++    position: absolute;
++    inset: 0;
++    border-radius: inherit;
++    background: conic-gradient(from 0deg, transparent 0deg 296deg, rgba(34, 211, 238, 0.02) 310deg, rgba(34, 211, 238, 0.28) 354deg, transparent 360deg);
++    animation: supportRadarSweep 9s linear infinite;
++  }
++  .support-radar-node {
++    position: absolute;
++    width: 6px;
++    height: 6px;
++    border-radius: 9999px;
++    background: #67e8f9;
++    box-shadow: 0 0 16px rgba(103, 232, 249, 0.9);
++    animation: telemetryPing 2.8s ease-out infinite;
++  }
++  .support-radar-node--one { left: 30%; top: 37%; }
++  .support-radar-node--two { right: 24%; top: 54%; animation-delay: 0.8s; }
++  .support-radar-node--three { left: 46%; bottom: 19%; animation-delay: 1.5s; }
++
++  .support-search-shell {
++    position: relative;
++    isolation: isolate;
++    border-radius: 1rem;
++  }
++  .support-search-shell::before {
++    content: "";
++    position: absolute;
++    z-index: -1;
++    inset: -2px;
++    border-radius: inherit;
++    opacity: 0.42;
++    background: linear-gradient(110deg, rgba(34, 211, 238, 0.55), rgba(167, 139, 250, 0.14), rgba(34, 211, 238, 0.45));
++    filter: blur(9px);
++    transition: opacity 350ms ease, filter 350ms ease;
++    animation: supportSearchGlow 4.5s ease-in-out infinite;
++  }
++  .support-search-shell:focus-within::before {
++    opacity: 0.82;
++    filter: blur(13px);
++  }
++  .support-search-input {
++    border-radius: 1rem !important;
++    border-color: rgba(34, 211, 238, 0.28) !important;
++    background: rgba(6, 14, 32, 0.9) !important;
++    padding-top: 0.85rem !important;
++    padding-bottom: 0.85rem !important;
++    padding-left: 2.75rem !important;
++    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 14px 38px rgba(0, 0, 0, 0.24);
++  }
++  .support-search-input:focus {
++    border-color: rgba(103, 232, 249, 0.72) !important;
++    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(34, 211, 238, 0.18), 0 18px 45px rgba(0, 218, 243, 0.1);
++  }
++  .support-index-dot {
++    width: 5px;
++    height: 5px;
++  }
++  .support-live-beacon {
++    position: relative;
++    width: 10px;
++    height: 10px;
++    flex: 0 0 auto;
++    border-radius: 9999px;
++    background: #34d399;
++    box-shadow: 0 0 12px rgba(52, 211, 153, 0.75);
++  }
++  .support-live-beacon::after {
++    content: "";
++    position: absolute;
++    inset: -5px;
++    border: 1px solid rgba(52, 211, 153, 0.4);
++    border-radius: inherit;
++    animation: telemetryPing 2.2s ease-out infinite;
++  }
++  .diagnostic-card {
++    position: relative;
++    min-height: 9.5rem;
++    overflow: hidden;
++  }
++  .reveal.is-visible .diagnostic-card {
++    animation: diagnosticCardIn 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
++    animation-delay: calc(160ms + (var(--diagnostic-index) * 70ms));
++  }
++  .diagnostic-scanline {
++    position: absolute;
++    z-index: 0;
++    inset-inline: 0;
++    top: -45%;
++    height: 38%;
++    opacity: 0.34;
++    background: linear-gradient(to bottom, transparent, rgba(34, 211, 238, 0.16), transparent);
++    animation: diagnosticScan 4.8s linear infinite;
++    animation-delay: calc(var(--diagnostic-index) * 420ms);
++    pointer-events: none;
++  }
++  .diagnostic-status-dot {
++    width: 5px;
++    height: 5px;
++    border-radius: 9999px;
++    background: #34d399;
++    box-shadow: 0 0 7px rgba(52, 211, 153, 0.7);
++    animation: pulseGlow 2.4s ease-in-out infinite;
++  }
++  .diagnostic-meter {
++    height: 2px;
++    overflow: hidden;
++    border-radius: 9999px;
++    background: rgba(148, 163, 184, 0.12);
++  }
++  .diagnostic-meter > span {
++    display: block;
++    width: var(--latency-load);
++    height: 100%;
++    transform-origin: left;
++    border-radius: inherit;
++    background: linear-gradient(90deg, #22d3ee, #34d399);
++    box-shadow: 0 0 8px rgba(34, 211, 238, 0.45);
++  }
++  .reveal.is-visible .diagnostic-meter > span {
++    animation: diagnosticMeterFill 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
++    animation-delay: calc(480ms + (var(--diagnostic-index) * 70ms));
++  }
++  .support-search-results {
++    animation: supportResultsIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
++  }
++  .support-result-row,
++  .support-empty-result {
++    animation: supportResultRowIn 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
++  }
++  .support-category-card:hover .support-category-icon {
++    transform: translateY(-2px) rotate(-3deg) scale(1.04);
++    color: #a5f3fc;
++    border-color: rgba(103, 232, 249, 0.55);
++    box-shadow: 0 0 18px rgba(0, 218, 243, 0.25);
++  }
++  .support-incident-card {
++    isolation: isolate;
++  }
++  .support-response-orbit {
++    position: absolute;
++    top: 50%;
++    right: 2rem;
++    width: 15rem;
++    aspect-ratio: 1;
++    translate: 0 -50%;
++    border: 1px solid rgba(34, 211, 238, 0.1);
++    border-radius: 9999px;
++    animation: supportResponseBreathe 5.5s ease-in-out infinite;
++    pointer-events: none;
++  }
++  .support-response-orbit::before,
++  .support-response-orbit::after {
++    content: "";
++    position: absolute;
++    border: 1px solid rgba(34, 211, 238, 0.1);
++    border-radius: inherit;
++  }
++  .support-response-orbit::before { inset: 22%; }
++  .support-response-orbit::after { inset: 42%; background: rgba(34, 211, 238, 0.04); }
++  .support-response-orbit > span {
++    position: absolute;
++    left: 50%;
++    top: -3px;
++    width: 6px;
++    height: 6px;
++    border-radius: 9999px;
++    background: #67e8f9;
++    box-shadow: 0 0 14px rgba(103, 232, 249, 0.9);
++    animation: solutionOrbitSpin 7s linear infinite;
++    transform-origin: 0 7.5rem;
++  }
++  .support-ticket-modal {
++    animation: supportModalIn 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
++  }
+ }
  
- export const MarketingLayout: React.FC = () => {
-   const [catalogOpen, setCatalogOpen] = useState(false);
--  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
--  const location = useLocation();
--  const { isAuthenticated, role, logout } = useAuth();
-+  const { isAuthenticated, role } = useAuth();
-   const consolePath = isAuthenticated ? getDefaultRouteForRole(role) : '/signin';
+ /* Keyframe Animations */
++@keyframes solutionOrbitSpin {
++  to { transform: rotate(360deg); }
++}
++
++@keyframes telemetryPing {
++  0% { opacity: 0.8; transform: scale(0.55); }
++  75%, 100% { opacity: 0; transform: scale(1.55); }
++}
++
++@keyframes solutionSignalTravel {
++  0% { top: 0; opacity: 0; }
++  8% { opacity: 1; }
++  88% { opacity: 1; }
++  100% { top: calc(100% - 42px); opacity: 0; }
++}
++
++@keyframes solutionCardScan {
++  0%, 12% { transform: translateX(0) skewX(-14deg); opacity: 0; }
++  22% { opacity: 0.18; }
++  48%, 100% { transform: translateX(450%) skewX(-14deg); opacity: 0; }
++}
++
++@keyframes solutionStepPulse {
++  0%, 100% { opacity: 0.32; transform: scale(0.92); }
++  50% { opacity: 0.8; transform: scale(1); }
++}
++
++@keyframes supportRadarSweep {
++  to { transform: rotate(360deg); }
++}
++
++@keyframes supportSearchGlow {
++  0%, 100% { transform: scaleX(0.98); opacity: 0.3; }
++  50% { transform: scaleX(1.01); opacity: 0.52; }
++}
++
++@keyframes diagnosticCardIn {
++  from { opacity: 0; transform: translateY(12px) scale(0.97); }
++  to { opacity: 1; transform: translateY(0) scale(1); }
++}
++
++@keyframes diagnosticScan {
++  0%, 15% { transform: translateY(0); opacity: 0; }
++  25% { opacity: 0.35; }
++  62%, 100% { transform: translateY(390%); opacity: 0; }
++}
++
++@keyframes diagnosticMeterFill {
++  from { transform: scaleX(0); opacity: 0.25; }
++  to { transform: scaleX(1); opacity: 1; }
++}
++
++@keyframes supportResultsIn {
++  from { opacity: 0; transform: translateY(-8px) scale(0.99); filter: blur(4px); }
++  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
++}
++
++@keyframes supportResultRowIn {
++  from { opacity: 0; transform: translateX(-8px); }
++  to { opacity: 1; transform: translateX(0); }
++}
++
++@keyframes supportResponseBreathe {
++  0%, 100% { opacity: 0.45; transform: scale(0.96); }
++  50% { opacity: 0.8; transform: scale(1.03); }
++}
++
++@keyframes supportModalIn {
++  from { opacity: 0; transform: translateY(18px) scale(0.97); filter: blur(7px); }
++  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
++}
++
+ @keyframes marquee {
+   0% {
+     transform: translateX(0);
+diff --git a/src/pages/marketing/SolutionsAuditingPage.tsx b/src/pages/marketing/SolutionsAuditingPage.tsx
+index 3d2afa1..2dc0710 100644
+--- a/src/pages/marketing/SolutionsAuditingPage.tsx
++++ b/src/pages/marketing/SolutionsAuditingPage.tsx
+@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/Badge';
+ import { Icon } from '@/components/ui/Icon';
+ import { SectionHeading } from '@/components/ui/SectionHeading';
+ import { GlowBackground } from '@/components/ui/GlowBackground';
++import { Parallax } from '@/components/ui/Parallax';
++import { Reveal } from '@/components/ui/Reveal';
++import { ScrollProgress } from '@/components/ui/ScrollProgress';
  
--  const navLinks = [
--    { label: 'Solutions', href: '/solutions/auditing' },
--    { label: 'Request Audit', href: '/client/audits/new' },
--    { label: 'Threat Hub', href: '/threat-hub/skynet' },
--    { label: 'Academy', href: '/academy/learn/crypto-security-101' },
--    { label: 'Support', href: '/support' },
--  ];
--
+ export const SolutionsAuditingPage: React.FC = () => {
+   const steps = [
+@@ -40,82 +43,181 @@ export const SolutionsAuditingPage: React.FC = () => {
+   ];
+ 
    return (
-     <div className="min-h-screen bg-[#060e20] text-slate-100 flex flex-col font-sans relative selection:bg-cyan-500/30 selection:text-cyan-300">
+-    <div className="space-y-16 py-12">
+-      {/* Header with Glow */}
+-      <GlowBackground variant="subtle" className="py-8">
+-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
+-          <SectionHeading
+-            badge="INSTITUTIONAL AUDITING"
+-            title="Uncompromising Smart Contract Auditing"
+-            description="The four-pillar methodology trusted by Tier-1 blockchain foundations, decentralized exchanges, and institutional liquidity networks."
+-          />
++    <div className="relative space-y-16 py-12 overflow-hidden">
++      <ScrollProgress />
++
++      {/* Header with layered orbital motion and a deliberate load sequence. */}
++      <GlowBackground variant="subtle" className="py-10 sm:py-14">
++        <div
++          className="absolute inset-0 pointer-events-none overflow-hidden"
++          aria-hidden="true"
++        >
++          <Parallax
++            speed={-0.08}
++            clamp={32}
++            className="absolute -right-24 -top-36 sm:right-[5%]"
++          >
++            <div className="solution-orbit">
++              <span />
++            </div>
++          </Parallax>
++          <Parallax
++            speed={-0.045}
++            clamp={22}
++            className="absolute -left-24 bottom-0"
++          >
++            <div className="h-48 w-48 rounded-full border border-purple-400/10 shadow-[0_0_70px_rgba(168,85,247,0.08)]" />
++          </Parallax>
++        </div>
++
++        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-7">
++          <Reveal variant="hero" delay={40}>
++            <SectionHeading
++              badge="INSTITUTIONAL AUDITING"
++              title="Uncompromising Smart Contract Auditing"
++              description="The four-pillar methodology trusted by Tier-1 blockchain foundations, decentralized exchanges, and institutional liquidity networks."
++            />
++          </Reveal>
++
++          <Reveal variant="rise" delay={210}>
++            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[10px] sm:text-xs font-mono uppercase tracking-[0.14em] text-slate-400">
++              <span className="flex items-center gap-2">
++                <span className="solution-live-dot" />4 verified phases
++              </span>
++              <span className="hidden sm:block h-3 w-px bg-white/15" />
++              <span>250+ vulnerability classes</span>
++              <span className="hidden sm:block h-3 w-px bg-white/15" />
++              <span>Immutable proof delivery</span>
++            </div>
++          </Reveal>
+         </div>
+       </GlowBackground>
  
-       {/* Main Navbar with Glassmorphism */}
--      <header className="sticky top-0 z-40 bg-[#060e20]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
--        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
--          {/* Brand Logo */}
--          <Link to="/" className="flex items-center gap-3 group">
--            <div className="w-10 h-10 rounded-xl bg-[#0b1326] border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:border-cyan-400 group-hover:shadow-[0_0_15px_rgba(0,218,243,0.4)] transition-all">
--              <Icon name="shield" size={24} />
+-      {/* Steps Breakdown */}
+-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+-        {steps.map((s, idx) => (
++      {/* Steps Breakdown — cards reveal independently while the signal travels down the rail. */}
++      <section
++        className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
++        aria-label="Audit methodology"
++      >
++        <Parallax
++          speed={-0.035}
++          clamp={20}
++          className="pointer-events-none absolute -right-32 top-1/3 h-72 w-72 rounded-full bg-cyan-500/[0.06] blur-[90px]"
++          aria-hidden="true"
++        />
++
++        <div className="relative space-y-6">
++          <div
++            className="solution-flow-rail hidden sm:block"
++            aria-hidden="true"
++          >
++            <span className="solution-flow-signal" />
++          </div>
++
++          {steps.map((s, idx) => (
++            <Reveal
++              key={s.step}
++              variant={idx === 0 ? 'clip' : 'scale'}
++              delay={(idx % 2) * 70}
++              threshold={0.08}
++              className="relative z-10"
++            >
++              <GlassCard
++                variant="fresnel"
++                hoverEffect
++                spotlight
++                blur="xl"
++                className="solution-step-card p-6 sm:p-8 relative border-white/10 group"
++              >
++                <span
++                  className="solution-card-scan"
++                  style={{ animationDelay: `${idx * 1.15}s` }}
++                  aria-hidden="true"
++                />
++
++                <div className="relative w-full flex flex-col md:flex-row items-start gap-6">
++                  <div className="solution-step-number w-14 h-14 rounded-xl bg-[#060e20] border border-cyan-500/40 flex items-center justify-center text-cyan-300 font-mono font-black text-2xl shrink-0 shadow-[0_0_20px_rgba(0,218,243,0.25)] group-hover:border-cyan-300 group-hover:text-cyan-100 transition-colors duration-500">
++                    <span
++                      className="solution-step-pulse"
++                      style={{ animationDelay: `${idx * 0.55}s` }}
++                      aria-hidden="true"
++                    />
++                    <span className="relative z-10">{s.step}</span>
++                  </div>
++
++                  <div className="flex-1 space-y-3">
++                    <div className="flex items-start sm:items-center gap-2.5">
++                      <Icon
++                        name={s.icon}
++                        size={22}
++                        className="text-cyan-400 mt-0.5 sm:mt-0 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3"
++                      />
++                      <h3 className="font-display font-bold text-xl text-white group-hover:text-cyan-200 transition-colors duration-300">
++                        {s.title}
++                      </h3>
++                    </div>
++                    <p className="text-sm text-slate-300 leading-relaxed font-sans">
++                      {s.desc}
++                    </p>
++                    <div className="flex flex-wrap gap-2 pt-2">
++                      {s.tags.map((t, tagIndex) => (
++                        <Badge
++                          key={t}
++                          variant="outline"
++                          size="sm"
++                          className="transition-all duration-300 group-hover:border-cyan-400/35 group-hover:text-cyan-200"
++                          style={{ transitionDelay: `${tagIndex * 45}ms` }}
++                        >
++                          {t}
++                        </Badge>
++                      ))}
++                    </div>
++                  </div>
++
++                  <div className="solution-phase-chip hidden lg:flex items-center self-center text-slate-400 font-mono text-xs px-3 py-1 rounded bg-black/30 border border-white/5">
++                    <span className="solution-phase-dot" aria-hidden="true" />
++                    <span>PHASE {idx + 1} OF 4</span>
++                  </div>
++                </div>
++              </GlassCard>
++            </Reveal>
++          ))}
++        </div>
++      </section>
++
++      {/* CTA Box */}
++      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
++        <Reveal variant="clip" threshold={0.08}>
+           <GlassCard
+-            key={s.step}
+             variant="fresnel"
+-            hoverEffect
+             blur="xl"
+-            className="p-6 sm:p-8 flex flex-col md:flex-row items-start gap-6 relative border-white/10 group"
++            spotlight
++            className="p-8 sm:p-10 text-center space-y-6 border-cyan-500/30 shadow-[0_0_30px_rgba(0,218,243,0.15)]"
+           >
+-            <div className="w-14 h-14 rounded-xl bg-[#060e20] border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-mono font-black text-2xl shrink-0 shadow-[0_0_20px_rgba(0,218,243,0.3)] group-hover:border-cyan-300 transition-all">
+-              {s.step}
 -            </div>
--            <div>
--              <span className="font-display font-black text-xl tracking-wider text-white group-hover:text-cyan-100 transition-colors">
--                ZAMARON
--              </span>
--              <span className="text-[10px] font-mono block text-cyan-400/80 tracking-widest leading-none">
--                CRYSTALLINE NEXUS
--              </span>
+-
+-            <div className="flex-1 space-y-3">
+-              <div className="flex items-center gap-2.5">
+-                <Icon name={s.icon} size={22} className="text-cyan-400" />
+-                <h3 className="font-display font-bold text-xl text-white group-hover:text-cyan-200 transition-colors">
+-                  {s.title}
+-                </h3>
+-              </div>
+-              <p className="text-sm text-slate-300 leading-relaxed font-sans">{s.desc}</p>
+-              <div className="flex flex-wrap gap-2 pt-2">
+-                {s.tags.map((t) => (
+-                  <Badge key={t} variant="outline" size="sm">
+-                    {t}
+-                  </Badge>
+-                ))}
++            <div className="solution-cta-orbit" aria-hidden="true" />
++            <div className="relative space-y-6">
++              <h2 className="font-display font-black text-2xl sm:text-3xl text-white">
++                Ready to Harden Your Smart Contracts?
++              </h2>
++              <p className="text-slate-300 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
++                Submit your repository for scoping. Receive a guaranteed
++                completion timeline, formal verification specifications, and
++                full-spectrum security coverage.
++              </p>
++              <div className="flex flex-wrap items-center justify-center gap-4">
++                <Link to="/client/audits/new">
++                  <Button size="lg" icon="shield">
++                    Submit Audit Request
++                  </Button>
++                </Link>
++                <Link to="/pricing">
++                  <Button variant="outline" size="lg">
++                    View Pricing Matrix
++                  </Button>
++                </Link>
+               </div>
+             </div>
+-
+-            <div className="hidden lg:flex items-center self-center text-slate-400 font-mono text-xs px-3 py-1 rounded bg-black/30 border border-white/5">
+-              <span>PHASE {idx + 1} OF 4</span>
 -            </div>
--          </Link>
+           </GlassCard>
+-        ))}
+-      </div>
 -
--          {/* Desktop Nav Links */}
--          <nav className="hidden md:flex items-center gap-6">
--            {navLinks.map((link) => {
--              const isActive = location.pathname === link.href;
--              return (
--                <Link
--                  key={link.href}
--                  to={link.href}
--                  className={`text-sm font-mono tracking-wide transition-all px-2 py-1 rounded-md ${
--                    isActive
--                      ? 'text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_10px_rgba(0,218,243,0.2)]'
--                      : 'text-slate-300 hover:text-white hover:bg-white/5'
--                  }`}
--                >
--                  {link.label}
--                </Link>
--              );
--            })}
--          </nav>
--
--          {/* Action CTAs */}
--          <div className="flex items-center gap-3">
--
--            {isAuthenticated ? (
--              <>
--                <button
--                  type="button"
--                  onClick={logout}
--                  className="text-sm font-mono text-slate-400 hover:text-white hidden sm:inline px-2 py-1"
--                >
--                  Log Out
--                </button>
--              </>
--            ) : (
--              <>
--                <Link to="/signin">
--                  <Button variant="primary" size="md">
--                    Log In
--                  </Button>
--                </Link>
--              </>
--            )}
--
--            {/* Mobile Menu Toggle Button */}
--            <button
--              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
--              className="p-2 rounded-lg bg-slate-900/60 border border-white/10 text-slate-300 hover:text-white md:hidden"
--              aria-label="Toggle menu"
--            >
--              <Icon name={mobileMenuOpen ? 'close' : 'menu'} size={20} />
--            </button>
+-      {/* CTA Box */}
+-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+-        <GlassCard
+-          variant="fresnel"
+-          blur="xl"
+-          className="p-8 sm:p-10 text-center space-y-6 border-cyan-500/30 shadow-[0_0_30px_rgba(0,218,243,0.15)]"
+-        >
+-          <h2 className="font-display font-black text-2xl sm:text-3xl text-white">
+-            Ready to Harden Your Smart Contracts?
+-          </h2>
+-          <p className="text-slate-300 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
+-            Submit your repository for scoping. Receive a guaranteed completion timeline, formal verification specifications, and full-spectrum security coverage.
+-          </p>
+-          <div className="flex flex-wrap items-center justify-center gap-4">
+-            <Link to="/client/audits/new">
+-              <Button size="lg" icon="shield">
+-                Submit Audit Request
+-              </Button>
+-            </Link>
+-            <Link to="/pricing">
+-              <Button variant="outline" size="lg">
+-                View Pricing Matrix
+-              </Button>
+-            </Link>
 -          </div>
--        </div>
--
--        {/* Mobile Navigation Dropdown */}
--        {mobileMenuOpen && (
--          <div className="md:hidden bg-[#060e20]/95 border-b border-white/10 px-4 py-4 space-y-3 backdrop-blur-xl">
--            {navLinks.map((link) => (
--              <Link
--                key={link.href}
--                to={link.href}
--                onClick={() => setMobileMenuOpen(false)}
--                className={`block px-3 py-2 rounded-lg text-sm font-mono ${
--                  location.pathname === link.href
--                    ? 'bg-cyan-500/15 text-cyan-300 font-bold border border-cyan-500/30'
--                    : 'text-slate-300 hover:bg-white/5'
--                }`}
--              >
--                {link.label}
--              </Link>
+-        </GlassCard>
++        </Reveal>
+       </div>
+     </div>
+   );
+diff --git a/src/pages/marketing/SupportPage.tsx b/src/pages/marketing/SupportPage.tsx
+index a061061..801aeae 100644
+--- a/src/pages/marketing/SupportPage.tsx
++++ b/src/pages/marketing/SupportPage.tsx
+@@ -7,6 +7,9 @@ import { Icon } from '@/components/ui/Icon';
+ import { Modal } from '@/components/ui/Modal';
+ import { SectionHeading } from '@/components/ui/SectionHeading';
+ import { GlowBackground } from '@/components/ui/GlowBackground';
++import { Parallax } from '@/components/ui/Parallax';
++import { Reveal } from '@/components/ui/Reveal';
++import { ScrollProgress } from '@/components/ui/ScrollProgress';
+ import { searchArticles, submitTicket } from '@/services/supportService';
+ 
+ export const SupportPage: React.FC = () => {
+@@ -20,12 +23,48 @@ export const SupportPage: React.FC = () => {
+   const articles = useMemo(() => searchArticles(search), [search]);
+ 
+   const statusItems = [
+-    { name: 'Core Audit Ledger', status: 'OPERATIONAL', latency: '14ms', icon: 'gavel' },
+-    { name: 'Neural Forensics Engine', status: 'OPERATIONAL', latency: '28ms', icon: 'smart_toy' },
+-    { name: 'Skynet Threat Radar', status: 'OPERATIONAL', latency: '8ms', icon: 'radar' },
+-    { name: 'Document Cryptographic Vault', status: 'OPERATIONAL', latency: '18ms', icon: 'lock' },
+-    { name: 'DAO Governance Relays', status: 'OPERATIONAL', latency: '42ms', icon: 'how_to_vote' },
+-    { name: 'Payment Rail Settle Gate', status: 'OPERATIONAL', latency: '35ms', icon: 'payments' },
++    {
++      name: 'Core Audit Ledger',
++      status: 'OPERATIONAL',
++      latency: '14ms',
++      load: 72,
++      icon: 'gavel',
++    },
++    {
++      name: 'Neural Forensics Engine',
++      status: 'OPERATIONAL',
++      latency: '28ms',
++      load: 64,
++      icon: 'smart_toy',
++    },
++    {
++      name: 'Skynet Threat Radar',
++      status: 'OPERATIONAL',
++      latency: '8ms',
++      load: 88,
++      icon: 'radar',
++    },
++    {
++      name: 'Document Cryptographic Vault',
++      status: 'OPERATIONAL',
++      latency: '18ms',
++      load: 79,
++      icon: 'lock',
++    },
++    {
++      name: 'DAO Governance Relays',
++      status: 'OPERATIONAL',
++      latency: '42ms',
++      load: 58,
++      icon: 'how_to_vote',
++    },
++    {
++      name: 'Payment Rail Settle Gate',
++      status: 'OPERATIONAL',
++      latency: '35ms',
++      load: 67,
++      icon: 'payments',
++    },
+   ];
+ 
+   const categories = [
+@@ -56,119 +95,276 @@ export const SupportPage: React.FC = () => {
+   ];
+ 
+   return (
+-    <div className="space-y-16 py-12">
+-      {/* Hero */}
+-      <GlowBackground variant="subtle" className="py-8">
+-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+-          <SectionHeading
+-            badge="COMMAND CENTER SUPPORT"
+-            title="How Can We Assist Your Operations?"
+-            description="Access specialized technical resources, live node diagnostic status, and cryptographic ticket support."
+-          />
++    <div className="relative space-y-16 py-12 overflow-hidden">
++      <ScrollProgress />
+ 
+-          <div className="max-w-xl mx-auto pt-2">
+-            <Input
+-              placeholder="Search documentation, SWC vulnerability codes, API guides..."
+-              value={search}
+-              onChange={(e) => setSearch(e.target.value)}
+-              icon="search"
+-            />
+-          </div>
++      {/* Hero — search arrives after the heading while the diagnostic radar scans behind it. */}
++      <GlowBackground variant="subtle" className="py-10 sm:py-14">
++        <div
++          className="absolute inset-0 pointer-events-none overflow-hidden"
++          aria-hidden="true"
++        >
++          <Parallax
++            speed={-0.075}
++            clamp={30}
++            className="absolute -right-28 -top-28 sm:right-[5%]"
++          >
++            <div className="support-radar">
++              <span className="support-radar-node support-radar-node--one" />
++              <span className="support-radar-node support-radar-node--two" />
++              <span className="support-radar-node support-radar-node--three" />
++            </div>
++          </Parallax>
++          <Parallax
++            speed={-0.04}
++            clamp={20}
++            className="absolute -left-24 bottom-0"
++          >
++            <div className="h-56 w-56 rounded-full bg-purple-500/[0.05] blur-[50px]" />
++          </Parallax>
+         </div>
+-      </GlowBackground>
+ 
+-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+-        {/* Live System Diagnostics Grid */}
+-        <GlassCard variant="fresnel" blur="xl" className="p-6 sm:p-8 space-y-6 border-white/10">
+-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+-            <div className="flex items-center gap-2.5">
+-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+-              <h3 className="font-display font-bold text-lg text-white">
+-                Real-Time Node Diagnostics & System Vitality
+-              </h3>
+-            </div>
+-            <Badge variant="success" size="sm" dot>
+-              ALL SYSTEMS 100% OPERATIONAL
+-            </Badge>
+-          </div>
++        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-7">
++          <Reveal variant="hero" delay={30}>
++            <SectionHeading
++              badge="COMMAND CENTER SUPPORT"
++              title="How Can We Assist Your Operations?"
++              description="Access specialized technical resources, live node diagnostic status, and cryptographic ticket support."
++            />
++          </Reveal>
+ 
+-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+-            {statusItems.map((s) => (
++          <Reveal variant="scale" delay={210}>
++            <div className="max-w-xl mx-auto pt-2">
++              <div className="support-search-shell">
++                <Input
++                  aria-label="Search support documentation"
++                  placeholder="Search documentation, SWC vulnerability codes, API guides..."
++                  value={search}
++                  onChange={(e) => setSearch(e.target.value)}
++                  icon="search"
++                  className="support-search-input"
++                />
++              </div>
+               <div
+-                key={s.name}
+-                className="p-3.5 bg-[#060e20]/80 border border-white/10 rounded-xl flex flex-col justify-between hover:border-cyan-400/40 transition-all group"
++                className="mt-3 flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-[0.12em] text-slate-500"
++                aria-live="polite"
+               >
+-                <div className="flex items-center justify-between text-slate-400 mb-2">
+-                  <Icon name={s.icon} size={18} className="text-cyan-400 group-hover:scale-110 transition-transform" />
+-                  <span className="text-[10px] font-mono text-emerald-400 font-bold">{s.latency}</span>
++                <span className="support-index-dot" aria-hidden="true" />
++                {search
++                  ? `${articles.length} encrypted knowledge ${articles.length === 1 ? 'match' : 'matches'}`
++                  : '40 indexed operational resources'}
++              </div>
++            </div>
++          </Reveal>
++        </div>
++      </GlowBackground>
++
++      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
++        <Parallax
++          speed={-0.04}
++          clamp={22}
++          className="pointer-events-none absolute -left-52 top-1/3 h-80 w-80 rounded-full bg-purple-500/[0.06] blur-[100px]"
++          aria-hidden="true"
++        />
++
++        {/* Live System Diagnostics Grid */}
++        <Reveal variant="clip" threshold={0.08}>
++          <GlassCard
++            variant="fresnel"
++            blur="xl"
++            className="diagnostics-panel p-6 sm:p-8 border-white/10"
++          >
++            <div className="relative space-y-6">
++              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
++                <div className="flex items-center gap-2.5">
++                  <span className="support-live-beacon" aria-hidden="true" />
++                  <h3 className="font-display font-bold text-lg text-white">
++                    Real-Time Node Diagnostics & System Vitality
++                  </h3>
+                 </div>
+-                <div>
+-                  <div className="text-xs font-semibold text-white leading-tight">{s.name}</div>
+-                  <div className="text-[10px] font-mono text-emerald-400 mt-1 flex items-center gap-1">
+-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+-                    {s.status}
++                <Badge variant="success" size="sm" dot pulse>
++                  ALL SYSTEMS 100% OPERATIONAL
++                </Badge>
++              </div>
++
++              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
++                {statusItems.map((s, index) => (
++                  <div
++                    key={s.name}
++                    className="diagnostic-card p-3.5 bg-[#060e20]/80 border border-white/10 rounded-xl flex flex-col justify-between hover:border-cyan-400/40 transition-all duration-300 group"
++                    style={
++                      {
++                        '--diagnostic-index': index,
++                        '--latency-load': `${s.load}%`,
++                      } as React.CSSProperties
++                    }
++                  >
++                    <div className="diagnostic-scanline" aria-hidden="true" />
++                    <div className="relative flex items-center justify-between text-slate-400 mb-2">
++                      <Icon
++                        name={s.icon}
++                        size={18}
++                        className="text-cyan-400 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3"
++                      />
++                      <span className="text-[10px] font-mono text-emerald-400 font-bold tabular-nums">
++                        {s.latency}
++                      </span>
++                    </div>
++                    <div className="relative">
++                      <div className="text-xs font-semibold text-white leading-tight">
++                        {s.name}
++                      </div>
++                      <div className="text-[10px] font-mono text-emerald-400 mt-1 flex items-center gap-1">
++                        <span
++                          className="diagnostic-status-dot"
++                          aria-hidden="true"
++                        />
++                        {s.status}
++                      </div>
++                      <div className="diagnostic-meter mt-3" aria-hidden="true">
++                        <span />
++                      </div>
++                    </div>
+                   </div>
+-                </div>
++                ))}
+               </div>
 -            ))}
 -          </div>
--        )}
--      </header>
-+      <Navbar />
+-        </GlassCard>
++            </div>
++          </GlassCard>
++        </Reveal>
  
-       {/* Main Outlet */}
-       <main className="flex-1">
-diff --git a/src/components/ui/Navigation/MegaMenuColumn.tsx b/src/components/ui/Navigation/MegaMenuColumn.tsx
-new file mode 100644
-index 0000000..dd717a6
---- /dev/null
-+++ b/src/components/ui/Navigation/MegaMenuColumn.tsx
-@@ -0,0 +1,23 @@
-+import React from 'react';
-+import { cn } from '@/lib/utils';
-+
-+export interface MegaMenuColumnProps {
-+  title?: string;
-+  children: React.ReactNode;
-+  className?: string;
-+}
-+
-+export const MegaMenuColumn: React.FC<MegaMenuColumnProps> = ({ title, children, className }) => {
-+  return (
-+    <div className={cn("flex flex-col space-y-2", className)}>
-+      {title && (
-+        <h4 className="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">
-+          {title}
-+        </h4>
-+      )}
-+      <div className="flex flex-col space-y-1">
-+        {children}
-+      </div>
-+    </div>
-+  );
-+};
-diff --git a/src/components/ui/Navigation/MegaMenuItem.tsx b/src/components/ui/Navigation/MegaMenuItem.tsx
-new file mode 100644
-index 0000000..d43ddc0
---- /dev/null
-+++ b/src/components/ui/Navigation/MegaMenuItem.tsx
-@@ -0,0 +1,45 @@
-+import React from 'react';
-+import { Link } from 'react-router-dom';
-+import { Icon } from '@/components/ui/Icon';
-+
-+export interface MegaMenuItemProps {
-+  label: string;
-+  href: string;
-+  description?: string;
-+  icon?: string;
-+  badge?: string;
-+  onClick?: () => void;
-+}
-+
-+export const MegaMenuItem: React.FC<MegaMenuItemProps> = ({ label, href, description, icon, badge, onClick }) => {
-+  return (
-+    <Link
-+      to={href}
-+      onClick={onClick}
-+      className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300"
-+    >
-+      {icon && (
-+        <div className="w-10 h-10 shrink-0 rounded-lg bg-[#0b1326] border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:border-cyan-400 group-hover:shadow-[0_0_12px_rgba(0,218,243,0.3)] transition-all">
-+          <Icon name={icon} size={20} />
-+        </div>
-+      )}
-+      <div>
-+        <div className="flex items-center gap-2">
-+          <span className="font-display font-bold text-sm text-slate-200 group-hover:text-cyan-300 transition-colors">
-+            {label}
-+          </span>
-+          {badge && (
-+            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-+              {badge}
-+            </span>
-+          )}
-+        </div>
-+        {description && (
-+          <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed group-hover:text-slate-300 transition-colors">
-+            {description}
-+          </p>
-+        )}
-+      </div>
-+    </Link>
-+  );
-+};
-diff --git a/src/components/ui/Navigation/NavDropdown.tsx b/src/components/ui/Navigation/NavDropdown.tsx
-new file mode 100644
-index 0000000..0ba6072
---- /dev/null
-+++ b/src/components/ui/Navigation/NavDropdown.tsx
-@@ -0,0 +1,103 @@
-+import React, { useRef, useState } from 'react';
-+import { cn } from '@/lib/utils';
-+import { Icon } from '@/components/ui/Icon';
-+
-+export interface NavDropdownProps {
-+  label: string;
-+  isActive?: boolean;
-+  children: React.ReactNode;
-+}
-+
-+export const NavDropdown: React.FC<NavDropdownProps> = ({ label, isActive, children }) => {
-+  const [isOpen, setIsOpen] = useState(false);
-+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-+
-+  const handleMouseEnter = () => {
-+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-+    setIsOpen(true);
-+  };
-+
-+  const handleMouseLeave = () => {
-+    timeoutRef.current = setTimeout(() => {
-+      setIsOpen(false);
-+    }, 150); // slight delay to make it smooth
-+  };
-+
-+  const handleFocus = () => setIsOpen(true);
-+  const handleBlur = (e: React.FocusEvent) => {
-+    if (!e.currentTarget.contains(e.relatedTarget)) {
-+      setIsOpen(false);
-+    }
-+  };
-+
-+  const handleKeyDown = (e: React.KeyboardEvent) => {
-+    if (e.key === 'Escape') {
-+      setIsOpen(false);
-+      // optionally focus back to the button, but focus is fine
-+    }
-+  };
-+
-+  return (
-+    <div
-+      className="relative h-full flex items-center group"
-+      onMouseEnter={handleMouseEnter}
-+      onMouseLeave={handleMouseLeave}
-+      onFocus={handleFocus}
-+      onBlur={handleBlur}
-+      onKeyDown={handleKeyDown}
-+    >
-+      <button
-+        aria-expanded={isOpen}
-+        className={cn(
-+          "text-sm font-mono tracking-wide transition-all px-3 py-2 rounded-md flex items-center gap-1",
-+          isActive
-+            ? "text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_10px_rgba(0,218,243,0.2)]"
-+            : isOpen
-+            ? "text-white bg-white/5"
-+            : "text-slate-300 hover:text-white hover:bg-white/5"
-+        )}
-+      >
-+        {label}
-+        <Icon 
-+          name="expand_more" 
-+          size={16} 
-+          className={cn("transition-transform duration-300", isOpen && "rotate-180 text-cyan-400")}
-+        />
-+      </button>
-+
-+      {/* Invisible bridge to prevent hover loss */}
-+      <div className="absolute top-full left-0 w-full h-4" />
-+
-+      {/* Mega Menu Panel */}
-+      <div
-+        className={cn(
-+          "absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-300 origin-top",
-+          isOpen
-+            ? "opacity-100 translate-y-0 scale-100 visible pointer-events-auto"
-+            : "opacity-0 -translate-y-2 scale-95 invisible pointer-events-none"
-+        )}
-+      >
-+        <div className="w-[600px] lg:w-[750px] max-w-[90vw] bg-[#070f23]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(0,218,243,0.1)] p-6 overflow-hidden relative">
-+          {/* Subtle Glows */}
-+          <div className="absolute top-0 left-1/4 w-64 h-32 bg-cyan-500/10 blur-[60px] pointer-events-none rounded-full" />
-+          <div className="absolute bottom-0 right-1/4 w-64 h-32 bg-purple-500/10 blur-[60px] pointer-events-none rounded-full" />
-+          
-+          <div className="relative z-10 grid gap-8" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-+            {/* Staggered reveal effect */}
-+            {React.Children.map(children, (child, index) => (
-+              <div 
-+                className={cn(
-+                  "transition-all duration-500 ease-out", 
-+                  isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-+                )}
-+                style={{ transitionDelay: `${index * 50}ms` }}
-+              >
-+                {child}
+         {/* Support Categories */}
+-        <div className="space-y-6">
+-          <h2 className="font-display font-bold text-2xl text-white">Browse Knowledge Hub</h2>
++        <section className="space-y-6" aria-labelledby="knowledge-hub-heading">
++          <Reveal variant="rise">
++            <div className="flex items-end justify-between gap-4">
++              <div>
++                <p className="mb-2 text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-400">
++                  Encrypted knowledge index
++                </p>
++                <h2
++                  id="knowledge-hub-heading"
++                  className="font-display font-bold text-2xl text-white"
++                >
++                  Browse Knowledge Hub
++                </h2>
 +              </div>
-+            ))}
-+          </div>
-+        </div>
-+      </div>
-+    </div>
-+  );
-+};
-diff --git a/src/components/ui/Navigation/Navbar.tsx b/src/components/ui/Navigation/Navbar.tsx
-new file mode 100644
-index 0000000..14df55f
---- /dev/null
-+++ b/src/components/ui/Navigation/Navbar.tsx
-@@ -0,0 +1,298 @@
-+import React, { useState } from 'react';
-+import { Link, useLocation } from 'react-router-dom';
-+import { Button } from '@/components/ui/Button';
-+import { Icon } from '@/components/ui/Icon';
-+import { NavDropdown } from './NavDropdown';
-+import { MegaMenuColumn } from './MegaMenuColumn';
-+import { MegaMenuItem } from './MegaMenuItem';
-+import { useAuth } from '@/context/AuthContext';
-+import { getDefaultRouteForRole } from '@/auth/rbac';
-+
-+export const Navbar: React.FC = () => {
-+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-+  const location = useLocation();
-+  const { isAuthenticated, role, logout } = useAuth();
-+  
-+  const consolePath = isAuthenticated ? getDefaultRouteForRole(role) : '/signin';
-+
-+  return (
-+    <header className="sticky top-0 z-40 bg-[#060e20]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
-+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-+        {/* Brand Logo */}
-+        <Link to="/" className="flex items-center gap-3 group z-50">
-+          <div className="w-10 h-10 rounded-xl bg-[#0b1326] border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:border-cyan-400 group-hover:shadow-[0_0_15px_rgba(0,218,243,0.4)] transition-all">
-+            <Icon name="shield" size={24} />
-+          </div>
-+          <div>
-+            <span className="font-display font-black text-xl tracking-wider text-white group-hover:text-cyan-100 transition-colors">
-+              ZAMARON
-+            </span>
-+            <span className="text-[10px] font-mono block text-cyan-400/80 tracking-widest leading-none">
-+              CRYSTALLINE NEXUS
-+            </span>
-+          </div>
-+        </Link>
-+
-+        {/* Desktop Nav Links */}
-+        <nav className="hidden md:flex items-stretch h-full gap-2 lg:gap-4">
-+          
-+          <NavDropdown label="Solutions" isActive={location.pathname.startsWith('/solutions') || location.pathname.startsWith('/pricing')}>
-+            <MegaMenuColumn title="Core Services">
-+              <MegaMenuItem 
-+                label="Smart Contract Auditing" 
-+                href="/solutions/auditing" 
-+                icon="verified" 
-+                description="Institutional-grade verification and formal analysis for complex protocols."
-+              />
-+              <MegaMenuItem 
-+                label="Audit Pricing & Tiers" 
-+                href="/pricing" 
-+                icon="request_quote" 
-+                description="Transparent pricing structures based on code complexity and risk factors."
-+              />
-+            </MegaMenuColumn>
-+            
-+            <MegaMenuColumn title="Client Action">
-+              {(!isAuthenticated || role === 'CLIENT' || role === 'ADMIN') && (
-+                <MegaMenuItem 
-+                  label="Request Audit" 
-+                  href="/client/audits/new" 
-+                  icon="add_circle" 
-+                  description="Submit your smart contract codebase for initial assessment and quote."
-+                  badge="New"
-+                />
-+              )}
-+              <MegaMenuItem 
-+                label="Command Support" 
-+                href="/support" 
-+                icon="support_agent" 
-+                description="24/7 priority support for active audits and critical security incidents."
-+              />
-+            </MegaMenuColumn>
-+          </NavDropdown>
-+
-+          <NavDropdown label="Platform" isActive={location.pathname.startsWith('/threat-hub') || location.pathname.startsWith('/client') || location.pathname.startsWith('/auditor') || location.pathname.startsWith('/admin')}>
-+            <MegaMenuColumn title="Threat Intelligence">
-+              <MegaMenuItem 
-+                label="Skynet Threat Radar" 
-+                href="/threat-hub/skynet" 
-+                icon="radar" 
-+                description="Real-time monitoring of Web3 ecosystem threats and active exploits."
-+              />
-+              <MegaMenuItem 
-+                label="Whale Alerts" 
-+                href="/threat-hub/whales" 
-+                icon="tsunami" 
-+                description="Track anomalous massive transactions and liquidity movements."
-+              />
-+              <MegaMenuItem 
-+                label="Incident Monitor" 
-+                href="/threat-hub/incidents" 
-+                icon="warning" 
-+                description="Historical and active security incidents database."
-+              />
-+            </MegaMenuColumn>
-+            
-+            <MegaMenuColumn title="Analytics">
-+              <MegaMenuItem 
-+                label="Security Leaderboard" 
-+                href="/threat-hub/leaderboard" 
-+                icon="leaderboard" 
-+                description="Top protocols ranked by Zamaron security score."
-+              />
-+              <MegaMenuItem 
-+                label="Token Risk Analyzer" 
-+                href="/threat-hub/token-analyzer" 
-+                icon="analytics" 
-+                description="Automated risk assessment for smart contracts and tokens."
-+              />
-+            </MegaMenuColumn>
-+
-+            {/* Role-specific Console Access */}
-+            <MegaMenuColumn title="Console">
-+              {(!isAuthenticated || role === 'CLIENT' || role === 'ADMIN') && (
-+                <MegaMenuItem 
-+                  label="Client Console" 
-+                  href="/client/dashboard" 
-+                  icon="dashboard" 
-+                  description="Track audit progress, view reports, and manage billing."
-+                />
-+              )}
-+              {isAuthenticated && (role === 'AUDITOR' || role === 'ADMIN') && (
-+                <MegaMenuItem 
-+                  label="Auditor Workspace" 
-+                  href="/auditor/queue" 
-+                  icon="terminal" 
-+                  description="Manage assigned audits, run analysis tools, and submit findings."
-+                />
-+              )}
-+              {isAuthenticated && role === 'ADMIN' && (
-+                <MegaMenuItem 
-+                  label="Admin Dashboard" 
-+                  href="/admin/logs" 
-+                  icon="admin_panel_settings" 
-+                  description="System configuration, security logs, and user management."
-+                />
-+              )}
-+            </MegaMenuColumn>
-+          </NavDropdown>
-+
-+          <NavDropdown label="Resources" isActive={location.pathname.startsWith('/academy') || location.pathname.startsWith('/governance') || location.pathname.startsWith('/catalog')}>
-+            <MegaMenuColumn title="Knowledge Base">
-+              <MegaMenuItem 
-+                label="Zamaron Academy" 
-+                href="/academy/learn/crypto-security-101" 
-+                icon="school" 
-+                description="Comprehensive courses on smart contract security and auditing."
-+              />
-+              <MegaMenuItem 
-+                label="Master Catalog" 
-+                href="/catalog" 
-+                icon="grid_view" 
-+                description="Explore all 47 application screens in our component matrix."
-+              />
-+            </MegaMenuColumn>
-+            
-+            <MegaMenuColumn title="Protocol">
-+              <MegaMenuItem 
-+                label="Protocol Governance" 
-+                href="/governance" 
-+                icon="gavel" 
-+                description="Participate in DAO proposals and network upgrades."
-+              />
-+            </MegaMenuColumn>
-+          </NavDropdown>
-+
-+        </nav>
-+
-+        {/* Action CTAs */}
-+        <div className="flex items-center gap-3 z-50">
-+          {isAuthenticated ? (
-+            <div className="flex items-center gap-4">
-+              <Link to={consolePath} className="hidden sm:block">
-+                <Button variant="outline" size="sm" className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10">
-+                  Console
-+                </Button>
-+              </Link>
-+              <button
-+                type="button"
-+                onClick={logout}
-+                className="text-sm font-mono text-slate-400 hover:text-white hidden sm:inline px-2 py-1"
-+              >
-+                Log Out
-+              </button>
++              <span className="hidden sm:block text-[10px] font-mono uppercase tracking-wider text-slate-500">
++                Updated live
++              </span>
 +            </div>
-+          ) : (
-+            <Link to="/signin">
-+              <Button variant="primary" size="md">
-+                Log In
-+              </Button>
-+            </Link>
-+          )}
++          </Reveal>
 +
-+          {/* Mobile Menu Toggle Button */}
-+          <button
-+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-+            className="p-2 rounded-lg bg-slate-900/60 border border-white/10 text-slate-300 hover:text-white md:hidden"
-+            aria-label="Toggle menu"
+           {search && (
+-            <GlassCard variant="default" className="p-5 space-y-3 border-white/10">
+-              <h3 className="font-display font-bold text-white">Knowledge hits ({articles.length})</h3>
+-              {articles.map((article) => (
+-                <div key={article.id} className="border-b border-white/10 pb-3">
+-                  <div className="text-sm font-bold text-white">{article.title}</div>
+-                  <p className="text-xs text-slate-400 mt-1">{article.body}</p>
++            <div
++              className="support-search-results"
++              role="region"
++              aria-label="Knowledge search results"
++              aria-live="polite"
++            >
++              <GlassCard variant="default" className="p-5 border-white/10">
++                <div className="relative space-y-3">
++                  <div className="flex items-center justify-between gap-3">
++                    <h3 className="font-display font-bold text-white">
++                      Knowledge hits ({articles.length})
++                    </h3>
++                    <Icon name="database" size={18} className="text-cyan-400" />
++                  </div>
++                  {articles.map((article, index) => (
++                    <div
++                      key={article.id}
++                      className="support-result-row border-b border-white/10 pb-3 last:border-b-0 last:pb-0"
++                      style={{ animationDelay: `${index * 55}ms` }}
++                    >
++                      <div className="text-sm font-bold text-white">
++                        {article.title}
++                      </div>
++                      <p className="text-xs text-slate-400 mt-1">
++                        {article.body}
++                      </p>
++                    </div>
++                  ))}
++                  {articles.length === 0 && (
++                    <div className="support-empty-result flex items-center gap-2 py-2 text-xs text-slate-500">
++                      <Icon name="search_off" size={18} />
++                      No articles matched that query.
++                    </div>
++                  )}
+                 </div>
+-              ))}
+-              {articles.length === 0 && <p className="text-xs text-slate-500">No articles matched that query.</p>}
+-            </GlassCard>
++              </GlassCard>
++            </div>
+           )}
++
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+-            {categories.map((c) => (
+-              <GlassCard
++            {categories.map((c, index) => (
++              <Reveal
+                 key={c.title}
+-                variant="elevated"
+-                hoverEffect
+-                blur="lg"
+-                className="p-6 space-y-3 cursor-pointer border-white/10 group"
++                variant="scale"
++                delay={index * 85}
++                className="h-full"
++                threshold={0.08}
+               >
+-                <div className="flex items-center justify-between">
+-                  <div className="p-2.5 rounded-xl bg-[#060e20] text-cyan-400 border border-cyan-500/30 group-hover:shadow-[0_0_15px_rgba(0,218,243,0.3)] transition-all">
+-                    <Icon name={c.icon} size={24} />
++                <GlassCard
++                  variant="elevated"
++                  hoverEffect
++                  spotlight
++                  tilt
++                  blur="lg"
++                  className="support-category-card h-full p-6 cursor-pointer border-white/10 group"
++                >
++                  <div className="relative h-full space-y-3">
++                    <div className="flex items-center justify-between">
++                      <div className="support-category-icon p-2.5 rounded-xl bg-[#060e20] text-cyan-400 border border-cyan-500/30 transition-all duration-500">
++                        <Icon name={c.icon} size={24} />
++                      </div>
++                      <span className="text-xs font-mono text-slate-400">
++                        {c.count}
++                      </span>
++                    </div>
++                    <h3 className="font-display font-bold text-lg text-white group-hover:text-cyan-200 transition-colors duration-300">
++                      {c.title}
++                    </h3>
++                    <p className="text-xs text-slate-300 leading-relaxed font-sans">
++                      {c.desc}
++                    </p>
+                   </div>
+-                  <span className="text-xs font-mono text-slate-400">{c.count}</span>
+-                </div>
+-                <h3 className="font-display font-bold text-lg text-white group-hover:text-cyan-200 transition-colors">
+-                  {c.title}
+-                </h3>
+-                <p className="text-xs text-slate-300 leading-relaxed font-sans">{c.desc}</p>
+-              </GlassCard>
++                </GlassCard>
++              </Reveal>
+             ))}
+           </div>
+-        </div>
++        </section>
+ 
+         {/* Direct Ticket Dispatch */}
+-        <GlassCard
+-          variant="fresnel"
+-          blur="xl"
+-          className="p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border-cyan-500/30"
+-        >
+-          <div className="space-y-2 text-center md:text-left">
+-            <h3 className="font-display font-bold text-2xl text-white">Need Priority Incident Response?</h3>
+-            <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
+-              Directly interface with the Zamaron lead cryptographic triage team. Guaranteed 15-minute response for active critical exploits.
+-            </p>
+-          </div>
+-          <Button size="lg" icon="support_agent" onClick={() => setTicketOpen(true)}>
+-            Dispatch Emergency Ticket
+-          </Button>
+-        </GlassCard>
++        <Reveal variant="clip" threshold={0.08}>
++          <GlassCard
++            variant="fresnel"
++            blur="xl"
++            spotlight
++            className="support-incident-card p-8 sm:p-10 border-cyan-500/30"
 +          >
-+            <Icon name={mobileMenuOpen ? 'close' : 'menu'} size={20} />
-+          </button>
-+        </div>
-+      </div>
-+
-+      {/* Mobile Navigation */}
-+      {mobileMenuOpen && (
-+        <div className="md:hidden absolute top-full left-0 w-full bg-[#060e20]/95 border-b border-white/10 px-4 py-4 space-y-6 backdrop-blur-xl max-h-[calc(100vh-4rem)] overflow-y-auto cyber-scrollbar shadow-xl">
-+          
-+          <div className="space-y-2">
-+            <h4 className="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">Solutions</h4>
-+            <div className="grid gap-1 pl-2 border-l border-white/5 ml-2">
-+              <Link to="/solutions/auditing" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="verified" size={16} className="text-cyan-400" /> Smart Contract Auditing
-+              </Link>
-+              <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="request_quote" size={16} className="text-cyan-400" /> Audit Pricing
-+              </Link>
-+              {(!isAuthenticated || role === 'CLIENT' || role === 'ADMIN') && (
-+                <Link to="/client/audits/new" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                  <Icon name="add_circle" size={16} className="text-cyan-400" /> Request Audit
-+                </Link>
-+              )}
-+              <Link to="/support" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="support_agent" size={16} className="text-cyan-400" /> Command Support
-+              </Link>
++            <div className="support-response-orbit" aria-hidden="true">
++              <span />
 +            </div>
-+          </div>
-+
-+          <div className="space-y-2">
-+            <h4 className="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">Platform</h4>
-+            <div className="grid gap-1 pl-2 border-l border-white/5 ml-2">
-+              <Link to="/threat-hub/skynet" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="radar" size={16} className="text-purple-400" /> Skynet Threat Radar
-+              </Link>
-+              <Link to="/threat-hub/whales" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="tsunami" size={16} className="text-purple-400" /> Whale Alerts
-+              </Link>
-+              <Link to="/threat-hub/incidents" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="warning" size={16} className="text-purple-400" /> Incident Monitor
-+              </Link>
-+              <Link to="/threat-hub/leaderboard" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="leaderboard" size={16} className="text-purple-400" /> Security Leaderboard
-+              </Link>
-+              <Link to="/threat-hub/token-analyzer" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="analytics" size={16} className="text-purple-400" /> Token Risk Analyzer
-+              </Link>
-+              
-+              {(!isAuthenticated || role === 'CLIENT' || role === 'ADMIN') && (
-+                <Link to="/client/dashboard" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2 mt-2">
-+                  <Icon name="dashboard" size={16} className="text-emerald-400" /> Client Console
-+                </Link>
-+              )}
-+              {isAuthenticated && (role === 'AUDITOR' || role === 'ADMIN') && (
-+                <Link to="/auditor/queue" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2 mt-2">
-+                  <Icon name="terminal" size={16} className="text-emerald-400" /> Auditor Workspace
-+                </Link>
-+              )}
-+              {isAuthenticated && role === 'ADMIN' && (
-+                <Link to="/admin/logs" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2 mt-2">
-+                  <Icon name="admin_panel_settings" size={16} className="text-emerald-400" /> Admin Dashboard
-+                </Link>
-+              )}
-+            </div>
-+          </div>
-+
-+          <div className="space-y-2">
-+            <h4 className="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">Resources</h4>
-+            <div className="grid gap-1 pl-2 border-l border-white/5 ml-2">
-+              <Link to="/academy/learn/crypto-security-101" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="school" size={16} className="text-amber-400" /> Zamaron Academy
-+              </Link>
-+              <Link to="/governance" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="gavel" size={16} className="text-amber-400" /> Protocol Governance
-+              </Link>
-+              <Link to="/catalog" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2">
-+                <Icon name="grid_view" size={16} className="text-amber-400" /> Master Catalog
-+              </Link>
-+            </div>
-+          </div>
-+
-+          {isAuthenticated && (
-+            <div className="pt-4 border-t border-white/10">
-+              <button
-+                type="button"
-+                onClick={() => {
-+                  logout();
-+                  setMobileMenuOpen(false);
-+                }}
-+                className="w-full px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg flex items-center gap-2"
++            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
++              <div className="space-y-2 text-center md:text-left">
++                <h3 className="font-display font-bold text-2xl text-white">
++                  Need Priority Incident Response?
++                </h3>
++                <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
++                  Directly interface with the Zamaron lead cryptographic triage
++                  team. Guaranteed 15-minute response for active critical
++                  exploits.
++                </p>
++              </div>
++              <Button
++                size="lg"
++                icon="support_agent"
++                className="shrink-0"
++                onClick={() => setTicketOpen(true)}
 +              >
-+                <Icon name="logout" size={16} /> Log Out
-+              </button>
++                Dispatch Emergency Ticket
++              </Button>
 +            </div>
++          </GlassCard>
++        </Reveal>
+       </div>
+ 
+       <Modal
+@@ -176,6 +372,7 @@ export const SupportPage: React.FC = () => {
+         onClose={() => setTicketOpen(false)}
+         title="Dispatch Incident Ticket"
+         subtitle="15-minute critical response window"
++        className="support-ticket-modal"
+       >
+         <form
+           className="space-y-3"
+@@ -193,9 +390,25 @@ export const SupportPage: React.FC = () => {
+             setTicketBody('');
+           }}
+         >
+-          <Input label="Name" value={ticketName} onChange={(e) => setTicketName(e.target.value)} required />
+-          <Input label="Email" type="email" value={ticketEmail} onChange={(e) => setTicketEmail(e.target.value)} required />
+-          <Input label="Subject" value={ticketSubject} onChange={(e) => setTicketSubject(e.target.value)} required />
++          <Input
++            label="Name"
++            value={ticketName}
++            onChange={(e) => setTicketName(e.target.value)}
++            required
++          />
++          <Input
++            label="Email"
++            type="email"
++            value={ticketEmail}
++            onChange={(e) => setTicketEmail(e.target.value)}
++            required
++          />
++          <Input
++            label="Subject"
++            value={ticketSubject}
++            onChange={(e) => setTicketSubject(e.target.value)}
++            required
++          />
+           <textarea
+             required
+             rows={4}
+@@ -204,7 +417,9 @@ export const SupportPage: React.FC = () => {
+             className="w-full bg-[#060e20] border border-white/15 rounded-lg p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30"
+             placeholder="Describe the incident..."
+           />
+-          {ticketNote && <p className="text-xs font-mono text-emerald-400">{ticketNote}</p>}
++          {ticketNote && (
++            <p className="text-xs font-mono text-emerald-400">{ticketNote}</p>
 +          )}
-+        </div>
-+      )}
-+    </header>
-+  );
-+};
-diff --git a/tsconfig.tsbuildinfo b/tsconfig.tsbuildinfo
-index a03b935..a945d51 100644
---- a/tsconfig.tsbuildinfo
-+++ b/tsconfig.tsbuildinfo
-@@ -1 +1 @@
--{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/auth/AuthLoadingScreen.tsx","./src/auth/GuestRoute.tsx","./src/auth/ProtectedRoute.tsx","./src/auth/index.ts","./src/auth/navigation.ts","./src/auth/rbac.scenarios.ts","./src/auth/rbac.selftest.ts","./src/auth/rbac.ts","./src/auth/usePermission.ts","./src/components/academy/AIMentorChat.tsx","./src/components/academy/CourseSideNav.tsx","./src/components/academy/LessonNotes.tsx","./src/components/academy/QuickQuizFab.tsx","./src/components/academy/TopNavBar.tsx","./src/components/academy/VideoPlayer.tsx","./src/components/admin/ActivityStream.tsx","./src/components/admin/AdminSideNav.tsx","./src/components/admin/AdminStats.tsx","./src/components/admin/AdminTopNav.tsx","./src/components/admin/MasterRegistry.tsx","./src/components/admin/RiskHeatmap.tsx","./src/components/analytics/AnalyticsSideNav.tsx","./src/components/analytics/AnalyticsTopBar.tsx","./src/components/analytics/AnalyticsTopNav.tsx","./src/components/analytics/AssessmentHistory.tsx","./src/components/analytics/KpiCards.tsx","./src/components/analytics/MetricsGrid.tsx","./src/components/analytics/ProficiencyGauge.tsx","./src/components/analytics/ProficiencyHero.tsx","./src/components/analytics/SkillRadar.tsx","./src/components/assessment/AssessmentSideNav.tsx","./src/components/assessment/CodeSnippet.tsx","./src/components/assessment/InfoCards.tsx","./src/components/assessment/QuizHeader.tsx","./src/components/assessment/QuizOptions.tsx","./src/components/certificate/CertificateCard.tsx","./src/components/certificate/SecuritySeal.tsx","./src/components/content/ContentSideNav.tsx","./src/components/content/ContentTopNav.tsx","./src/components/content/ModuleEditor.tsx","./src/components/content/NeuralPatterns.tsx","./src/components/content/ReportTemplates.tsx","./src/components/content/ScamDefinitions.tsx","./src/components/courses/CourseCard.tsx","./src/components/courses/CourseGrid.tsx","./src/components/courses/DashboardNavLink.tsx","./src/components/courses/DashboardSidebar.tsx","./src/components/courses/FeaturedCourseHero.tsx","./src/components/courses/FilterPills.tsx","./src/components/courses/MobileBottomNav.tsx","./src/components/courses/MobileTopNav.tsx","./src/components/courses/SearchBar.tsx","./src/components/ecosystem/BannerStats.tsx","./src/components/ecosystem/ClusterTelemetry.tsx","./src/components/ecosystem/EcosystemSideNav.tsx","./src/components/ecosystem/EcosystemTopNav.tsx","./src/components/ecosystem/NeuralAccuracy.tsx","./src/components/ecosystem/ScannerLoad.tsx","./src/components/ecosystem/SystemAlerts.tsx","./src/components/ecosystem/TrafficHeatmap.tsx","./src/components/layouts/AuthLayout.tsx","./src/components/layouts/DashboardLayout.tsx","./src/components/layouts/MarketingLayout.tsx","./src/components/risk-report/ChatInput.tsx","./src/components/risk-report/ChatMessage.tsx","./src/components/risk-report/ChatSidebar.tsx","./src/components/risk-report/NeuralRiskScoreCard.tsx","./src/components/risk-report/RiskBadge.tsx","./src/components/risk-report/Sidebar.tsx","./src/components/risk-report/SidebarNavLink.tsx","./src/components/risk-report/StatusMetricCard.tsx","./src/components/risk-report/ThreatItem.tsx","./src/components/risk-report/ThreatVectorPanel.tsx","./src/components/scam-detector/HeroSearch.tsx","./src/components/scam-detector/MyHistory.tsx","./src/components/scam-detector/NetworkHealth.tsx","./src/components/scam-detector/SideNav.tsx","./src/components/scam-detector/ThreatFeed.tsx","./src/components/scam-detector/TopNav.tsx","./src/components/scanner/AuditHistory.tsx","./src/components/scanner/AuditStats.tsx","./src/components/scanner/RiskMap.tsx","./src/components/scanner/ScanSearch.tsx","./src/components/scanner/ScannerSideNav.tsx","./src/components/scanner/ScannerTopNav.tsx","./src/components/scanner/ThreatFeed.tsx","./src/components/security/ActiveMonitors.tsx","./src/components/security/AuditHistoryList.tsx","./src/components/security/DemoDataNotice.tsx","./src/components/security/IncidentFeed.tsx","./src/components/security/LogStream.tsx","./src/components/security/ProjectCard.tsx","./src/components/security/ScoreDimensionBar.tsx","./src/components/security/SecurityScoreGauge.tsx","./src/components/security/SecuritySideNav.tsx","./src/components/security/SecurityStats.tsx","./src/components/security/SecurityTierBadge.tsx","./src/components/security/SecurityTopNav.tsx","./src/components/security/TokenRiskChecks.tsx","./src/components/security/TrustBadges.tsx","./src/components/shared/AddressBadge.tsx","./src/components/shared/CodeViewer.tsx","./src/components/shared/LiveLogStream.tsx","./src/components/shared/MasterCatalogDrawer.tsx","./src/components/shared/QuorumProgress.tsx","./src/components/shared/RadarChart.tsx","./src/components/shared/StatCard.tsx","./src/components/ui/AnimatedCounter.tsx","./src/components/ui/Badge.tsx","./src/components/ui/BlockchainViz.tsx","./src/components/ui/Button.tsx","./src/components/ui/Card.tsx","./src/components/ui/GlassCard.tsx","./src/components/ui/GlowBackground.tsx","./src/components/ui/Icon.tsx","./src/components/ui/Input.tsx","./src/components/ui/Marquee.tsx","./src/components/ui/Modal.tsx","./src/components/ui/Parallax.tsx","./src/components/ui/Reveal.tsx","./src/components/ui/ScrollProgress.tsx","./src/components/ui/SectionHeading.tsx","./src/components/ui/Select.tsx","./src/components/ui/Switch.tsx","./src/components/ui/Tabs.tsx","./src/components/ui/TiltCard.tsx","./src/context/AuthContext.tsx","./src/data/coursesContent.ts","./src/data/lmsSeed.ts","./src/data/riskReportContent.ts","./src/data/securityData.ts","./src/hooks/useInViewOnce.ts","./src/hooks/useIncidents.ts","./src/hooks/useLeaderboard.ts","./src/hooks/useParallax.ts","./src/hooks/usePrefersReducedMotion.ts","./src/hooks/useProjects.ts","./src/hooks/useSpotlight.ts","./src/hooks/useTokenScan.ts","./src/lib/download.ts","./src/lib/evm.ts","./src/lib/markdown.ts","./src/lib/persistentStore.ts","./src/lib/utils.ts","./src/mock/data.ts","./src/pages/academy/AssessmentQuizPage.tsx","./src/pages/academy/CertificatePage.tsx","./src/pages/academy/CoursePlayerPage.tsx","./src/pages/admin/AlertConfigPage.tsx","./src/pages/admin/BillingHistoryPage.tsx","./src/pages/admin/ContentAdministrationPage.tsx","./src/pages/admin/CourseBuilderPage.tsx","./src/pages/admin/DevelopersApiPage.tsx","./src/pages/admin/InvoiceTemplatePage.tsx","./src/pages/admin/PaymentGatewaysPage.tsx","./src/pages/admin/RefundsPage.tsx","./src/pages/admin/SecurityConfigPage.tsx","./src/pages/admin/SecurityLogsPage.tsx","./src/pages/admin/SecurityLogsTacticalPage.tsx","./src/pages/admin/TokenRiskEditorPage.tsx","./src/pages/admin/UsersProtocolsPage.tsx","./src/pages/auditor/AiTerminalPage.tsx","./src/pages/auditor/AuditorLeaderboardPage.tsx","./src/pages/auditor/AuditorQueuePage.tsx","./src/pages/auditor/ForensicsPage.tsx","./src/pages/auth/InductionPage.tsx","./src/pages/auth/LoginPage.tsx","./src/pages/auth/SecureGatePage.tsx","./src/pages/auth/UnauthorizedPage.tsx","./src/pages/catalog/MasterCatalogPage.tsx","./src/pages/client/CheckoutPage.tsx","./src/pages/client/ClientDashboardPage.tsx","./src/pages/client/DocumentVaultPage.tsx","./src/pages/client/DualPaneReviewPage.tsx","./src/pages/client/FinalReportPage.tsx","./src/pages/client/LiveAuditTrackerPage.tsx","./src/pages/client/NewAuditRequestPage.tsx","./src/pages/client/VulnerabilityTriagePage.tsx","./src/pages/governance/GovernancePage.tsx","./src/pages/governance/ProposalDetailPage.tsx","./src/pages/governance/UserProfilePage.tsx","./src/pages/marketing/HomePage.tsx","./src/pages/marketing/PricingPage.tsx","./src/pages/marketing/SolutionsAuditingPage.tsx","./src/pages/marketing/SupportPage.tsx","./src/pages/threat-hub/EcosystemHealthPage.tsx","./src/pages/threat-hub/ProjectProfilePage.tsx","./src/pages/threat-hub/SecurityIncidentsPage.tsx","./src/pages/threat-hub/SecurityLeaderboardPage.tsx","./src/pages/threat-hub/SkynetDashboardPage.tsx","./src/pages/threat-hub/TokenAnalyzerPage.tsx","./src/pages/threat-hub/WhaleAlertsPage.tsx","./src/services/academyService.ts","./src/services/adminService.ts","./src/services/auditService.ts","./src/services/authService.scenarios.ts","./src/services/authService.ts","./src/services/authorization.contract.ts","./src/services/authorization.ts","./src/services/courseService.ts","./src/services/governanceService.ts","./src/services/incidentService.ts","./src/services/projectService.ts","./src/services/securityScoreService.ts","./src/services/supportService.ts","./src/services/tokenScanService.ts","./src/services/vaultService.ts","./src/types/academy.ts","./src/types/admin.ts","./src/types/analytics.ts","./src/types/assessment.ts","./src/types/certificate.ts","./src/types/content.ts","./src/types/courses.ts","./src/types/ecosystem.ts","./src/types/index.ts","./src/types/lms.ts","./src/types/ops.ts","./src/types/scanner.ts","./src/types/security.ts","./src/types/threat.ts"],"version":"5.9.3"}
-\ No newline at end of file
-+{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/auth/AuthLoadingScreen.tsx","./src/auth/GuestRoute.tsx","./src/auth/ProtectedRoute.tsx","./src/auth/index.ts","./src/auth/navigation.ts","./src/auth/rbac.scenarios.ts","./src/auth/rbac.selftest.ts","./src/auth/rbac.ts","./src/auth/usePermission.ts","./src/components/academy/AIMentorChat.tsx","./src/components/academy/CourseSideNav.tsx","./src/components/academy/LessonNotes.tsx","./src/components/academy/QuickQuizFab.tsx","./src/components/academy/TopNavBar.tsx","./src/components/academy/VideoPlayer.tsx","./src/components/admin/ActivityStream.tsx","./src/components/admin/AdminSideNav.tsx","./src/components/admin/AdminStats.tsx","./src/components/admin/AdminTopNav.tsx","./src/components/admin/MasterRegistry.tsx","./src/components/admin/RiskHeatmap.tsx","./src/components/analytics/AnalyticsSideNav.tsx","./src/components/analytics/AnalyticsTopBar.tsx","./src/components/analytics/AnalyticsTopNav.tsx","./src/components/analytics/AssessmentHistory.tsx","./src/components/analytics/KpiCards.tsx","./src/components/analytics/MetricsGrid.tsx","./src/components/analytics/ProficiencyGauge.tsx","./src/components/analytics/ProficiencyHero.tsx","./src/components/analytics/SkillRadar.tsx","./src/components/assessment/AssessmentSideNav.tsx","./src/components/assessment/CodeSnippet.tsx","./src/components/assessment/InfoCards.tsx","./src/components/assessment/QuizHeader.tsx","./src/components/assessment/QuizOptions.tsx","./src/components/certificate/CertificateCard.tsx","./src/components/certificate/SecuritySeal.tsx","./src/components/content/ContentSideNav.tsx","./src/components/content/ContentTopNav.tsx","./src/components/content/ModuleEditor.tsx","./src/components/content/NeuralPatterns.tsx","./src/components/content/ReportTemplates.tsx","./src/components/content/ScamDefinitions.tsx","./src/components/courses/CourseCard.tsx","./src/components/courses/CourseGrid.tsx","./src/components/courses/DashboardNavLink.tsx","./src/components/courses/DashboardSidebar.tsx","./src/components/courses/FeaturedCourseHero.tsx","./src/components/courses/FilterPills.tsx","./src/components/courses/MobileBottomNav.tsx","./src/components/courses/MobileTopNav.tsx","./src/components/courses/SearchBar.tsx","./src/components/ecosystem/BannerStats.tsx","./src/components/ecosystem/ClusterTelemetry.tsx","./src/components/ecosystem/EcosystemSideNav.tsx","./src/components/ecosystem/EcosystemTopNav.tsx","./src/components/ecosystem/NeuralAccuracy.tsx","./src/components/ecosystem/ScannerLoad.tsx","./src/components/ecosystem/SystemAlerts.tsx","./src/components/ecosystem/TrafficHeatmap.tsx","./src/components/layouts/AuthLayout.tsx","./src/components/layouts/DashboardLayout.tsx","./src/components/layouts/MarketingLayout.tsx","./src/components/risk-report/ChatInput.tsx","./src/components/risk-report/ChatMessage.tsx","./src/components/risk-report/ChatSidebar.tsx","./src/components/risk-report/NeuralRiskScoreCard.tsx","./src/components/risk-report/RiskBadge.tsx","./src/components/risk-report/Sidebar.tsx","./src/components/risk-report/SidebarNavLink.tsx","./src/components/risk-report/StatusMetricCard.tsx","./src/components/risk-report/ThreatItem.tsx","./src/components/risk-report/ThreatVectorPanel.tsx","./src/components/scam-detector/HeroSearch.tsx","./src/components/scam-detector/MyHistory.tsx","./src/components/scam-detector/NetworkHealth.tsx","./src/components/scam-detector/SideNav.tsx","./src/components/scam-detector/ThreatFeed.tsx","./src/components/scam-detector/TopNav.tsx","./src/components/scanner/AuditHistory.tsx","./src/components/scanner/AuditStats.tsx","./src/components/scanner/RiskMap.tsx","./src/components/scanner/ScanSearch.tsx","./src/components/scanner/ScannerSideNav.tsx","./src/components/scanner/ScannerTopNav.tsx","./src/components/scanner/ThreatFeed.tsx","./src/components/security/ActiveMonitors.tsx","./src/components/security/AuditHistoryList.tsx","./src/components/security/DemoDataNotice.tsx","./src/components/security/IncidentFeed.tsx","./src/components/security/LogStream.tsx","./src/components/security/ProjectCard.tsx","./src/components/security/ScoreDimensionBar.tsx","./src/components/security/SecurityScoreGauge.tsx","./src/components/security/SecuritySideNav.tsx","./src/components/security/SecurityStats.tsx","./src/components/security/SecurityTierBadge.tsx","./src/components/security/SecurityTopNav.tsx","./src/components/security/TokenRiskChecks.tsx","./src/components/security/TrustBadges.tsx","./src/components/shared/AddressBadge.tsx","./src/components/shared/CodeViewer.tsx","./src/components/shared/LiveLogStream.tsx","./src/components/shared/MasterCatalogDrawer.tsx","./src/components/shared/QuorumProgress.tsx","./src/components/shared/RadarChart.tsx","./src/components/shared/StatCard.tsx","./src/components/ui/AnchorLayout.tsx","./src/components/ui/AnimatedCounter.tsx","./src/components/ui/Badge.tsx","./src/components/ui/BlockchainViz.tsx","./src/components/ui/Button.tsx","./src/components/ui/Card.tsx","./src/components/ui/CurtainTransition.tsx","./src/components/ui/GlassCard.tsx","./src/components/ui/GlowBackground.tsx","./src/components/ui/GradientWaves.tsx","./src/components/ui/Icon.tsx","./src/components/ui/Input.tsx","./src/components/ui/Marquee.tsx","./src/components/ui/Modal.tsx","./src/components/ui/MoltenMetal.tsx","./src/components/ui/Parallax.tsx","./src/components/ui/Reveal.tsx","./src/components/ui/ScrollProgress.tsx","./src/components/ui/SectionHeading.tsx","./src/components/ui/Select.tsx","./src/components/ui/Switch.tsx","./src/components/ui/Tabs.tsx","./src/components/ui/TextType.tsx","./src/components/ui/TiltCard.tsx","./src/components/ui/VerticalMarquee.tsx","./src/components/ui/Navigation/MegaMenuColumn.tsx","./src/components/ui/Navigation/MegaMenuItem.tsx","./src/components/ui/Navigation/NavDropdown.tsx","./src/components/ui/Navigation/Navbar.tsx","./src/context/AuthContext.tsx","./src/data/coursesContent.ts","./src/data/lmsSeed.ts","./src/data/riskReportContent.ts","./src/data/securityData.ts","./src/hooks/useInViewOnce.ts","./src/hooks/useIncidents.ts","./src/hooks/useLeaderboard.ts","./src/hooks/useParallax.ts","./src/hooks/usePrefersReducedMotion.ts","./src/hooks/useProjects.ts","./src/hooks/useSpotlight.ts","./src/hooks/useTokenScan.ts","./src/lib/download.ts","./src/lib/evm.ts","./src/lib/markdown.ts","./src/lib/persistentStore.ts","./src/lib/utils.ts","./src/mock/data.ts","./src/pages/academy/AssessmentQuizPage.tsx","./src/pages/academy/CertificatePage.tsx","./src/pages/academy/CoursePlayerPage.tsx","./src/pages/admin/AlertConfigPage.tsx","./src/pages/admin/BillingHistoryPage.tsx","./src/pages/admin/ContentAdministrationPage.tsx","./src/pages/admin/CourseBuilderPage.tsx","./src/pages/admin/DevelopersApiPage.tsx","./src/pages/admin/InvoiceTemplatePage.tsx","./src/pages/admin/PaymentGatewaysPage.tsx","./src/pages/admin/RefundsPage.tsx","./src/pages/admin/SecurityConfigPage.tsx","./src/pages/admin/SecurityLogsPage.tsx","./src/pages/admin/SecurityLogsTacticalPage.tsx","./src/pages/admin/TokenRiskEditorPage.tsx","./src/pages/admin/UsersProtocolsPage.tsx","./src/pages/auditor/AiTerminalPage.tsx","./src/pages/auditor/AuditorLeaderboardPage.tsx","./src/pages/auditor/AuditorQueuePage.tsx","./src/pages/auditor/ForensicsPage.tsx","./src/pages/auth/LoginPage.tsx","./src/pages/auth/SecureGatePage.tsx","./src/pages/auth/SignupPage.tsx","./src/pages/auth/UnauthorizedPage.tsx","./src/pages/catalog/MasterCatalogPage.tsx","./src/pages/client/CheckoutPage.tsx","./src/pages/client/ClientDashboardPage.tsx","./src/pages/client/DocumentVaultPage.tsx","./src/pages/client/DualPaneReviewPage.tsx","./src/pages/client/FinalReportPage.tsx","./src/pages/client/LiveAuditTrackerPage.tsx","./src/pages/client/NewAuditRequestPage.tsx","./src/pages/client/VulnerabilityTriagePage.tsx","./src/pages/governance/GovernancePage.tsx","./src/pages/governance/ProposalDetailPage.tsx","./src/pages/governance/UserProfilePage.tsx","./src/pages/marketing/HomePage.tsx","./src/pages/marketing/PricingPage.tsx","./src/pages/marketing/SolutionsAuditingPage.tsx","./src/pages/marketing/SupportPage.tsx","./src/pages/threat-hub/EcosystemHealthPage.tsx","./src/pages/threat-hub/ProjectProfilePage.tsx","./src/pages/threat-hub/SecurityIncidentsPage.tsx","./src/pages/threat-hub/SecurityLeaderboardPage.tsx","./src/pages/threat-hub/SkynetDashboardPage.tsx","./src/pages/threat-hub/TokenAnalyzerPage.tsx","./src/pages/threat-hub/WhaleAlertsPage.tsx","./src/services/academyService.ts","./src/services/adminService.ts","./src/services/auditService.ts","./src/services/authService.scenarios.ts","./src/services/authService.ts","./src/services/authorization.contract.ts","./src/services/authorization.ts","./src/services/courseService.ts","./src/services/governanceService.ts","./src/services/incidentService.ts","./src/services/projectService.ts","./src/services/securityScoreService.ts","./src/services/supportService.ts","./src/services/tokenScanService.ts","./src/services/vaultService.ts","./src/types/academy.ts","./src/types/admin.ts","./src/types/analytics.ts","./src/types/assessment.ts","./src/types/certificate.ts","./src/types/content.ts","./src/types/courses.ts","./src/types/ecosystem.ts","./src/types/index.ts","./src/types/lms.ts","./src/types/ops.ts","./src/types/scanner.ts","./src/types/security.ts","./src/types/threat.ts"],"version":"5.9.3"}
-\ No newline at end of file
+           <Button type="submit" className="w-full" icon="send">
+             Submit Ticket
+           </Button>

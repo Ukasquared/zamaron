@@ -59,7 +59,7 @@ export const Navbar: React.FC = () => {
                   href="/client/audits/new" 
                   icon="add_circle" 
                   description="Submit your smart contract codebase for initial assessment and quote."
-                  badge="New"
+                  badge=""
                 />
               )}
               <MegaMenuItem 

@@ -64,15 +64,6 @@ export const DashboardLayout: React.FC = () => {
 
         {/* Right Side: Role Selector, Matrix Drawer Button, Wallet, Profile */}
         <div className="flex items-center gap-3">
-          {/* Quick 47-Screens Master Matrix Button */}
-          <button
-            onClick={() => setCatalogOpen(true)}
-            className="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-300 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono font-bold shadow-[0_0_12px_rgba(0,218,243,0.2)]"
-            title="Open Master Navigation Matrix for all 47 screens"
-          >
-            <Icon name="grid_view" size={16} />
-            <span className="hidden sm:inline">47 Screens Matrix</span>
-          </button>
 
           {/* Active role badge */}
           <div className="hidden md:flex items-center gap-1.5 bg-[#0b1326]/80 px-2 py-0.5 rounded-md border border-white/10 text-[11px] font-mono backdrop-blur-md">
@@ -196,7 +187,7 @@ export const DashboardLayout: React.FC = () => {
               className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-mono text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
             >
               <Icon name="support_agent" size={16} />
-              {!sidebarCollapsed && <span>Command Support</span>}
+              {!sidebarCollapsed && <span>Support</span>}
             </Link>
             <button
               type="button"
@@ -204,7 +195,7 @@ export const DashboardLayout: React.FC = () => {
               className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-mono text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer w-full text-left"
             >
               <Icon name="logout" size={16} />
-              {!sidebarCollapsed && <span>End Session</span>}
+              {!sidebarCollapsed && <span>Logout</span>}
             </button>
           </div>
         </aside>
@@ -272,7 +263,7 @@ export const DashboardLayout: React.FC = () => {
                 className="mt-6 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-mono text-slate-300 hover:bg-white/5 cursor-pointer border border-white/10"
               >
                 <Icon name="logout" size={16} />
-                End Session
+                Logout
               </button>
             </div>
           </div>

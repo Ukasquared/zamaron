@@ -444,9 +444,417 @@
   .img-reveal.is-visible img {
     transform: scale(1);
   }
+
+  /* Solutions page — orbital hero, travelling audit signal, and card telemetry */
+  .solution-orbit {
+    position: relative;
+    width: 22rem;
+    aspect-ratio: 1;
+    border: 1px dashed rgba(34, 211, 238, 0.2);
+    border-radius: 9999px;
+    opacity: 0.52;
+    animation: solutionOrbitSpin 24s linear infinite;
+    box-shadow: 0 0 70px rgba(0, 218, 243, 0.05), inset 0 0 55px rgba(0, 218, 243, 0.04);
+  }
+  .solution-orbit::before,
+  .solution-orbit::after {
+    content: "";
+    position: absolute;
+    border-radius: inherit;
+    border: 1px solid rgba(167, 139, 250, 0.12);
+  }
+  .solution-orbit::before {
+    inset: 18%;
+  }
+  .solution-orbit::after {
+    inset: 37%;
+    border-color: rgba(34, 211, 238, 0.2);
+    box-shadow: 0 0 24px rgba(34, 211, 238, 0.12);
+  }
+  .solution-orbit > span {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: #67e8f9;
+    box-shadow: 0 0 18px rgba(103, 232, 249, 0.9);
+  }
+  .solution-live-dot,
+  .support-index-dot {
+    position: relative;
+    display: inline-flex;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: #22d3ee;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.75);
+  }
+  .solution-live-dot::after,
+  .support-index-dot::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border: 1px solid rgba(34, 211, 238, 0.45);
+    border-radius: inherit;
+    animation: telemetryPing 2.4s ease-out infinite;
+  }
+  .solution-flow-rail {
+    position: absolute;
+    z-index: 0;
+    top: 2rem;
+    bottom: 2rem;
+    left: 3.75rem;
+    width: 1px;
+    overflow: visible;
+    background: linear-gradient(to bottom, transparent, rgba(34, 211, 238, 0.34) 8%, rgba(167, 139, 250, 0.25) 92%, transparent);
+  }
+  .solution-flow-signal {
+    position: absolute;
+    top: 0;
+    left: -2px;
+    width: 5px;
+    height: 42px;
+    border-radius: 9999px;
+    background: linear-gradient(to bottom, transparent, #67e8f9, transparent);
+    filter: drop-shadow(0 0 7px rgba(34, 211, 238, 0.9));
+    animation: solutionSignalTravel 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+  .solution-step-card {
+    isolation: isolate;
+  }
+  .solution-card-scan {
+    position: absolute;
+    z-index: 0;
+    inset-block: 0;
+    left: -42%;
+    width: 32%;
+    opacity: 0.15;
+    transform: skewX(-14deg);
+    background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.18), transparent);
+    animation: solutionCardScan 8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    pointer-events: none;
+  }
+  .solution-step-number {
+    position: relative;
+    isolation: isolate;
+  }
+  .solution-step-pulse {
+    position: absolute;
+    inset: 4px;
+    z-index: 0;
+    border: 1px solid rgba(34, 211, 238, 0.34);
+    border-radius: 0.5rem;
+    animation: solutionStepPulse 3.4s ease-in-out infinite;
+  }
+  .solution-phase-chip {
+    gap: 0.45rem;
+    transition: color 300ms ease, border-color 300ms ease;
+  }
+  .solution-step-card:hover .solution-phase-chip {
+    color: #a5f3fc;
+    border-color: rgba(34, 211, 238, 0.22);
+  }
+  .solution-phase-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background: #22d3ee;
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
+    animation: pulseGlow 2.2s ease-in-out infinite;
+  }
+  .solution-cta-orbit {
+    position: absolute;
+    top: 50%;
+    right: -5rem;
+    width: 17rem;
+    aspect-ratio: 1;
+    translate: 0 -50%;
+    border: 1px dashed rgba(34, 211, 238, 0.12);
+    border-radius: 9999px;
+    animation: solutionOrbitSpin 30s linear infinite reverse;
+    pointer-events: none;
+  }
+  .solution-cta-orbit::before,
+  .solution-cta-orbit::after {
+    content: "";
+    position: absolute;
+    border: 1px solid rgba(167, 139, 250, 0.1);
+    border-radius: inherit;
+  }
+  .solution-cta-orbit::before { inset: 22%; }
+  .solution-cta-orbit::after { inset: 42%; border-color: rgba(34, 211, 238, 0.16); }
+
+  /* Support page — radar sweep, staggered diagnostics, and responsive search motion */
+  .support-radar {
+    position: relative;
+    width: 23rem;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid rgba(34, 211, 238, 0.16);
+    border-radius: 9999px;
+    opacity: 0.46;
+    background:
+      linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px),
+      repeating-radial-gradient(circle, transparent 0 3.55rem, rgba(34, 211, 238, 0.12) 3.6rem 3.65rem);
+    background-size: 100% 50%, 50% 100%, 100% 100%;
+    background-position: center, center, center;
+    background-repeat: no-repeat;
+    box-shadow: 0 0 80px rgba(0, 218, 243, 0.05), inset 0 0 55px rgba(0, 218, 243, 0.04);
+  }
+  .support-radar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: conic-gradient(from 0deg, transparent 0deg 296deg, rgba(34, 211, 238, 0.02) 310deg, rgba(34, 211, 238, 0.28) 354deg, transparent 360deg);
+    animation: supportRadarSweep 9s linear infinite;
+  }
+  .support-radar-node {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: #67e8f9;
+    box-shadow: 0 0 16px rgba(103, 232, 249, 0.9);
+    animation: telemetryPing 2.8s ease-out infinite;
+  }
+  .support-radar-node--one { left: 30%; top: 37%; }
+  .support-radar-node--two { right: 24%; top: 54%; animation-delay: 0.8s; }
+  .support-radar-node--three { left: 46%; bottom: 19%; animation-delay: 1.5s; }
+
+  .support-search-shell {
+    position: relative;
+    isolation: isolate;
+    border-radius: 1rem;
+  }
+  .support-search-shell::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -2px;
+    border-radius: inherit;
+    opacity: 0.42;
+    background: linear-gradient(110deg, rgba(34, 211, 238, 0.55), rgba(167, 139, 250, 0.14), rgba(34, 211, 238, 0.45));
+    filter: blur(9px);
+    transition: opacity 350ms ease, filter 350ms ease;
+    animation: supportSearchGlow 4.5s ease-in-out infinite;
+  }
+  .support-search-shell:focus-within::before {
+    opacity: 0.82;
+    filter: blur(13px);
+  }
+  .support-search-input {
+    border-radius: 1rem !important;
+    border-color: rgba(34, 211, 238, 0.28) !important;
+    background: rgba(6, 14, 32, 0.9) !important;
+    padding-top: 0.85rem !important;
+    padding-bottom: 0.85rem !important;
+    padding-left: 2.75rem !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 14px 38px rgba(0, 0, 0, 0.24);
+  }
+  .support-search-input:focus {
+    border-color: rgba(103, 232, 249, 0.72) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(34, 211, 238, 0.18), 0 18px 45px rgba(0, 218, 243, 0.1);
+  }
+  .support-index-dot {
+    width: 5px;
+    height: 5px;
+  }
+  .support-live-beacon {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    flex: 0 0 auto;
+    border-radius: 9999px;
+    background: #34d399;
+    box-shadow: 0 0 12px rgba(52, 211, 153, 0.75);
+  }
+  .support-live-beacon::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    border-radius: inherit;
+    animation: telemetryPing 2.2s ease-out infinite;
+  }
+  .diagnostic-card {
+    position: relative;
+    min-height: 9.5rem;
+    overflow: hidden;
+  }
+  .reveal.is-visible .diagnostic-card {
+    animation: diagnosticCardIn 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(160ms + (var(--diagnostic-index) * 70ms));
+  }
+  .diagnostic-scanline {
+    position: absolute;
+    z-index: 0;
+    inset-inline: 0;
+    top: -45%;
+    height: 38%;
+    opacity: 0.34;
+    background: linear-gradient(to bottom, transparent, rgba(34, 211, 238, 0.16), transparent);
+    animation: diagnosticScan 4.8s linear infinite;
+    animation-delay: calc(var(--diagnostic-index) * 420ms);
+    pointer-events: none;
+  }
+  .diagnostic-status-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background: #34d399;
+    box-shadow: 0 0 7px rgba(52, 211, 153, 0.7);
+    animation: pulseGlow 2.4s ease-in-out infinite;
+  }
+  .diagnostic-meter {
+    height: 2px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: rgba(148, 163, 184, 0.12);
+  }
+  .diagnostic-meter > span {
+    display: block;
+    width: var(--latency-load);
+    height: 100%;
+    transform-origin: left;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #22d3ee, #34d399);
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.45);
+  }
+  .reveal.is-visible .diagnostic-meter > span {
+    animation: diagnosticMeterFill 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(480ms + (var(--diagnostic-index) * 70ms));
+  }
+  .support-search-results {
+    animation: supportResultsIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .support-result-row,
+  .support-empty-result {
+    animation: supportResultRowIn 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .support-category-card:hover .support-category-icon {
+    transform: translateY(-2px) rotate(-3deg) scale(1.04);
+    color: #a5f3fc;
+    border-color: rgba(103, 232, 249, 0.55);
+    box-shadow: 0 0 18px rgba(0, 218, 243, 0.25);
+  }
+  .support-incident-card {
+    isolation: isolate;
+  }
+  .support-response-orbit {
+    position: absolute;
+    top: 50%;
+    right: 2rem;
+    width: 15rem;
+    aspect-ratio: 1;
+    translate: 0 -50%;
+    border: 1px solid rgba(34, 211, 238, 0.1);
+    border-radius: 9999px;
+    animation: supportResponseBreathe 5.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .support-response-orbit::before,
+  .support-response-orbit::after {
+    content: "";
+    position: absolute;
+    border: 1px solid rgba(34, 211, 238, 0.1);
+    border-radius: inherit;
+  }
+  .support-response-orbit::before { inset: 22%; }
+  .support-response-orbit::after { inset: 42%; background: rgba(34, 211, 238, 0.04); }
+  .support-response-orbit > span {
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: #67e8f9;
+    box-shadow: 0 0 14px rgba(103, 232, 249, 0.9);
+    animation: solutionOrbitSpin 7s linear infinite;
+    transform-origin: 0 7.5rem;
+  }
+  .support-ticket-modal {
+    animation: supportModalIn 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }
 
 /* Keyframe Animations */
+@keyframes solutionOrbitSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes telemetryPing {
+  0% { opacity: 0.8; transform: scale(0.55); }
+  75%, 100% { opacity: 0; transform: scale(1.55); }
+}
+
+@keyframes solutionSignalTravel {
+  0% { top: 0; opacity: 0; }
+  8% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { top: calc(100% - 42px); opacity: 0; }
+}
+
+@keyframes solutionCardScan {
+  0%, 12% { transform: translateX(0) skewX(-14deg); opacity: 0; }
+  22% { opacity: 0.18; }
+  48%, 100% { transform: translateX(450%) skewX(-14deg); opacity: 0; }
+}
+
+@keyframes solutionStepPulse {
+  0%, 100% { opacity: 0.32; transform: scale(0.92); }
+  50% { opacity: 0.8; transform: scale(1); }
+}
+
+@keyframes supportRadarSweep {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes supportSearchGlow {
+  0%, 100% { transform: scaleX(0.98); opacity: 0.3; }
+  50% { transform: scaleX(1.01); opacity: 0.52; }
+}
+
+@keyframes diagnosticCardIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes diagnosticScan {
+  0%, 15% { transform: translateY(0); opacity: 0; }
+  25% { opacity: 0.35; }
+  62%, 100% { transform: translateY(390%); opacity: 0; }
+}
+
+@keyframes diagnosticMeterFill {
+  from { transform: scaleX(0); opacity: 0.25; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes supportResultsIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.99); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes supportResultRowIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes supportResponseBreathe {
+  0%, 100% { opacity: 0.45; transform: scale(0.96); }
+  50% { opacity: 0.8; transform: scale(1.03); }
+}
+
+@keyframes supportModalIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); filter: blur(7px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
 @keyframes marquee {
   0% {
     transform: translateX(0);
