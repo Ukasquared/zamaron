@@ -12,7 +12,7 @@ import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { Reveal } from "@/components/ui/Reveal";
 import { Parallax } from "@/components/ui/Parallax";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
-import MetaBalls from "@/components/ui/MetaBalls";
+import MoltenMetal from "@/components/ui/MoltenMetal";
 import GradientWaves from "@/components/ui/GradientWaves";
 import TextType from "@/components/ui/TextType";
 import {VerticalMarquee} from "@/components/ui/VerticalMarquee";
@@ -190,18 +190,26 @@ export const HomePage: React.FC = () => {
         </div>
 
         <div className="absolute inset-0 z-10 pointer-events-none">
-          <MetaBalls
-            color="#ffffff"
-            cursorBallColor="#ffffff"
-            cursorBallSize={3}
-            ballCount={15}
-            animationSize={30}
-            enableMouseInteraction
-            enableTransparency={true}
-            hoverSmoothness={0.15}
-            clumpFactor={1}
-            speed={0.6}
-          />
+            <MoltenMetal
+                color1="#5227FF"
+                color2="#FF9FFC"
+                color3="#FFFFFF"
+                speed={0.35}
+                scale={5.4}
+                detail={3}
+                glow={2.1}
+                coreSize={0.1}
+                swirl={1}
+                fold={-0.2}
+                blackPoint={0.05}
+                brightness={1.3}
+                colorMode="molten"
+                grain
+                grainIntensity={0.05}
+                mouseInteraction
+                mouseStrength={0.3}
+                opacity={1}
+              />
         </div>
 
         <div className="relative z-20 py-20 sm:py-24">

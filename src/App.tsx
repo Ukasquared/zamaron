@@ -18,7 +18,7 @@ import { SupportPage } from '@/pages/marketing/SupportPage';
 // Auth Pages
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { SecureGatePage } from '@/pages/auth/SecureGatePage';
-import { InductionPage } from '@/pages/auth/InductionPage';
+import { SignupPage } from '@/pages/auth/SignupPage';
 import { UnauthorizedPage } from '@/pages/auth/UnauthorizedPage';
 
 // Client Portal Pages
@@ -98,8 +98,7 @@ export const App: React.FC = () => {
               <Route path="/secure-auditor-login" element={<LoginPage requiredRole="AUDITOR" />} />
               {/* Legacy URL deliberately resolves to the client-only public sign-in. */}
               <Route path="/auth/login" element={<Navigate to="/signin" replace />} />
-              <Route path="/auth/induction" element={<InductionPage />} />
-              <Route path="/auth/induction-signup" element={<InductionPage />} />
+              <Route path="/auth/signup" element={<SignupPage />} />
             </Route>
             {/* Secondary factor — requires an existing session, cannot mint a role. */}
             <Route path="/auth/secure-gate" element={<SecureGatePage />} />

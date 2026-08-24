@@ -38,9 +38,6 @@ export const AuthLayout: React.FC = () => {
             <span className="font-display font-black text-lg tracking-wider text-white">
               ZAMARON
             </span>
-            <span className="text-[9px] font-mono block text-primary/80 tracking-widest leading-none">
-              TERMINAL ACCESS
-            </span>
           </div>
         </Link>
 
@@ -49,7 +46,7 @@ export const AuthLayout: React.FC = () => {
             to="/"
             className="text-xs font-mono text-slate-400 hover:text-white flex items-center gap-1"
           >
-            <Icon name="arrow_back" size={16} /> Back to Portal
+            <Icon name="arrow_back" size={16} /> Back to Home
           </Link>
         </div>
       </header>

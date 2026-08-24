@@ -3,7 +3,6 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 import { useAuth } from '@/context/AuthContext';
 import { getPostLoginPath } from '@/auth/rbac';
@@ -19,26 +18,22 @@ interface LoginPageProps {
   requiredRole?: UserRole;
 }
 
-const LOGIN_COPY: Record<UserRole, { title: string; description: string; badge: string }> = {
+const LOGIN_COPY: Record<UserRole, { title: string; description: string; }> = {
   CLIENT: {
-    title: 'Client sign in',
+    title: 'Account Login',
     description: 'Sign in to manage your protocol security engagements.',
-    badge: 'CLIENT PORTAL',
   },
   AUDITOR: {
     title: 'Auditor access',
     description: 'Authorized audit personnel only. Your account clearance is verified during sign in.',
-    badge: 'RESTRICTED AUDITOR TERMINAL',
   },
   ADMIN: {
     title: 'Administrator access',
     description: 'Authorized administrators only. Your account clearance is verified during sign in.',
-    badge: 'RESTRICTED ADMIN TERMINAL',
   },
   STUDENT: {
     title: 'Sign in',
     description: 'Authenticate to continue.',
-    badge: 'TERMINAL ACCESS',
   },
 };
 
@@ -76,12 +71,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ requiredRole = 'CLIENT' })
       blur="xl"
       className="w-full max-w-md p-8 space-y-6 shadow-[0_0_40px_rgba(0,218,243,0.15)] relative border-cyan-500/30"
     >
-      <div className="flex items-center justify-between gap-3">
-        <Badge variant="primary" size="sm" dot pulse>
-          {copy.badge}
-        </Badge>
-        <span className="text-[10px] font-mono text-slate-400">SESSION: #ZT-8924-X</span>
-      </div>
 
       <div className="space-y-1">
         <h2 className="font-display font-black text-2xl text-white">{copy.title}</h2>
@@ -131,11 +120,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ requiredRole = 'CLIENT' })
 
       {requiredRole === 'CLIENT' && (
         <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
-          <Link to="/auth/induction" className="hover:text-cyan-300 transition-colors">
-            New client? <span className="text-cyan-400 font-bold">Begin induction</span>
-          </Link>
-          <Link to="/auth/secure-gate" className="hover:text-slate-200">
-            Hardware enclave
+          <Link to="/auth/signup" className="hover:text-cyan-300 transition-colors">
+              New to Zamaron? <span className="text-cyan-400 font-bold">sign up</span>
           </Link>
         </div>
       )}
